@@ -1,8 +1,8 @@
 import { Redis } from "@upstash/redis";
 import { readFileSync } from "fs";
 import { join } from "path";
-import type { TrackerData } from "./types";
-import { computeNextReview } from "./tracker";
+import type { TrackerData, FeedbackLevel } from "./types";
+import { computeNextReview, computeNextReviewWithFeedback, computeMasteryFromReviews } from "./tracker";
 
 const KV_KEY = "tracker:data";
 
@@ -38,10 +38,19 @@ export async function getTrackerData(): Promise<TrackerData> {
   return JSON.parse(raw) as TrackerData;
 }
 
-/** Mark a concept as reviewed, update stage and next review date */
+async function saveData(data: TrackerData): Promise<void> {
+  const redis = getRedis();
+  if (redis) {
+    await redis.set(KV_KEY, JSON.stringify(data));
+  }
+}
+
+/** Mark a concept as reviewed with optional feedback */
 export async function markReviewed(
   conceptId: string,
-  date: string
+  date: string,
+  feedback: FeedbackLevel = "medium",
+  notes?: string
 ): Promise<TrackerData> {
   const data = await getTrackerData();
   const concept = data.concepts.find((c) => c.id === conceptId);
@@ -50,26 +59,56 @@ export async function markReviewed(
     throw new Error(`Concept not found: ${conceptId}`);
   }
 
-  // Add review entry
-  concept.reviews.push({ date, completed: true });
+  // Add review entry with feedback
+  concept.reviews.push({ date, completed: true, feedback, notes });
 
-  // Increment stage (max 5)
-  if (concept.review_stage < 5) {
-    concept.review_stage += 1;
+  // Compute next review using feedback-based algorithm
+  const { nextReview, newStage } = computeNextReviewWithFeedback(
+    concept.review_stage,
+    date,
+    feedback
+  );
+  concept.review_stage = newStage;
+  if (newStage < 5) {
+    concept.next_review = nextReview;
   }
 
-  // Compute next review date
-  if (concept.review_stage < 5) {
-    concept.next_review = computeNextReview(concept.review_stage, date);
-  }
+  // Update mastery level based on recent reviews
+  concept.mastery_level = computeMasteryFromReviews(
+    concept.reviews,
+    concept.mastery_level
+  );
 
   data.last_updated = date;
+  await saveData(data);
 
-  // Save to KV if available
-  const redis = getRedis();
-  if (redis) {
-    await redis.set(KV_KEY, JSON.stringify(data));
-  }
+  return data;
+}
+
+/** Add a learning request for a concept */
+export async function addLearningRequest(
+  conceptId: string,
+  reason?: string
+): Promise<TrackerData> {
+  const data = await getTrackerData();
+
+  if (!data.learning_requests) data.learning_requests = [];
+
+  // Avoid duplicate pending requests for same concept
+  const existing = data.learning_requests.find(
+    (r) => r.concept_id === conceptId && r.status === "pending"
+  );
+  if (existing) return data;
+
+  data.learning_requests.push({
+    concept_id: conceptId,
+    requested_date: new Date().toISOString().split("T")[0],
+    reason,
+    status: "pending",
+  });
+
+  data.last_updated = new Date().toISOString().split("T")[0];
+  await saveData(data);
 
   return data;
 }

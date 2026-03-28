@@ -4,6 +4,7 @@ import {
   getCategoryBreakdown,
   getStats,
   buildPagesIndex,
+  getFocusAreas,
 } from "@/lib/tracker";
 import { getTrackerData } from "@/lib/kv";
 import TodayReview from "@/components/TodayReview";
@@ -13,6 +14,7 @@ import CategoryBreakdown from "@/components/CategoryBreakdown";
 import WeeklyTimeline from "@/components/WeeklyTimeline";
 import CrossReferenceMap from "@/components/CrossReferenceMap";
 import LearningRecommendations from "@/components/LearningRecommendations";
+import FocusAreas from "@/components/FocusAreas";
 import {
   Brain,
   Trophy,
@@ -48,6 +50,7 @@ export default async function DashboardPage() {
   const calendar = getReviewCalendar(data);
   const breakdown = getCategoryBreakdown(data);
   const stats = getStats(data);
+  const focusAreas = getFocusAreas(data);
 
   const latestWeek = [...data.weeks].sort((a, b) =>
     a.week > b.week ? -1 : 1
@@ -97,6 +100,13 @@ export default async function DashboardPage() {
           subtitle="Learning weeks"
         />
       </div>
+
+      {/* Focus Areas */}
+      {focusAreas.length > 0 && (
+        <Card title="Focus Areas">
+          <FocusAreas focusAreas={focusAreas} />
+        </Card>
+      )}
 
       {/* Today's Review */}
       {dueToday.length > 0 && (

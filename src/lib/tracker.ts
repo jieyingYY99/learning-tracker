@@ -7,7 +7,7 @@ import {
   format,
   isWithinInterval,
 } from "date-fns";
-import type { Concept, TrackerData, Page } from "./types";
+import type { Concept, TrackerData, Page, FeedbackLevel, MasteryLevel, FocusArea } from "./types";
 
 const REVIEW_INTERVALS = [1, 3, 7, 14, 30];
 
@@ -18,6 +18,79 @@ export function computeNextReview(
   const stage = Math.min(reviewStage, REVIEW_INTERVALS.length - 1);
   const days = REVIEW_INTERVALS[stage];
   return format(addDays(parseISO(lastReviewDate), days), "yyyy-MM-dd");
+}
+
+export function computeNextReviewWithFeedback(
+  currentStage: number,
+  lastReviewDate: string,
+  feedback: FeedbackLevel
+): { nextReview: string; newStage: number } {
+  let newStage = currentStage;
+
+  switch (feedback) {
+    case "easy":
+      newStage = Math.min(currentStage + 2, 5);
+      break;
+    case "medium":
+      newStage = Math.min(currentStage + 1, 5);
+      break;
+    case "hard":
+      // Stay at same stage
+      break;
+    case "forgot":
+      newStage = Math.max(currentStage - 1, 0);
+      break;
+  }
+
+  if (newStage >= 5) {
+    return { nextReview: "", newStage: 5 }; // mastered
+  }
+
+  const intervalIndex = Math.min(newStage, REVIEW_INTERVALS.length - 1);
+  let days = REVIEW_INTERVALS[intervalIndex];
+
+  if (feedback === "hard") {
+    days = Math.max(1, Math.floor(days / 2));
+  } else if (feedback === "forgot") {
+    days = 1;
+  }
+
+  const nextReview = format(addDays(parseISO(lastReviewDate), days), "yyyy-MM-dd");
+  return { nextReview, newStage };
+}
+
+export function computeMasteryFromReviews(
+  reviews: { feedback?: FeedbackLevel }[],
+  currentMastery?: MasteryLevel
+): MasteryLevel {
+  const recent = reviews.slice(-3);
+  const recentFeedback = recent.map((r) => r.feedback).filter(Boolean) as FeedbackLevel[];
+
+  if (recentFeedback.length < 2) return currentMastery || "seen";
+
+  if (recentFeedback.every((f) => f === "easy")) return "can_use";
+  if (recentFeedback.includes("forgot")) {
+    return currentMastery === "can_use" ? "understand" : "seen";
+  }
+  if (recentFeedback.filter((f) => f === "easy" || f === "medium").length >= 2) {
+    return currentMastery === "seen" ? "understand" : currentMastery || "understand";
+  }
+
+  return currentMastery || "seen";
+}
+
+export function getFocusAreas(data: TrackerData): FocusArea[] {
+  return data.concepts
+    .map((c) => {
+      const recent = c.reviews.slice(-5);
+      const hardCount = recent.filter((r) => r.feedback === "hard").length;
+      const forgotCount = recent.filter((r) => r.feedback === "forgot").length;
+      const struggleScore = forgotCount * 2 + hardCount;
+      return { concept: c, struggleScore, hardCount, forgotCount };
+    })
+    .filter((item) => item.struggleScore >= 2)
+    .sort((a, b) => b.struggleScore - a.struggleScore)
+    .slice(0, 5);
 }
 
 export function getConceptsDueToday(

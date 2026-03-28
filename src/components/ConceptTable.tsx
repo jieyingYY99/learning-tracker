@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ChevronDown,
   ChevronRight,
   ArrowUpDown,
+  Star,
 } from "lucide-react";
 import clsx from "clsx";
 import type { Concept } from "@/lib/types";
@@ -129,9 +131,18 @@ export default function ConceptTable({
                       </span>
 
                       {/* Name */}
-                      <span className="min-w-0 flex-1 truncate font-medium">
+                      <Link
+                        href={`/concept/${c.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="min-w-0 flex-1 truncate font-medium hover:text-accent transition-colors"
+                      >
+                        {c.mastery_level && (
+                          <span className="mr-1 text-xs" title={c.mastery_level}>
+                            {c.mastery_level === "seen" ? "👁" : c.mastery_level === "understand" ? "💡" : "🔧"}
+                          </span>
+                        )}
                         {c.name}
-                      </span>
+                      </Link>
 
                       {/* Category badge */}
                       <span
@@ -176,22 +187,85 @@ export default function ConceptTable({
                   {expanded === c.id && (
                     <div className="border-t border-border bg-surface2 px-6 py-4 text-xs leading-relaxed text-text-dim">
                       <p className="mb-2">{c.description}</p>
+
+                      {/* Tags */}
+                      {c.tags && c.tags.length > 0 && (
+                        <div className="mb-2 flex flex-wrap gap-1">
+                          {c.tags.map((tag) => (
+                            <Link
+                              key={tag}
+                              href={`/search?tag=${encodeURIComponent(tag)}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="rounded bg-surface px-1.5 py-0.5 text-[10px] text-text-dim hover:text-accent"
+                            >
+                              #{tag}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Difficulty */}
+                      {c.difficulty && (
+                        <p className="mb-1 flex items-center gap-1">
+                          <span className="font-medium text-text">Difficulty:</span>
+                          {Array.from({ length: c.difficulty }, (_, i) => (
+                            <Star key={i} size={10} className="fill-orange text-orange" />
+                          ))}
+                        </p>
+                      )}
+
                       <p className="mb-1">
                         <span className="font-medium text-text">Next review:</span>{" "}
-                        {c.next_review}
+                        {c.review_stage >= 5 ? "Mastered" : c.next_review}
                       </p>
+
+                      {/* Recent review feedback */}
+                      {c.reviews.length > 0 && (
+                        <div className="mb-1 flex items-center gap-1">
+                          <span className="font-medium text-text">Recent reviews:</span>
+                          {c.reviews.slice(-5).map((r, i) => (
+                            <span
+                              key={i}
+                              className={clsx(
+                                "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                                r.feedback === "easy" && "bg-green/10 text-green",
+                                r.feedback === "medium" && "bg-accent/10 text-accent",
+                                r.feedback === "hard" && "bg-orange/10 text-orange",
+                                r.feedback === "forgot" && "bg-red/10 text-red",
+                                !r.feedback && "bg-surface text-text-dim",
+                              )}
+                            >
+                              {r.feedback || "ok"}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       {c.source_commits.length > 0 && (
                         <div className="mt-2">
                           <span className="font-medium text-text">Source commits:</span>
                           <ul className="mt-1 space-y-0.5 font-mono text-[11px]">
-                            {c.source_commits.map((commit, i) => (
+                            {c.source_commits.slice(0, 3).map((commit, i) => (
                               <li key={i} className="truncate">
                                 {commit}
                               </li>
                             ))}
+                            {c.source_commits.length > 3 && (
+                              <li className="text-text-dim">
+                                +{c.source_commits.length - 3} more
+                              </li>
+                            )}
                           </ul>
                         </div>
                       )}
+
+                      <Link
+                        href={`/concept/${c.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-2 inline-block text-accent hover:underline"
+                      >
+                        View full details →
+                      </Link>
                     </div>
                   )}
                 </td>

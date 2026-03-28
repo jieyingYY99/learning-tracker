@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LayoutDashboard } from "lucide-react";
+import { BookOpen, LayoutDashboard, Search } from "lucide-react";
 import clsx from "clsx";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/search", label: "Search", icon: Search },
   { href: "/pages", label: "Pages", icon: BookOpen },
 ];
 
