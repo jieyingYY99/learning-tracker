@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuse AI 后端学习之旅</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface-2: #222240;
+            --primary: #7c5cfc;
+            --primary-light: #a78bfa;
+            --accent: #22d3ee;
+            --accent-green: #34d399;
+            --accent-orange: #fb923c;
+            --accent-pink: #f472b6;
+            --accent-yellow: #fbbf24;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --border: #334155;
+            --correct: #22c55e;
+            --wrong: #ef4444;
+            --code-bg: #0d1117;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            background: radial-gradient(ellipse at 50% 0%, rgba(124,92,252,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(34,211,238,0.08) 0%, transparent 40%);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: radial-gradient(rgba(124,92,252,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        .hero .subtitle {
+            font-size: 1rem;
+            color: var(--text-dim);
+            opacity: 0.7;
+            margin-bottom: 3rem;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(15,15,26,0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .progress-container.visible { transform: translateY(0); }
+
+        .progress-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--surface-2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            min-width: 80px;
+        }
+
+        /* Navigation */
+        .nav-map {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            max-width: 900px;
+            margin: 0 auto 3rem;
+            padding: 0 1rem;
+        }
+
+        .nav-chip {
+            padding: 8px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-dim);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .nav-chip .chip-icon { font-size: 1.1rem; }
+        .nav-chip.completed { border-color: var(--correct); color: var(--correct); }
+
+        /* Sections */
+        .section {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 4rem 0;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 1rem;
+            color: var(--primary-light);
+        }
+
+        /* Analogy box */
+        .analogy {
+            background: linear-gradient(135deg, rgba(124,92,252,0.08), rgba(34,211,238,0.05));
+            border: 1px solid rgba(124,92,252,0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .analogy::before {
+            content: '💡';
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background: var(--surface);
+            padding: 0 8px;
+            font-size: 1.2rem;
+        }
+
+        .analogy-title {
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .code-block .lang-tag {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .code-keyword { color: #c084fc; }
+        .code-string { color: #86efac; }
+        .code-comment { color: #64748b; font-style: italic; }
+        .code-type { color: #67e8f9; }
+        .code-func { color: #fbbf24; }
+        .code-number { color: #fb923c; }
+
+        /* Architecture diagram */
+        .arch-diagram {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .arch-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .arch-box.primary { background: rgba(124,92,252,0.15); border: 1px solid rgba(124,92,252,0.4); color: var(--primary-light); }
+        .arch-box.accent { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); color: var(--accent); }
+        .arch-box.green { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--accent-green); }
+        .arch-box.orange { background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.3); color: var(--accent-orange); }
+        .arch-box.pink { background: rgba(244,114,182,0.1); border: 1px solid rgba(244,114,182,0.3); color: var(--accent-pink); }
+
+        .arch-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .arch-arrow {
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            margin: 4px 0;
+        }
+
+        .arch-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin: 8px 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Flow diagram */
+        .flow {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin: 1rem 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: var(--surface-2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .flow-step .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .flow-connector {
+            width: 28px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-left: 16px;
+        }
+
+        /* Quiz */
+        .quiz-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            background: rgba(124,92,252,0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(124,92,252,0.3);
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+
+        .quiz-option {
+            padding: 14px 18px;
+            background: var(--surface-2);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quiz-option:hover:not(.disabled) {
+            border-color: var(--primary);
+            background: rgba(124,92,252,0.05);
+        }
+
+        .quiz-option .option-letter {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: rgba(124,92,252,0.1);
+            color: var(--primary-light);
+            flex-shrink: 0;
+        }
+
+        .quiz-option.correct {
+            border-color: var(--correct);
+            background: rgba(34,197,94,0.08);
+        }
+
+        .quiz-option.correct .option-letter {
+            background: var(--correct);
+            color: white;
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--wrong);
+            background: rgba(239,68,68,0.08);
+        }
+
+        .quiz-option.wrong .option-letter {
+            background: var(--wrong);
+            color: white;
+        }
+
+        .quiz-option.disabled { cursor: default; opacity: 0.6; }
+        .quiz-option.correct.disabled { opacity: 1; }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            display: none;
+            line-height: 1.6;
+        }
+
+        .quiz-feedback.correct-feedback {
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: var(--accent-green);
+            display: block;
+        }
+
+        .quiz-feedback.wrong-feedback {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #fca5a5;
+            display: block;
+        }
+
+        /* Score card */
+        .score-card {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(124,92,252,0.1), rgba(34,211,238,0.05));
+            border: 1px solid rgba(124,92,252,0.2);
+            border-radius: 20px;
+            margin: 3rem 0;
+        }
+
+        .score-card h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 1rem 0;
+        }
+
+        .score-detail { color: var(--text-dim); font-size: 1rem; }
+
+        /* Highlights */
+        .hl { color: var(--accent); font-weight: 500; }
+        .hl-purple { color: var(--primary-light); font-weight: 500; }
+        .hl-green { color: var(--accent-green); font-weight: 500; }
+        .hl-orange { color: var(--accent-orange); font-weight: 500; }
+        .hl-pink { color: var(--accent-pink); font-weight: 500; }
+
+        /* Lists */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary-light);
+            font-weight: bold;
+        }
+
+        /* Tag */
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tag-go { background: rgba(0,173,238,0.12); color: #00ADD8; }
+        .tag-db { background: rgba(251,146,60,0.12); color: var(--accent-orange); }
+        .tag-api { background: rgba(124,92,252,0.12); color: var(--primary-light); }
+        .tag-ai { background: rgba(244,114,182,0.12); color: var(--accent-pink); }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .section { padding: 2rem 1rem; }
+            .card { padding: 1.5rem; }
+            .quiz-container { padding: 1.5rem; }
+            .arch-box { min-width: 80px; padding: 8px 12px; font-size: 0.75rem; }
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Start button */
+        .start-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, var(--primary), #6d28d9);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(124,92,252,0.3);
+        }
+
+        /* Table */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .info-table th, .info-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-table th {
+            color: var(--text-dim);
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div class="progress-container" id="progressBar">
+    <span class="progress-text" id="progressText">0 / 10 完成</span>
+    <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+    <h1>Kuse AI 后端学习之旅</h1>
+    <p>嘿，小伙伴！准备好了吗？<br>我们一起来认识这个超酷的 Go 后端项目吧！</p>
+    <p class="subtitle">10 个学习模块 · 交互式测验 · 从零开始</p>
+    <a href="#section-1" class="start-btn">开始探索 ↓</a>
+
+    <div class="nav-map" style="margin-top: 3rem;">
+        <a href="#section-1" class="nav-chip" data-section="1"><span class="chip-icon">🏠</span> 项目全貌</a>
+        <a href="#section-2" class="nav-chip" data-section="2"><span class="chip-icon">🚪</span> 程序入口</a>
+        <a href="#section-3" class="nav-chip" data-section="3"><span class="chip-icon">⚙️</span> 配置系统</a>
+        <a href="#section-4" class="nav-chip" data-section="4"><span class="chip-icon">🛣️</span> 路由与API</a>
+        <a href="#section-5" class="nav-chip" data-section="5"><span class="chip-icon">📦</span> 数据库</a>
+        <a href="#section-6" class="nav-chip" data-section="6"><span class="chip-icon">🧠</span> AI 对话</a>
+        <a href="#section-7" class="nav-chip" data-section="7"><span class="chip-icon">📂</span> 文件管理</a>
+        <a href="#section-8" class="nav-chip" data-section="8"><span class="chip-icon">🔧</span> 技能系统</a>
+        <a href="#section-9" class="nav-chip" data-section="9"><span class="chip-icon">🛡️</span> 中间件</a>
+        <a href="#section-10" class="nav-chip" data-section="10"><span class="chip-icon">🚀</span> 部署上线</a>
+    </div>
+</div>
+
+<!-- ==================== SECTION 1 ==================== -->
+<div class="section fade-in" id="section-1">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(124,92,252,0.15); color: var(--primary-light);">01</div>
+        <h2 class="section-title">项目全貌 — 我们在造什么？</h2>
+    </div>
+
+    <div class="card">
+        <h3>先说大白话</h3>
+        <p>想象你在开一家 <span class="hl">AI 智能助手公司</span>。用户注册之后，就可以跟 AI 聊天、上传文件、让 AI 帮他们做各种事情。</p>
+        <p style="margin-top: 1rem;">这个项目叫 <span class="hl-purple">kuse-ai-go</span>，就是这家公司的"后厨"——所有看不见的脏活累活都在这里完成。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🏪</div>
+        <p>把整个系统想象成一个<strong>大型购物中心</strong>：</p>
+        <ul class="feature-list" style="margin-top: 0.5rem;">
+            <li><span class="hl">folder 服务</span> = 购物中心的主楼（文件管理 + AI 对话，最核心的部分）</li>
+            <li><span class="hl-green">library 服务</span> = 图书馆（处理文档、PDF 之类的）</li>
+            <li><span class="hl-orange">llm_proxy 服务</span> = 翻译中心（帮你跟各种 AI 模型对话的中间人）</li>
+            <li><span class="hl-pink">wallet 服务</span> = 收银台（管钱的）</li>
+            <li><span class="hl-purple">gateway 服务</span> = 购物中心大门（所有人进来都先经过这里）</li>
+        </ul>
+    </div>
+
+    <div class="arch-diagram">
+        <div class="arch-label">项目整体架构</div>
+        <div class="arch-row">
+            <div class="arch-box primary" style="min-width: 300px;">kuse-ai-go (整个仓库)</div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-row">
+            <div class="arch-box primary">folder<br><small>主服务</small></div>
+            <div class="arch-box accent">library<br><small>文档处理</small></div>
+            <div class="arch-box orange">llm_proxy<br><small>AI 网关</small></div>
+            <div class="arch-box green">wallet<br><small>钱包</small></div>
+            <div class="arch-box pink">gateway<br><small>网关</small></div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-row">
+            <div class="arch-box accent">MySQL<br><small>数据库</small></div>
+            <div class="arch-box green">Redis<br><small>缓存/消息</small></div>
+            <div class="arch-box orange">GCS<br><small>文件存储</small></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>目录结构一览</h3>
+        <div class="code-block">
+            <span class="lang-tag">项目结构</span>
+<span class="code-comment">// kuse-ai-go/ 根目录</span>
+├── kuse-ai/
+│   ├── <span class="code-type">common/</span>        <span class="code-comment">// 公共工具（日志、指标、存储客户端等）</span>
+│   ├── <span class="code-func">folder/</span>        <span class="code-comment">// ⭐ 主服务！文件管理 + AI 对话</span>
+│   ├── <span class="code-type">library/</span>       <span class="code-comment">// 文档处理服务</span>
+│   ├── <span class="code-type">llm_proxy/</span>     <span class="code-comment">// AI 模型代理</span>
+│   ├── <span class="code-type">gateway/</span>       <span class="code-comment">// API 网关</span>
+│   ├── <span class="code-type">wallet/</span>        <span class="code-comment">// 计费钱包</span>
+│   ├── <span class="code-type">corg/</span>          <span class="code-comment">// 租户配置</span>
+│   └── <span class="code-type">insight/</span>       <span class="code-comment">// 数据分析</span>
+└── kuse-fuse-client/              <span class="code-comment">// 文件系统客户端</span>
+        </div>
+        <p style="margin-top: 1rem; color: var(--text-dim); font-size: 0.9rem;">我们接下来的学习会主要围绕 <span class="hl">folder</span> 服务展开，因为它是最核心、功能最多的部分。</p>
+    </div>
+
+    <!-- Quiz 1 -->
+    <div class="quiz-container" data-quiz="1">
+        <div class="quiz-badge">小测验 #1</div>
+        <div class="quiz-question">在这个项目里，最核心、功能最多的服务是哪一个？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>gateway — 因为它是"大门"嘛，肯定最重要</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>folder — 负责文件管理和 AI 对话，是主服务</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>wallet — 管钱的最重要</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>llm_proxy — AI 代理是核心</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="没错！folder 服务就是我们的"购物中心主楼"，几乎所有核心功能——文件操作、AI 对话、技能系统——都在里面。其他服务是辅助角色。" data-wrong="再想想哦！哪个服务负责的功能最多？提示：文件管理 + AI 对话 + 技能系统都归它管。"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 2 ==================== -->
+<div class="section fade-in" id="section-2">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(34,211,238,0.15); color: var(--accent);">02</div>
+        <h2 class="section-title">程序入口 — 一切从这里开始</h2>
+    </div>
+
+    <div class="card">
+        <h3>什么是 main.go？</h3>
+        <p>每个 Go 程序都有一个 <span class="hl">main.go</span> 文件，就像每栋大楼都有一个<strong>正门</strong>一样。程序启动时，Go 会找到 <code style="color: var(--accent-yellow);">func main()</code> 这个函数，然后从那里开始执行。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🎬</div>
+        <p>想象你是餐厅经理，每天早上开门前要做一堆准备工作：开灯、检查冰箱、准备食材、告诉服务员今天的菜单……<span class="hl">main.go</span> 就是你的"开店清单"。</p>
+    </div>
+
+    <div class="card">
+        <h3>启动流程（简化版）</h3>
+        <div class="flow">
+            <div class="flow-step"><span class="step-num">1</span> 读取配置文件（我要用哪个数据库？端口号是多少？）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">2</span> 初始化日志系统（出了问题怎么记录？）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">3</span> 连接数据库 MySQL + Redis</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">4</span> 初始化外部服务（OpenAI、Google AI、图片处理等）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">5</span> 初始化技能系统（AI 能做哪些事？）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">6</span> 启动 HTTP 服务器（打开大门，开始接客！）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">7</span> 设置优雅关闭（关门前把客人都招待完再走）</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>关键代码速览</h3>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-keyword">func</span> <span class="code-func">main</span>() {
+    <span class="code-comment">// 第1步：读配置</span>
+    cfg := config.<span class="code-func">Load</span>()
+
+    <span class="code-comment">// 第2步：初始化日志</span>
+    logger.<span class="code-func">Init</span>(cfg.Log.Level)
+
+    <span class="code-comment">// 第3步：连接数据库</span>
+    db := storage.<span class="code-func">Init</span>(cfg.Database)
+
+    <span class="code-comment">// 第4步：初始化 AI 服务</span>
+    openaiClient := openai.<span class="code-func">NewClient</span>(cfg.OpenAI.APIKey)
+
+    <span class="code-comment">// 第5步：初始化技能</span>
+    skillService := skill.<span class="code-func">NewService</span>(cfg.Skills)
+
+    <span class="code-comment">// 第6步：启动 HTTP 服务器 (端口 8090)</span>
+    server := api.<span class="code-func">NewServer</span>(cfg, db, skillService, ...)
+    server.<span class="code-func">Run</span>(<span class="code-string">":8090"</span>)
+}
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">这是简化版哦，真实代码更长，但核心逻辑就是这些步骤。</p>
+    </div>
+
+    <div class="card">
+        <h3>优雅关闭 — Graceful Shutdown</h3>
+        <p>当我们要停止服务器的时候（比如部署新版本），不能直接拔电源！我们要：</p>
+        <ul class="feature-list">
+            <li>先告诉新来的客人"我们快关门了"（停止接新请求）</li>
+            <li>等正在服务的客人都搞完（最多等 <span class="hl-orange">280 秒</span>）</li>
+            <li>清理掉所有正在进行的 AI 对话流</li>
+            <li>然后才真正关闭</li>
+        </ul>
+        <p style="margin-top: 0.5rem; color: var(--text-dim);">为什么是 280 秒？因为 Kubernetes 给容器 300 秒的关闭时间，280 秒比它稍微短一点，留点缓冲。</p>
+    </div>
+
+    <!-- Quiz 2 -->
+    <div class="quiz-container" data-quiz="2">
+        <div class="quiz-badge">小测验 #2</div>
+        <div class="quiz-question">程序启动时，下面哪个步骤应该最先执行？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>启动 HTTP 服务器，开始接收请求</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>初始化 AI 服务（OpenAI、Gemini 等）</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>读取配置文件（我需要知道连哪个数据库、用哪个端口）</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>设置优雅关闭</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="太对了！配置文件就像一本"说明书"，告诉程序所有其他东西的地址和密码。不先读它，后面什么都干不了。" data-wrong="想想看：如果你还不知道数据库在哪里、端口号是多少，你怎么做后面的事情呢？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 3 ==================== -->
+<div class="section fade-in" id="section-3">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(52,211,153,0.15); color: var(--accent-green);">03</div>
+        <h2 class="section-title">配置系统 — 程序的"偏好设置"</h2>
+    </div>
+
+    <div class="card">
+        <h3>为什么需要配置？</h3>
+        <p>想想你手机的设置：Wi-Fi 密码、音量大小、主题颜色……每个人的手机设置都不一样。</p>
+        <p style="margin-top: 0.5rem;">程序也是一样的！在<span class="hl-green">测试环境</span>我们用测试数据库，在<span class="hl-orange">生产环境</span>我们用真实数据库。这些差异就靠配置来管理。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🎮</div>
+        <p>配置就像游戏里的<strong>设置菜单</strong>：画质调高还是调低？音效开不开？联什么服务器？不同玩家的设置不同，但游戏代码是同一份。</p>
+    </div>
+
+    <div class="card">
+        <h3>核心配置项</h3>
+        <table class="info-table">
+            <tr><th>配置项</th><th>说什么</th><th>举个例子</th></tr>
+            <tr><td>App.Environment</td><td>我在哪个环境？</td><td><span class="tag tag-go">local / staging / prd</span></td></tr>
+            <tr><td>Server.Port</td><td>监听哪个端口？</td><td><span class="tag tag-api">8090</span></td></tr>
+            <tr><td>Database.Host</td><td>数据库在哪？</td><td><span class="tag tag-db">localhost:3306</span></td></tr>
+            <tr><td>Redis.Host</td><td>Redis 在哪？</td><td><span class="tag tag-db">localhost:6379</span></td></tr>
+            <tr><td>OpenAI.APIKey</td><td>AI 的通行证</td><td><span class="tag tag-ai">sk-xxx...</span></td></tr>
+            <tr><td>LiteLLM.BaseURL</td><td>AI 模型网关地址</td><td><span class="tag tag-api">http://litellm:4000</span></td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>环境变量 — 配置的载体</h3>
+        <p>配置的值从哪来？通过<span class="hl">环境变量</span>！就像你跟朋友说"密码在纸条上"，而不是直接把密码写在门上。</p>
+        <div class="code-block">
+            <span class="lang-tag">环境变量</span>
+<span class="code-comment"># 这些值存在 .env 文件里（本地开发）</span>
+<span class="code-comment"># 或存在 Kubernetes 的 Secret 里（生产环境）</span>
+
+KUSE_AI_ENVIRONMENT=<span class="code-string">"staging"</span>
+KUSE_AI_FOLDER_PORT=<span class="code-number">8090</span>
+KUSE_AI_DB_HOST=<span class="code-string">"mysql.kuse-ai.svc.cluster.local"</span>
+KUSE_AI_OPENAI_API_KEY=<span class="code-string">"sk-super-secret"</span>
+        </div>
+        <p style="margin-top: 1rem;">这样做的好处：<strong>同一份代码</strong>可以在不同环境跑，只要改配置就行！</p>
+    </div>
+
+    <div class="card">
+        <h3>聪明的默认值</h3>
+        <p>代码里有很多"如果你没设置，我就用默认值"的逻辑：</p>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-comment">// 本地开发：技能文件在 "skills" 目录</span>
+<span class="code-comment">// 部署到服务器：技能文件在 "/skills" 目录</span>
+defaultSkillsDir := <span class="code-string">"skills"</span>
+<span class="code-keyword">if</span> environment != <span class="code-string">"local"</span> {
+    defaultSkillsDir = <span class="code-string">"/skills"</span>
+}
+        </div>
+    </div>
+
+    <!-- Quiz 3 -->
+    <div class="quiz-container" data-quiz="3">
+        <div class="quiz-badge">小测验 #3</div>
+        <div class="quiz-question">为什么我们不把数据库密码直接写在代码里，而是用环境变量？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>因为 Go 语言规定必须用环境变量</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>因为环境变量读取更快</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>安全性（代码会上传到 Git）+ 灵活性（不同环境用不同值）</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>因为代码里不能写字符串</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="完全正确！代码通常会上传到 Git 仓库，如果密码写在代码里，所有人都能看到。而且同一份代码要在本地、测试、生产不同环境跑，用环境变量切换非常方便。" data-wrong="再想想哦！两个关键词：安全性和灵活性。代码是大家都能看到的（Git），而不同环境需要不同的数据库地址……"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 4 ==================== -->
+<div class="section fade-in" id="section-4">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(251,146,60,0.15); color: var(--accent-orange);">04</div>
+        <h2 class="section-title">路由与 API — 前台接待员</h2>
+    </div>
+
+    <div class="card">
+        <h3>什么是 API 路由？</h3>
+        <p>当用户（或者前端页面）想做某件事情时，他们会发送一个 <span class="hl">HTTP 请求</span>到我们的服务器。路由器的工作就是根据请求的"地址"，把它转发给正确的处理函数。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 📮</div>
+        <p>路由器就像<strong>邮局分拣员</strong>：</p>
+        <ul class="feature-list">
+            <li>寄到"一楼/文件科" → 交给文件管理模块</li>
+            <li>寄到"二楼/聊天室" → 交给 AI 对话模块</li>
+            <li>寄到"三楼/技能部" → 交给技能系统</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>HTTP 方法速学</h3>
+        <table class="info-table">
+            <tr><th>方法</th><th>意思</th><th>比喻</th></tr>
+            <tr><td style="color: var(--accent-green) !important;">GET</td><td>拿东西看看</td><td>去图书馆借书</td></tr>
+            <tr><td style="color: var(--accent) !important;">POST</td><td>创建新东西</td><td>寄一封新信</td></tr>
+            <tr><td style="color: var(--accent-yellow) !important;">PUT</td><td>修改已有的东西</td><td>改作业</td></tr>
+            <tr><td style="color: var(--wrong) !important;">DELETE</td><td>删掉东西</td><td>扔垃圾</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>项目里的核心路由</h3>
+        <div class="code-block">
+            <span class="lang-tag">路由表</span>
+<span class="code-comment">// === 文件管理 ===</span>
+<span class="code-keyword">POST</span>   <span class="code-string">/api/folder/v1/dir</span>              <span class="code-comment">// 创建文件夹</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/api/folder/v1/dir</span>              <span class="code-comment">// 列出文件夹内容</span>
+<span class="code-keyword">POST</span>   <span class="code-string">/api/folder/v1/file/upload</span>      <span class="code-comment">// 上传文件</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/api/folder/v1/file/:filepath</span>   <span class="code-comment">// 下载文件</span>
+<span class="code-keyword">DELETE</span> <span class="code-string">/api/folder/v1/dir</span>              <span class="code-comment">// 删除文件/文件夹</span>
+
+<span class="code-comment">// === AI 对话 ===</span>
+<span class="code-keyword">POST</span>   <span class="code-string">/api/folder/v1/conversation/chat</span>    <span class="code-comment">// 💬 发消息给 AI（流式）</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/api/folder/v1/conversation/</span>        <span class="code-comment">// 列出所有对话</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/api/folder/v1/conversation/:uid</span>    <span class="code-comment">// 查看某个对话</span>
+
+<span class="code-comment">// === 技能 ===</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/api/skills</span>                         <span class="code-comment">// 查看可用技能</span>
+<span class="code-keyword">POST</span>   <span class="code-string">/api/skill/:skillID/execute</span>         <span class="code-comment">// 执行某个技能</span>
+
+<span class="code-comment">// === 健康检查 ===</span>
+<span class="code-keyword">GET</span>    <span class="code-string">/health</span>                             <span class="code-comment">// 我还活着吗？</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Gin 框架 — 我们的 HTTP 管家</h3>
+        <p>项目使用 <span class="hl-purple">Gin</span> 框架来处理 HTTP 请求。Gin 是 Go 里最流行的 Web 框架，又快又简单。</p>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-comment">// 创建路由器</span>
+router := gin.<span class="code-func">Default</span>()
+
+<span class="code-comment">// 注册路由：当有人 GET /health 时，调用 HandleHealth 函数</span>
+router.<span class="code-func">GET</span>(<span class="code-string">"/health"</span>, folder.<span class="code-func">HandleHealth</span>)
+
+<span class="code-comment">// 路由组：给一组路由加前缀</span>
+v1 := router.<span class="code-func">Group</span>(<span class="code-string">"/api/folder/v1"</span>)
+{
+    v1.<span class="code-func">POST</span>(<span class="code-string">"/dir"</span>, folder.<span class="code-func">HandleMKDir</span>)
+    v1.<span class="code-func">GET</span>(<span class="code-string">"/dir"</span>, folder.<span class="code-func">HandleDir</span>)
+}
+        </div>
+    </div>
+
+    <!-- Quiz 4 -->
+    <div class="quiz-container" data-quiz="4">
+        <div class="quiz-badge">小测验 #4</div>
+        <div class="quiz-question">用户想上传一个文件到服务器，应该用哪个 HTTP 方法和路径？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>GET /api/folder/v1/file/upload</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>POST /api/folder/v1/file/upload</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>PUT /api/folder/v1/file/upload</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>DELETE /api/folder/v1/file/upload</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="答对啦！上传文件是在创建新内容，所以用 POST。GET 是"拿东西看看"，PUT 是"修改"，DELETE 是"删除"。" data-wrong="回忆一下 HTTP 方法的含义：GET=读取、POST=创建、PUT=修改、DELETE=删除。上传文件属于什么操作？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 5 ==================== -->
+<div class="section fade-in" id="section-5">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(244,114,182,0.15); color: var(--accent-pink);">05</div>
+        <h2 class="section-title">数据库 — 程序的记忆</h2>
+    </div>
+
+    <div class="card">
+        <h3>为什么需要数据库？</h3>
+        <p>程序跑着跑着一关机，内存里的东西就全没了。数据库就是程序的<span class="hl-pink">"长期记忆"</span>——把重要的东西存到硬盘上，下次开机还在。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 📓</div>
+        <p>想象你有两种记事方式：</p>
+        <ul class="feature-list">
+            <li><span class="hl-orange">MySQL</span> = 你的笔记本（结构化的，按格子填写，适合存文件信息、用户资料、聊天记录）</li>
+            <li><span class="hl">Redis</span> = 你的便利贴（快速、临时的，适合存"谁正在线"、"这个对话正在进行中"等瞬时信息）</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>GORM — 数据库翻译官</h3>
+        <p>直接写 SQL 太麻烦了，我们用 <span class="hl-purple">GORM</span>（Go 的 ORM 框架）来跟数据库交流。它能把 Go 的结构体自动翻译成数据库的表。</p>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-comment">// 定义一个 Go 结构体</span>
+<span class="code-keyword">type</span> <span class="code-type">File</span> <span class="code-keyword">struct</span> {
+    ID        <span class="code-type">uint</span>      <span class="code-comment">// 自动生成的唯一编号</span>
+    UserID    <span class="code-type">uint64</span>    <span class="code-comment">// 这个文件属于谁</span>
+    Path      <span class="code-type">string</span>    <span class="code-comment">// 文件路径，比如 "/notes/日记.md"</span>
+    IsDir     <span class="code-type">bool</span>      <span class="code-comment">// 是文件还是文件夹？</span>
+    Content   <span class="code-type">string</span>    <span class="code-comment">// 文件内容</span>
+    CreatedAt <span class="code-type">time.Time</span> <span class="code-comment">// 什么时候创建的</span>
+}
+
+<span class="code-comment">// GORM 会自动创建对应的 MySQL 表！</span>
+<span class="code-comment">// 查询文件就像这样简单：</span>
+<span class="code-keyword">var</span> file <span class="code-type">File</span>
+db.<span class="code-func">Where</span>(<span class="code-string">"user_id = ? AND path = ?"</span>, <span class="code-number">123</span>, <span class="code-string">"/notes/日记.md"</span>).<span class="code-func">First</span>(&file)
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>核心数据表</h3>
+        <div class="arch-diagram">
+            <div class="arch-label">数据库表关系</div>
+            <div class="arch-row">
+                <div class="arch-box primary">File<br><small>文件/文件夹</small></div>
+                <div class="arch-box accent">FileVersion<br><small>文件版本历史</small></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-row">
+                <div class="arch-box pink">Conversation<br><small>AI 对话</small></div>
+                <div class="arch-box orange">Message<br><small>聊天消息</small></div>
+            </div>
+            <div class="arch-arrow">↕</div>
+            <div class="arch-row">
+                <div class="arch-box green">UserSkillStatus<br><small>技能开关</small></div>
+                <div class="arch-box primary">SchedulerJob<br><small>定时任务</small></div>
+                <div class="arch-box accent">Bot<br><small>机器人</small></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>软删除 — 后悔药</h3>
+        <p>注意到 File 表有个 <code style="color: var(--accent-yellow);">DeletedAt</code> 字段吗？这叫<span class="hl-green">软删除</span>。用户删文件时，我们不是真的删掉，而是标记一个删除时间。这样：</p>
+        <ul class="feature-list">
+            <li>用户可以去"垃圾桶"恢复文件</li>
+            <li>查询时自动过滤掉已删除的文件</li>
+            <li>真正删除要等一段时间后才执行</li>
+        </ul>
+    </div>
+
+    <!-- Quiz 5 -->
+    <div class="quiz-container" data-quiz="5">
+        <div class="quiz-badge">小测验 #5</div>
+        <div class="quiz-question">项目同时用了 MySQL 和 Redis，以下哪种说法最准确？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>MySQL 存临时数据，Redis 存永久数据</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>MySQL 存结构化永久数据（文件、对话），Redis 存快速临时数据（缓存、实时状态）</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>它们功能一样，互为备份</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>MySQL 是主数据库，Redis 只在 MySQL 挂了时用</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="太棒了！MySQL 像笔记本，适合存重要的结构化数据。Redis 像便利贴，超级快，适合存"这个人正在输入中"、"缓存的查询结果"这种临时数据。" data-wrong="想想我们的比喻：笔记本 vs 便利贴。哪个适合存重要的永久资料？哪个适合存临时的快速笔记？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 6 ==================== -->
+<div class="section fade-in" id="section-6">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(251,191,36,0.15); color: var(--accent-yellow);">06</div>
+        <h2 class="section-title">AI 对话系统 — 项目的灵魂</h2>
+    </div>
+
+    <div class="card">
+        <h3>这是项目最酷的部分！</h3>
+        <p>用户在前端打字发消息，后端就要：接收消息 → 发给 AI 模型 → 把 AI 的回复一点一点"流"回给用户。</p>
+        <p style="margin-top: 0.5rem;">为什么是"流"？因为 AI 生成文字是一个一个字蹦出来的（就像 ChatGPT 一样），我们不能等它全部生成完再发送，那太慢了！</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 📻</div>
+        <p>传统 API 像<strong>写信</strong>——你写完一整封信才寄出去。<br>
+        流式响应（SSE）像<strong>打电话</strong>——你说一个字对方就听到一个字，实时的！</p>
+    </div>
+
+    <div class="card">
+        <h3>一条消息的完整旅程</h3>
+        <div class="flow">
+            <div class="flow-step"><span class="step-num">1</span> 用户发消息："帮我写一首诗"</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">2</span> 后端收到 POST /conversation/chat 请求</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">3</span> 把用户消息存到 MySQL</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">4</span> 组装上下文（之前的聊天记录 + 系统提示词）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">5</span> 通过 LiteLLM 网关发给 AI 模型（Claude / GPT / Gemini）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">6</span> AI 一个字一个字地回复，通过 SSE 实时推给前端</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">7</span> AI 回复完成，把完整回复存到 MySQL</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">8</span> 如果对话太长了，触发压缩（三层压缩架构）</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>三层压缩 — 无限记忆的秘密</h3>
+        <p>聊天记录越来越多怎么办？全部发给 AI 太贵了（AI 按字数收费），而且它也处理不了那么多。所以我们设计了<span class="hl">三层压缩</span>：</p>
+        <div class="arch-diagram">
+            <div class="arch-label">对话压缩架构</div>
+            <div class="arch-row">
+                <div class="arch-box green" style="min-width: 250px;">Recent 层<br><small>最近的消息，完整保留</small><br><small style="opacity:0.6">比如最近 20 条</small></div>
+            </div>
+            <div class="arch-arrow">↓ 旧消息被压缩</div>
+            <div class="arch-row">
+                <div class="arch-box accent" style="min-width: 250px;">Summary 层<br><small>较早的消息，压缩成摘要</small><br><small style="opacity:0.6">"用户之前讨论了 XX 话题"</small></div>
+            </div>
+            <div class="arch-arrow">↓ 更早的继续压缩</div>
+            <div class="arch-row">
+                <div class="arch-box primary" style="min-width: 250px;">Archive 层<br><small>很久以前的消息，极度压缩</small><br><small style="opacity:0.6">"历史上讨论过的主题列表"</small></div>
+            </div>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.5rem;">这样 AI 既能"记住"以前聊过什么，又不会因为数据太多而变慢或太贵。</p>
+    </div>
+
+    <div class="card">
+        <h3>LiteLLM — AI 模型的"翻译中心"</h3>
+        <p>我们不只用一个 AI，而是可以用 <span class="hl-purple">Claude</span>、<span class="hl">GPT</span>、<span class="hl-green">Gemini</span> 等多个模型。LiteLLM 是一个统一的网关，让我们用同一套代码调用不同的 AI：</p>
+        <div class="code-block">
+            <span class="lang-tag">简化示意</span>
+<span class="code-comment">// 不管用哪个 AI，代码都一样：</span>
+response := litellm.<span class="code-func">ChatCompletion</span>({
+    Model:    <span class="code-string">"claude-sonnet-4-6-gcp"</span>,  <span class="code-comment">// 换成 "gpt-4o" 也行</span>
+    Messages: chatHistory,
+    Stream:   <span class="code-keyword">true</span>,
+})
+        </div>
+    </div>
+
+    <!-- Quiz 6 -->
+    <div class="quiz-container" data-quiz="6">
+        <div class="quiz-badge">小测验 #6</div>
+        <div class="quiz-question">在三层压缩架构中，"Recent 层"保存的是什么？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>所有历史消息的压缩摘要</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>用户的个人资料和偏好设置</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>最近的完整消息（原封不动保留的）</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>AI 模型的配置参数</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="对！Recent 层就像你的短期记忆——最近几条消息完整保留，不做任何压缩。只有更早的消息才会被压缩成摘要（Summary）或归档（Archive）。" data-wrong="回想一下三层的名字：Recent（最近）、Summary（摘要）、Archive（归档）。哪一层是"最近的、完整的"？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 7 ==================== -->
+<div class="section fade-in" id="section-7">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(124,92,252,0.15); color: var(--primary-light);">07</div>
+        <h2 class="section-title">文件管理 — 云端的文件柜</h2>
+    </div>
+
+    <div class="card">
+        <h3>文件存在哪里？</h3>
+        <p>用户的文件信息（名字、路径、所有者）存在 <span class="hl-orange">MySQL</span> 里，而文件内容本身存在 <span class="hl">Google Cloud Storage（GCS）</span>——一个超大的云端硬盘。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🏢</div>
+        <p>MySQL 像图书馆的<strong>目录卡片</strong>（书名、作者、放在哪个架子上），GCS 像<strong>书架</strong>本身（真正放书的地方）。你先查目录找到位置，再去书架拿书。</p>
+    </div>
+
+    <div class="card">
+        <h3>文件上传流程</h3>
+        <div class="flow">
+            <div class="flow-step"><span class="step-num">1</span> 用户选择文件，点"上传"</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">2</span> 后端接收文件，计算 SHA256 哈希值（文件的"指纹"）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">3</span> 在 MySQL 中创建文件记录（路径、大小、所有者等）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">4</span> 把文件内容上传到 GCS</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">5</span> 如果是图片，生成缩略图</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">6</span> 返回文件 ID 给前端</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>版本控制 — 时光机</h3>
+        <p>每次修改文件，旧版本不会消失，而是被保存到 <span class="hl-purple">FileVersion</span> 表里。用户可以：</p>
+        <ul class="feature-list">
+            <li>查看文件的修改历史</li>
+            <li>恢复到之前的某个版本</li>
+            <li>把旧版本另存为新文件</li>
+        </ul>
+        <p style="margin-top: 0.5rem; color: var(--text-dim);">就像 Google Docs 的"版本历史"功能！</p>
+    </div>
+
+    <div class="card">
+        <h3>FUSE 和 SharedFS — 让 AI 也能读写文件</h3>
+        <p>有个很酷的功能：AI 助手可以像操作真实文件一样操作用户的文件！</p>
+        <ul class="feature-list">
+            <li><span class="hl">SharedFS</span> — 给 AI 助手提供读写用户文件的 API</li>
+            <li><span class="hl-green">FUSE</span> — 把远程文件"挂载"到本地，像读本地文件一样读远程文件</li>
+        </ul>
+        <p style="margin-top: 0.5rem;">安全靠 <span class="hl-orange">JWT Token</span>：临时的"通行证"，用完就失效（默认 30 分钟）。</p>
+    </div>
+
+    <!-- Quiz 7 -->
+    <div class="quiz-container" data-quiz="7">
+        <div class="quiz-badge">小测验 #7</div>
+        <div class="quiz-question">用户上传了一张图片，这张图片的"像素内容"存在哪里？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>MySQL 数据库的 File 表里</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>Redis 缓存里</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>Google Cloud Storage (GCS) 里</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>服务器的本地硬盘上</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="没错！MySQL 只存文件的"目录卡片"（名字、路径、大小等元数据），真正的文件内容存在 GCS 这个"云端大硬盘"上。" data-wrong="回想一下图书馆的比喻：目录卡片（MySQL）存的是文件信息，真正的"书"（文件内容）放在哪里？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 8 ==================== -->
+<div class="section fade-in" id="section-8">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(34,211,238,0.15); color: var(--accent);">08</div>
+        <h2 class="section-title">技能系统 — AI 的技能树</h2>
+    </div>
+
+    <div class="card">
+        <h3>什么是技能（Skill）？</h3>
+        <p>AI 不是万能的，但我们可以给它"装技能包"！每个技能就像一个<span class="hl">专门的工具</span>，让 AI 能做特定的事情。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🎮</div>
+        <p>就像 RPG 游戏里的<strong>技能树</strong>！你的角色可以学"火球术"、"治愈术"、"隐身术"……每个技能有不同的效果。AI 也一样，它可以有"搜索网页"、"生成图片"、"翻译文档"等不同技能。</p>
+    </div>
+
+    <div class="card">
+        <h3>双系统：V1 + V2</h3>
+        <table class="info-table">
+            <tr><th>特点</th><th>V1（文件系统）</th><th>V2（数据库）</th></tr>
+            <tr><td>存储位置</td><td>skills/ 目录下的文件</td><td>数据库表</td></tr>
+            <tr><td>适合场景</td><td>固定不变的技能</td><td>需要动态管理的技能</td></tr>
+            <tr><td>更新方式</td><td>改文件重启</td><td>API 热更新</td></tr>
+            <tr><td>元数据</td><td>skills.json</td><td>自动管理</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>技能发现流程</h3>
+        <div class="flow">
+            <div class="flow-step"><span class="step-num">1</span> 服务启动时，扫描 skills/ 目录</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">2</span> 读取每个技能的元数据（名称、描述、参数）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">3</span> 注册到技能管理器中</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">4</span> 用户请求时，检查该用户是否启用了该技能</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">5</span> 如果 V2 开启了自动重载，定期刷新技能列表</div>
+        </div>
+    </div>
+
+    <!-- Quiz 8 -->
+    <div class="quiz-container" data-quiz="8">
+        <div class="quiz-badge">小测验 #8</div>
+        <div class="quiz-question">V1 和 V2 技能系统的最大区别是什么？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>V1 用 Python 写，V2 用 Go 写</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>V1 免费，V2 收费</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>V1 基于文件系统（静态），V2 基于数据库（可以动态热更新）</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>V1 只有管理员能用，V2 所有人都能用</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="完美！V1 技能存在文件里，改了要重启才生效。V2 存在数据库里，可以通过 API 随时添加、修改、删除，甚至支持定时自动刷新。" data-wrong="关键词是"存储位置"和"更新方式"。一个存文件，一个存数据库——想想这两种方式在更新时有什么不同？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 9 ==================== -->
+<div class="section fade-in" id="section-9">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(52,211,153,0.15); color: var(--accent-green);">09</div>
+        <h2 class="section-title">中间件 — 安保与管家</h2>
+    </div>
+
+    <div class="card">
+        <h3>什么是中间件（Middleware）？</h3>
+        <p>每个请求到达真正的处理函数之前，都要先经过一系列"检查站"。这些检查站就是<span class="hl-green">中间件</span>。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🏨</div>
+        <p>你去五星级酒店：</p>
+        <ul class="feature-list">
+            <li><span class="hl-green">门口保安</span>（CORS 中间件）→ 检查你是不是从允许的地方来的</li>
+            <li><span class="hl-purple">前台登记</span>（请求日志中间件）→ 给你发个访客牌，记录你什么时候来的</li>
+            <li><span class="hl-orange">房卡验证</span>（认证中间件）→ 你是住客吗？有权限进这个房间吗？</li>
+        </ul>
+        <p style="margin-top: 0.5rem;">这些步骤都在你进入房间（处理函数）之前完成。</p>
+    </div>
+
+    <div class="card">
+        <h3>项目中的三大中间件</h3>
+
+        <p style="margin-top: 1rem;"><span class="hl-green">1. 请求 ID + 上下文提取</span></p>
+        <p>每个请求进来都分配一个唯一 ID（UUID），同时从请求头里提取用户信息：</p>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-comment">// 中间件会从请求头里提取这些信息：</span>
+UserID    <span class="code-comment">// 哪个用户发的请求</span>
+Browser   <span class="code-comment">// 用什么浏览器</span>
+Device    <span class="code-comment">// 什么设备</span>
+Country   <span class="code-comment">// 从哪个国家来的</span>
+RequestID <span class="code-comment">// 这个请求的唯一编号</span>
+        </div>
+
+        <p style="margin-top: 1.5rem;"><span class="hl-purple">2. 请求/响应日志</span></p>
+        <p>记录每个请求的方法、路径、状态码、耗时。出了问题就能查"案发现场"。</p>
+
+        <p style="margin-top: 1.5rem;"><span class="hl-orange">3. CORS — 跨域保护</span></p>
+        <p>浏览器有个安全机制：A 网站不能随便访问 B 网站的 API。CORS 中间件决定"谁被允许来访问"：</p>
+        <div class="code-block">
+            <span class="lang-tag">Go</span>
+<span class="code-comment">// 本地开发 & 测试环境：谁都可以来</span>
+<span class="code-keyword">if</span> env == <span class="code-string">"local"</span> || env == <span class="code-string">"staging"</span> {
+    AllowAllOrigins: <span class="code-keyword">true</span>
+}
+
+<span class="code-comment">// 生产环境：只有 kuse.ai 可以来</span>
+<span class="code-keyword">if</span> env == <span class="code-string">"prd"</span> {
+    AllowOrigins: [<span class="code-string">"https://kuse.ai"</span>, <span class="code-string">"https://*.kuse.ai"</span>]
+}
+        </div>
+    </div>
+
+    <!-- Quiz 9 -->
+    <div class="quiz-container" data-quiz="9">
+        <div class="quiz-badge">小测验 #9</div>
+        <div class="quiz-question">为什么生产环境的 CORS 不允许所有来源（AllowAllOrigins）？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>因为允许所有来源会让服务器变慢</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>安全原因——防止其他恶意网站冒充用户访问我们的 API</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>因为 Go 语言在生产环境有这个限制</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>因为生产环境的网络带宽不够</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="说得好！如果允许所有来源，黑客可以在自己的网站上写一段代码，利用你浏览器里保存的登录信息，偷偷访问 kuse.ai 的 API。限制来源可以防止这种"跨站请求伪造"攻击。" data-wrong="这是个安全问题哦！想想：如果任何网站都能调用我们的 API，而用户的浏览器里保存着登录信息……会发生什么？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== SECTION 10 ==================== -->
+<div class="section fade-in" id="section-10">
+    <div class="section-header">
+        <div class="section-number" style="background: rgba(251,146,60,0.15); color: var(--accent-orange);">10</div>
+        <h2 class="section-title">部署上线 — 从代码到用户</h2>
+    </div>
+
+    <div class="card">
+        <h3>代码写完了，怎么给用户用？</h3>
+        <p>这是从"笔记本上的代码"变成"全世界都能访问的服务"的过程。</p>
+    </div>
+
+    <div class="analogy">
+        <div class="analogy-title">打个比方 🍕</div>
+        <p>写代码像做披萨，部署像送外卖：</p>
+        <ul class="feature-list">
+            <li><span class="hl">Docker</span> = 把披萨装进统一的外卖盒（标准化打包）</li>
+            <li><span class="hl-purple">Container Registry</span> = 外卖站点（存放打包好的东西）</li>
+            <li><span class="hl-green">Kubernetes</span> = 外卖调度系统（决定哪个骑手送哪单）</li>
+            <li><span class="hl-orange">CI/CD</span> = 自动下单系统（代码一改，自动重新打包和配送）</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Docker — 标准化打包</h3>
+        <p>每台电脑的环境不一样（操作系统、软件版本……），Docker 的作用是把代码和它需要的一切都打包成一个<span class="hl">"容器"</span>，在任何机器上都能跑。</p>
+        <div class="code-block">
+            <span class="lang-tag">Dockerfile</span>
+<span class="code-comment"># 第一步：在一个干净的环境里编译 Go 代码</span>
+<span class="code-keyword">FROM</span> golang:1.25 <span class="code-keyword">AS</span> builder
+<span class="code-keyword">COPY</span> . .
+<span class="code-keyword">RUN</span> go build -o folder cmd/server/main.go
+
+<span class="code-comment"># 第二步：把编译好的程序放进一个超轻量的镜像</span>
+<span class="code-keyword">FROM</span> alpine:latest
+<span class="code-keyword">COPY</span> --from=builder folder /app/folder
+<span class="code-keyword">CMD</span> [<span class="code-string">"/app/folder"</span>]
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.5rem;">两步构建：先编译，再打包。最终的镜像只包含运行所需的东西，特别小。</p>
+    </div>
+
+    <div class="card">
+        <h3>CI/CD 自动化流水线</h3>
+        <p>每次代码推送到 GitHub 的 main 分支，自动触发：</p>
+        <div class="flow">
+            <div class="flow-step"><span class="step-num">1</span> 检测哪些文件改了（只重新构建改动的部分）</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">2</span> Docker 构建镜像</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">3</span> 推送到 Google Container Registry</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">4</span> kubectl 命令更新 Kubernetes 部署</div>
+            <div class="flow-connector">↓</div>
+            <div class="flow-step"><span class="step-num">5</span> Kubernetes 滚动更新（先启动新的，再关掉旧的）</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Kubernetes — 容器编排大师</h3>
+        <p>当你有很多容器要管理时，Kubernetes（简称 K8s）就是你的<span class="hl-green">总管</span>：</p>
+        <ul class="feature-list">
+            <li>如果一个容器挂了，自动重启一个新的</li>
+            <li>流量太大时，自动多开几个容器分担</li>
+            <li>更新代码时，先启动新版本，确认没问题再关掉旧版本（滚动更新）</li>
+        </ul>
+    </div>
+
+    <!-- Quiz 10 -->
+    <div class="quiz-container" data-quiz="10">
+        <div class="quiz-badge">小测验 #10</div>
+        <div class="quiz-question">Docker 的核心价值是什么？</div>
+        <div class="quiz-options">
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">A</span>
+                <span>让代码跑得更快</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">B</span>
+                <span>替代 Kubernetes 来管理服务器</span>
+            </div>
+            <div class="quiz-option" data-answer="correct" onclick="checkAnswer(this)">
+                <span class="option-letter">C</span>
+                <span>把代码和运行环境打包在一起，确保在任何机器上都能一致运行</span>
+            </div>
+            <div class="quiz-option" data-answer="wrong" onclick="checkAnswer(this)">
+                <span class="option-letter">D</span>
+                <span>加密代码，防止别人看到</span>
+            </div>
+        </div>
+        <div class="quiz-feedback" data-correct="太棒了！Docker 解决的核心问题是"在我电脑上能跑，到你电脑上就不行了"。它把代码+依赖+环境统统打包成一个标准化的容器，走到哪跑到哪。" data-wrong="想想我们的外卖盒比喻：不管送到哪里，打开盒子里面的披萨（代码+环境）都是一模一样的。这解决了什么问题？"></div>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ==================== FINAL SCORE ==================== -->
+<div class="section" id="final-score">
+    <div class="score-card">
+        <h2>学习完成！</h2>
+        <div class="score-number" id="finalScore">0 / 10</div>
+        <p class="score-detail" id="scoreMessage">回答上面的所有测验题来查看你的总分！</p>
+        <div style="margin-top: 2rem;">
+            <a href="#section-1" class="start-btn" style="font-size: 0.95rem; padding: 12px 28px;" onclick="resetAll()">重新学习</a>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <h3>接下来学什么？</h3>
+        <p style="color: var(--text-dim);">恭喜你完成了后端入门之旅！以下是进阶方向：</p>
+        <ul class="feature-list" style="text-align: left; max-width: 500px; margin: 1rem auto 0;">
+            <li>试着本地跑起来这个项目（<code style="color: var(--accent-yellow);">go run cmd/server/main.go</code>）</li>
+            <li>读一读 internal/api/server.go，看看路由是怎么注册的</li>
+            <li>跟着一个 HTTP 请求的流程，从路由到处理函数到数据库</li>
+            <li>学习 Go 语言基础（<a href="https://go.dev/tour/" style="color: var(--accent);" target="_blank">Go 官方教程</a>）</li>
+            <li>了解 REST API 设计原则</li>
+        </ul>
+    </div>
+</div>
+
+<div style="text-align: center; padding: 3rem; color: var(--text-dim); font-size: 0.85rem;">
+    Made with care for learning. Kuse AI Backend Learning Guide.
+</div>
+
+<script>
+    // Quiz state
+    let totalQuizzes = 10;
+    let answered = {};
+    let correctCount = 0;
+
+    function checkAnswer(option) {
+        const container = option.closest('.quiz-container');
+        const quizId = container.dataset.quiz;
+
+        if (answered[quizId]) return;
+        answered[quizId] = true;
+
+        const isCorrect = option.dataset.answer === 'correct';
+        const feedbackEl = container.querySelector('.quiz-feedback');
+        const options = container.querySelectorAll('.quiz-option');
+
+        // Disable all options
+        options.forEach(opt => {
+            opt.classList.add('disabled');
+            if (opt.dataset.answer === 'correct') {
+                opt.classList.add('correct');
+            }
+        });
+
+        if (isCorrect) {
+            option.classList.add('correct');
+            feedbackEl.textContent = feedbackEl.dataset.correct;
+            feedbackEl.className = 'quiz-feedback correct-feedback';
+            correctCount++;
+        } else {
+            option.classList.add('wrong');
+            feedbackEl.textContent = feedbackEl.dataset.wrong;
+            feedbackEl.className = 'quiz-feedback wrong-feedback';
+        }
+
+        updateProgress();
+        updateNavChips();
+    }
+
+    function updateProgress() {
+        const answeredCount = Object.keys(answered).length;
+        const fill = document.getElementById('progressFill');
+        const text = document.getElementById('progressText');
+        const percentage = (answeredCount / totalQuizzes) * 100;
+
+        fill.style.width = percentage + '%';
+        text.textContent = `${correctCount} / ${answeredCount} 正确`;
+
+        // Update final score
+        document.getElementById('finalScore').textContent = `${correctCount} / ${totalQuizzes}`;
+
+        if (answeredCount === totalQuizzes) {
+            const msg = correctCount === totalQuizzes ? '满分！你是后端天才！' :
+                        correctCount >= 8 ? '非常棒！你已经理解了大部分概念！' :
+                        correctCount >= 6 ? '不错哦！再复习一下错题就更好了。' :
+                        '继续加油！回到上面重新看看那些答错的部分吧。';
+            document.getElementById('scoreMessage').textContent = msg;
+        }
+    }
+
+    function updateNavChips() {
+        document.querySelectorAll('.nav-chip').forEach(chip => {
+            const section = chip.dataset.section;
+            if (answered[section]) {
+                chip.classList.add('completed');
+            }
+        });
+    }
+
+    function resetAll() {
+        answered = {};
+        correctCount = 0;
+        document.querySelectorAll('.quiz-option').forEach(opt => {
+            opt.classList.remove('correct', 'wrong', 'disabled');
+        });
+        document.querySelectorAll('.quiz-feedback').forEach(fb => {
+            fb.className = 'quiz-feedback';
+            fb.style.display = 'none';
+        });
+        document.querySelectorAll('.nav-chip').forEach(chip => {
+            chip.classList.remove('completed');
+        });
+        updateProgress();
+    }
+
+    // Progress bar visibility
+    const progressBar = document.getElementById('progressBar');
+    const hero = document.querySelector('.hero');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                progressBar.classList.remove('visible');
+            } else {
+                progressBar.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    observer.observe(hero);
+
+    // Fade-in animations
+    const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+</script>
+
+</body>
+</html>

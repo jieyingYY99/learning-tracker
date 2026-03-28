@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NanoSlide Learning Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+/* ===== CSS Reset & Base ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#232733;--bg4:#2d3140;
+  --text:#e4e6eb;--text2:#a0a4b0;--text3:#6b7084;
+  --blue:#4d8eff;--green:#34d399;--purple:#a78bfa;--orange:#fb923c;
+  --blue-dim:#4d8eff22;--green-dim:#34d39922;--purple-dim:#a78bfa22;--orange-dim:#fb923c22;
+  --border:#2d3140;--radius:8px;--sidebar-w:280px;
+}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow:hidden;height:100vh}
+
+/* ===== Layout ===== */
+.app{display:flex;height:100vh}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border)}
+.sidebar-header h1{font-size:16px;font-weight:700;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-header .subtitle{font-size:11px;color:var(--text3);margin-top:2px}
+.progress-bar-container{margin-top:12px;background:var(--bg);border-radius:4px;height:6px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:4px;transition:width .5s ease;width:0%}
+.progress-label{font-size:11px;color:var(--text3);margin-top:4px}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 0}
+.sidebar-nav::-webkit-scrollbar{width:4px}
+.sidebar-nav::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+.phase-group{margin-bottom:8px}
+.phase-title{padding:8px 20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none}
+.phase-title .arrow{transition:transform .2s;font-size:10px}
+.phase-title.collapsed .arrow{transform:rotate(-90deg)}
+.phase-title[data-phase="1"]{color:var(--blue)}
+.phase-title[data-phase="2"]{color:var(--green)}
+.phase-title[data-phase="3"]{color:var(--purple)}
+.phase-title[data-phase="4"]{color:var(--orange)}
+.phase-items{overflow:hidden;transition:max-height .3s ease}
+.phase-items.collapsed{max-height:0!important}
+.nav-item{padding:6px 20px 6px 32px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--text);font-weight:600}
+.nav-item[data-phase="1"].active{border-left-color:var(--blue)}
+.nav-item[data-phase="2"].active{border-left-color:var(--green)}
+.nav-item[data-phase="3"].active{border-left-color:var(--purple)}
+.nav-item[data-phase="4"].active{border-left-color:var(--orange)}
+.nav-item .check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--text3);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .2s}
+.nav-item .check.done{background:var(--green);border-color:var(--green);color:#fff}
+.nav-item .topic-num{font-size:11px;color:var(--text3);min-width:20px}
+
+/* ===== Main Content ===== */
+.main{flex:1;overflow-y:auto;padding:0}
+.main::-webkit-scrollbar{width:6px}
+.main::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.topic-page{display:none;padding:40px 60px 80px;max-width:900px;margin:0 auto}
+.topic-page.active{display:block}
+.topic-phase-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.topic-phase-badge[data-phase="1"]{background:var(--blue-dim);color:var(--blue)}
+.topic-phase-badge[data-phase="2"]{background:var(--green-dim);color:var(--green)}
+.topic-phase-badge[data-phase="3"]{background:var(--purple-dim);color:var(--purple)}
+.topic-phase-badge[data-phase="4"]{background:var(--orange-dim);color:var(--orange)}
+.topic-title{font-size:28px;font-weight:800;margin-bottom:4px}
+.topic-subtitle{font-size:15px;color:var(--text2);margin-bottom:28px}
+
+.section{margin-bottom:32px}
+.section h3{font-size:16px;font-weight:700;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.section p,.section li{font-size:14px;color:var(--text2);line-height:1.8}
+.section ul{padding-left:20px;margin-bottom:12px}
+.section li{margin-bottom:4px}
+.section code{background:var(--bg3);padding:1px 6px;border-radius:4px;font-size:13px;font-family:'SF Mono',Monaco,Consolas,monospace;color:var(--blue)}
+.en{color:var(--text);font-weight:600}
+.keyword{background:var(--blue-dim);color:var(--blue);padding:1px 6px;border-radius:4px;font-size:13px;font-family:'SF Mono',Monaco,Consolas,monospace}
+
+/* ===== Code Blocks ===== */
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;color:var(--text3)}
+.code-header .lang{font-weight:600}
+.code-header button{background:var(--bg3);color:var(--text2);border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px}
+.code-header button:hover{background:var(--bg4);color:var(--text)}
+.code-block pre{margin:0;padding:14px;overflow-x:auto;font-size:13px;line-height:1.6}
+.code-block pre code{background:none;padding:0;font-size:13px}
+
+/* ===== Live Editor ===== */
+.live-editor{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.editor-header{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.editor-header .label{font-size:12px;color:var(--text3);font-weight:600}
+.editor-buttons{display:flex;gap:6px}
+.editor-buttons button{border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s}
+.btn-run{background:var(--green);color:#000}
+.btn-run:hover{filter:brightness(1.1)}
+.btn-reset{background:var(--bg3);color:var(--text2)}
+.btn-reset:hover{background:var(--bg4);color:var(--text)}
+.editor-textarea{width:100%;min-height:120px;background:var(--bg);color:var(--text);border:none;padding:14px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:13px;line-height:1.6;resize:vertical;outline:none;tab-size:2}
+.editor-output{border-top:1px solid var(--border);padding:10px 14px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;color:var(--text2);max-height:200px;overflow-y:auto;white-space:pre-wrap}
+.editor-output .out-label{color:var(--text3);font-size:11px;margin-bottom:4px;display:block}
+.editor-output .error{color:#f87171}
+.editor-output .log{color:var(--green)}
+
+/* ===== Deep Dive ===== */
+.deep-dive{border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.deep-dive-toggle{width:100%;background:var(--bg2);border:none;padding:12px 16px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;text-align:left}
+.deep-dive-toggle:hover{background:var(--bg3)}
+.deep-dive-toggle .icon{transition:transform .2s}
+.deep-dive-toggle.open .icon{transform:rotate(90deg)}
+.deep-dive-content{display:none;padding:16px;background:var(--bg);font-size:14px;color:var(--text2);line-height:1.8}
+.deep-dive-content.open{display:block}
+.deep-dive-content h4{color:var(--text);font-size:14px;margin:12px 0 6px}
+.deep-dive-content p{margin-bottom:8px}
+
+/* ===== Quiz ===== */
+.quiz{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:16px 0}
+.quiz h4{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.quiz h4 .quiz-icon{font-size:16px}
+.quiz-question{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.quiz-question:last-of-type{border-bottom:none;margin-bottom:8px;padding-bottom:0}
+.quiz-q{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px}
+.quiz-options{display:flex;flex-direction:column;gap:4px}
+.quiz-option{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border:1px solid transparent}
+.quiz-option:hover{background:var(--bg3)}
+.quiz-option input{display:none}
+.quiz-option .radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.quiz-option.selected .radio{border-color:var(--blue);background:var(--blue)}
+.quiz-option.selected .radio::after{content:'';width:6px;height:6px;border-radius:50%;background:#fff}
+.quiz-option.correct{background:#34d39920;border-color:var(--green)}
+.quiz-option.correct .radio{border-color:var(--green);background:var(--green)}
+.quiz-option.wrong{background:#f8717120;border-color:#f87171}
+.quiz-feedback{margin-top:8px;font-size:12px;padding:8px 10px;border-radius:6px;display:none}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct{background:#34d39915;color:var(--green)}
+.quiz-feedback.wrong{background:#f8717115;color:#f87171}
+.quiz-check-btn{background:var(--blue);color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;margin-top:12px;transition:all .15s}
+.quiz-check-btn:hover{filter:brightness(1.1)}
+.quiz-check-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ===== Topic Footer ===== */
+.topic-footer{display:flex;justify-content:space-between;align-items:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--border)}
+.mark-complete{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s}
+.mark-complete:hover{border-color:var(--green);color:var(--green)}
+.mark-complete.done{background:var(--green);border-color:var(--green);color:#000;font-weight:600}
+.nav-btn{background:var(--bg3);color:var(--text2);border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s}
+.nav-btn:hover{background:var(--bg4);color:var(--text)}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+
+/* ===== Diagram ===== */
+.diagram{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin:12px 0;overflow-x:auto}
+.diagram pre{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;line-height:1.5;color:var(--text2)}
+
+/* ===== Mobile ===== */
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:100;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;cursor:pointer;color:var(--text);font-size:14px}
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-100%;top:0;height:100vh;z-index:99;transition:left .3s}
+  .sidebar.open{left:0}
+  .mobile-toggle{display:block}
+  .topic-page{padding:20px 16px 60px}
+  .topic-title{font-size:22px}
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.topic-page.active{animation:fadeIn .3s ease}
+
+/* ===== Concept Map ===== */
+.concept-map{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.concept-tag{background:var(--bg3);color:var(--text2);padding:4px 12px;border-radius:16px;font-size:12px;font-weight:500}
+</style>
+</head>
+<body>
+
+<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776; Menu</button>
+
+<div class="app">
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h1>NanoSlide Learning Hub</h1>
+    <div class="subtitle">NanoSlide 技术自学指南</div>
+    <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 16 completed</div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+</aside>
+
+<main class="main" id="mainContent">
+<!-- Topic pages will be injected by JS -->
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script>
+// ===== TOPIC DATA =====
+const TOPICS = [
+// --- Phase 1: Topics 0-3 ---
+{
+  id: 0, phase: 1,
+  title: "React Hooks Deep Dive",
+  shortTitle: "React Hooks",
+  subtitle: "React Hooks 深入 — 从闭包陷阱到依赖管理",
+  concepts: ["useRef", "useCallback", "useEffect", "useImperativeHandle", "closure trap", "dependency array"],
+  sections: [
+    { type: "text", heading: "为什么 React Hooks 是 NanoSlide 的基石", content: "<p>NanoSlide 的前端组件大量使用 <span class='en'>React Hooks</span> 来管理 <span class='en'>side effects</span>、<span class='en'>memoization</span> 和 <span class='en'>DOM references</span>。理解 Hooks 的运行机制是读懂整个 codebase 的前提。</p><p>在 <code>OverlayPPTXViewer.tsx</code> 中，我们可以看到几乎所有核心 Hook 的实战用法：<code>useRef</code> 管理 DOM 引用和 mutable state、<code>useCallback</code> 避免子组件不必要的 re-render、<code>useEffect</code> 处理事件订阅和副作用清理。</p>" },
+    { type: "code", lang: "typescript", code: "// OverlayPPTXViewer.tsx — 订阅 PptxPreview 实例的 state 变化\nconst [, forceUpdate] = useState(0);\nuseEffect(() => {\n  if (!pptx) return;\n  // 订阅实例的 state:change 事件\n  const unsub = pptx.on('state:change', () => forceUpdate((n) => n + 1));\n  return () => unsub(); // cleanup: 组件卸载时取消订阅\n}, [pptx]);" },
+    { type: "text", heading: "useRef vs useState：何时选择哪个？", content: "<p><code>useRef</code> 和 <code>useState</code> 都能存储值，但行为完全不同：</p><ul><li><code>useState</code>：值变化时触发 <span class='en'>re-render</span></li><li><code>useRef</code>：值变化时<strong>不会</strong>触发 re-render，适合存储 <span class='en'>mutable references</span></li></ul><p>在 <code>SlideAnnotationLayer.tsx</code> 中，<code>isDragging</code> 用 <code>useRef</code> 因为拖拽状态在 <code>mousemove</code> 中高频更新，用 <code>useState</code> 会导致每次鼠标移动都 re-render。</p>" },
+    { type: "code", lang: "typescript", code: "// SlideAnnotationLayer.tsx — useRef 用于高频更新的 mutable 标记\nconst isDragging = useRef(false);\nconst justDismissedRef = useRef(false);\nconst textareaRef = useRef<HTMLTextAreaElement>(null);\n\n// OverlayPPTXViewer.tsx — useRef 存储 DOM 元素数组\nconst thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);\n\n// useRef 还用于存储 Promise resolver\nconst closeResolverRef = useRef<((allow: boolean) => void) | null>(null);\nconst handleBeforeClose = useCallback(async (): Promise<boolean> => {\n  if (pptx?.isGenerating) {\n    return new Promise<boolean>((resolve) => {\n      closeResolverRef.current = resolve;\n      setShowCloseDialog(true);\n    });\n  }\n  return true;\n}, [pptx]);" },
+    { type: "code", lang: "typescript", code: "// useEffect 清理副作用的正确模式\nuseEffect(() => {\n  if (disabled) {\n    setDragState(null);\n    setPending(null);\n    isDragging.current = false;  // useRef 也要重置！\n  }\n}, [disabled]);\n\n// window 级别事件监听 + cleanup\nuseEffect(() => {\n  if (!dragState) return;\n  const handleWindowMouseMove = (e: MouseEvent) => { /* ... */ };\n  const handleWindowMouseUp = (e: MouseEvent) => { handleMouseUp(e); };\n  window.addEventListener('mousemove', handleWindowMouseMove);\n  window.addEventListener('mouseup', handleWindowMouseUp);\n  return () => {\n    window.removeEventListener('mousemove', handleWindowMouseMove);\n    window.removeEventListener('mouseup', handleWindowMouseUp);\n  };\n}, [dragState, disabled, pending, containerRef, handleMouseUp]);" },
+    { type: "editor", code: "// 模拟 useRef vs useState 的核心区别\nfunction simulateComponent() {\n  let renderCount = 0;\n  let refValue = { current: 0 };\n  let stateValue = 0;\n  \n  function reRender() {\n    renderCount++;\n    console.log('Re-render #' + renderCount + ', state=' + stateValue + ', ref=' + refValue.current);\n  }\n  \n  console.log('--- 修改 ref (不触发 re-render) ---');\n  refValue.current = 42;\n  console.log('ref.current = ' + refValue.current + ', renderCount = ' + renderCount);\n  \n  console.log('\\n--- 修改 state (触发 re-render) ---');\n  stateValue = 100;\n  reRender();\n  \n  console.log('\\n--- 闭包陷阱 (Stale Closure) ---');\n  let counter = 0;\n  const callbacks = [];\n  for (let i = 0; i < 3; i++) {\n    counter = i;\n    callbacks.push(function() { return counter; });\n  }\n  console.log('callback results: ' + callbacks.map(fn => fn()).join(', '));\n  console.log('全部返回 2！这就是为什么 useCallback 需要正确的依赖数组');\n}\nsimulateComponent();" },
+    { type: "deepdive", heading: "闭包陷阱 (Stale Closure) 在 NanoSlide 中的真实案例", content: "<p>在 <code>OverlayPPTXViewer.tsx</code> 中，<code>handleAddAnnotation</code> 依赖 <code>[currentSlide, pptx]</code>。如果漏掉 <code>currentSlide</code>，切换 slide 后标注会添加到旧 slide！</p><p><strong>防御策略：</strong></p><ul><li>永远在依赖数组中列出所有用到的外部变量</li><li>使用 ESLint 的 <code>exhaustive-deps</code> 规则自动检测</li><li>对于不想重新创建的 callback，用 <code>useRef</code> 保存最新值</li></ul>" },
+    { type: "quiz", questions: [
+      { q: "为什么用 useState(0) 的 counter trick 而不是直接读取 pptx 属性？", options: ["A. pptx 属性变化不会自动触发 React re-render，需要 forceUpdate", "B. useState 比直接读取更快", "C. pptx 实例可能为 null", "D. TypeScript 类型推断的需要"], answer: 0 },
+      { q: "isDragging 为什么用 useRef 而不是 useState？", options: ["A. useRef 的值可以在 useEffect 中读取", "B. 拖拽标记高频变化，useState 会导致每次鼠标移动都 re-render", "C. TypeScript 推荐的写法", "D. useState 不能存储 boolean"], answer: 1 },
+      { q: "useCallback 依赖数组漏掉变量会怎样？", options: ["A. TypeScript 编译错误", "B. React 自动修复", "C. 回调会一直使用该变量的旧值（stale closure）", "D. 组件不会渲染"], answer: 2 }
+    ]}
+  ]
+},
+{
+  id: 1, phase: 1,
+  title: "Zustand State Management",
+  shortTitle: "Zustand",
+  subtitle: "Zustand 状态管理 — 从 Store 设计到 Per-Instance 架构",
+  concepts: ["Zustand", "store design", "immutable updates", "event emitter", "session cache", "per-instance state"],
+  sections: [
+    { type: "text", heading: "NanoSlide 的状态架构演变", content: "<p>NanoSlide 最初使用全局 <span class='en'>Zustand store</span> 管理所有 PPTX 状态。但随着多 Tab 需求出现，全局 store 无法隔离不同文件的状态。</p><p>于是架构迁移为 <span class='en'>per-instance</span> 模式：每个打开的 PPTX 文件对应一个 <code>PptxPreview</code> 类实例，通过 <span class='en'>event emitter</span> 通知 React 组件重新渲染。</p>" },
+    { type: "code", lang: "typescript", code: "// store/pptxOverlay/index.ts — 类型定义\nexport type SlideData = {\n  index: number;\n  title: string;\n  url: string;\n  path?: string;\n  file_id?: string;\n  name?: string;\n};\n\nexport interface SlideAnnotation {\n  id: string;\n  type: 'point' | 'region';\n  x: number; y: number;\n  width?: number; height?: number;\n  text: string;\n  number: number;\n}\n\nexport interface PPTXSessionCache {\n  slides: SlideData[];\n  currentSlide: number;\n  slideAnnotations: Record<number, SlideAnnotationState>;\n  annotationUndoStack: Record<number, SlideAnnotationState>[];\n  annotationRedoStack: Record<number, SlideAnnotationState>[];\n  isGenerating?: boolean;\n  _pageSessionToken?: string;\n};" },
+    { type: "text", heading: "Immutable Update 的核心原则", content: "<p>原则是：<strong>永远不直接修改现有对象，而是创建新对象</strong>。</p><ul><li><code>{ ...oldObj, key: newValue }</code> — 浅拷贝 + 覆盖</li><li><code>[...oldArray, newItem]</code> — 数组追加</li><li><code>array.filter()</code>、<code>array.map()</code> — 返回新数组</li></ul><p>React 通过 <span class='en'>reference equality</span> 判断是否需要 re-render。直接修改对象引用不变，React 不会检测到变化。</p>" },
+    { type: "code", lang: "typescript", code: "// PptxPreview.ts — Immutable update 实战\naddAnnotation(slideIndex: number, annotation: SlideAnnotation): void {\n  // 保存旧状态到 undo stack（新数组）\n  this.annotationUndoStack = [...this.annotationUndoStack, { ...this.slideAnnotations }];\n  this.annotationRedoStack = [];\n\n  // 创建新对象，而非修改旧对象\n  this.slideAnnotations = {\n    ...this.slideAnnotations,\n    [slideIndex]: {\n      annotations: [...state.annotations, numberedAnnotation],\n    },\n  };\n  this._notifyStateChange();\n}" },
+    { type: "code", lang: "typescript", code: "// Session Cache with LRU eviction\nconst MAX_CACHE_ENTRIES = 15;\nconst sessionCache: Map<string, PPTXSessionCache> =\n  (globalThis as any).__pptxSessionCache ??= new Map();\n\nexport function setCacheEntry(key: string, value: PPTXSessionCache): void {\n  sessionCache.delete(key);   // 先删除，再 set，保证插入顺序\n  sessionCache.set(key, value);\n  while (sessionCache.size > MAX_CACHE_ENTRIES) {\n    const oldest = sessionCache.keys().next().value;\n    if (oldest != null) {\n      const evicted = sessionCache.get(oldest);\n      if (evicted) {\n        for (const s of evicted.slides) {\n          if (s.url?.startsWith('blob:')) URL.revokeObjectURL(s.url);\n        }\n      }\n      sessionCache.delete(oldest);\n    } else break;\n  }\n}" },
+    { type: "editor", code: "// 演示 Immutable Update 模式\nvar state = {\n  slides: [{ index: 1, title: 'Slide 1' }, { index: 2, title: 'Slide 2' }],\n  annotations: { 0: { annotations: [{ id: 'a1', text: 'Fix logo' }] } }\n};\n\nconsole.log('--- 错误方式：直接修改 (Mutation) ---');\nvar badState = state;\nbadState.slides.push({ index: 3, title: 'Slide 3' });\nconsole.log('state === badState:', state === badState);\nconsole.log('state.slides.length:', state.slides.length);\nstate.slides.pop();\n\nconsole.log('\\n--- 正确方式：Immutable Update ---');\nvar goodState = {\n  ...state,\n  slides: [...state.slides, { index: 3, title: 'Slide 3' }]\n};\nconsole.log('state === goodState:', state === goodState);\nconsole.log('state.slides.length:', state.slides.length);\nconsole.log('goodState.slides.length:', goodState.slides.length);\n\nconsole.log('\\n--- Spread 是浅拷贝 ---');\nvar shallow = { ...state };\nconsole.log('shallow.annotations === state.annotations:', shallow.annotations === state.annotations);" },
+    { type: "deepdive", heading: "从全局 Store 到 Per-Instance：架构迁移的取舍", content: "<p><strong>问题</strong>：打开两个 PPTX 时，切换 Tab 会互相覆盖状态。</p><p><strong>新架构</strong>：每个 Tab 创建独立的 <code>PptxPreview</code> 实例。</p><p><strong>取舍</strong>：</p><ul><li>优势：多 Tab 完美隔离，生命周期清晰</li><li>代价：失去 Zustand 的 devtools 等中间件</li><li>缓存层：通过 <code>sessionCache</code> Map 实现 Tab 切换时的状态恢复</li></ul>" },
+    { type: "quiz", questions: [
+      { q: "为什么更新 slideAnnotations 时使用展开运算符 {...}？", options: ["A. 性能更好", "B. 创建新对象引用，确保 React 检测到变化并 re-render", "C. TypeScript 语法要求", "D. 防止并发冲突"], answer: 1 },
+      { q: "sessionCache 使用 Map 而非 Object 的主要原因？", options: ["A. 类型安全性更好", "B. Map 保持插入顺序，方便实现 LRU 驱逐", "C. 内存占用更小", "D. 支持任意类型 key"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 2, phase: 1,
+  title: "TypeScript Advanced Patterns",
+  shortTitle: "TypeScript",
+  subtitle: "TypeScript 进阶 — 从接口组合到类型守卫",
+  concepts: ["interface", "type alias", "generics", "type guard", "discriminated union", "Record type"],
+  sections: [
+    { type: "text", heading: "NanoSlide 中的 TypeScript 类型体系", content: "<p>NanoSlide 展示了 <span class='en'>TypeScript</span> 在实际项目中的多种进阶用法。好的类型定义本身就是文档。</p><p>我们将学习 <span class='en'>interface composition</span>、<span class='en'>discriminated unions</span>、<span class='en'>Record type</span>、<span class='en'>optional properties</span> 和 <span class='en'>type guards</span>。</p>" },
+    { type: "code", lang: "typescript", code: "// 类型定义展示多种 TS 模式\n\n// 1. Type Alias\nexport type SlideData = {\n  index: number;\n  title: string;\n  url: string;\n  path?: string;      // optional property\n  file_id?: string;\n};\n\n// 2. Discriminated Union\nexport interface SlideAnnotation {\n  id: string;\n  type: 'point' | 'region';  // discriminant field\n  x: number; y: number;\n  width?: number; height?: number;\n  text: string;\n}\n\n// 3. Record<K, V> 工具类型\nexport interface PPTXSessionCache {\n  slides: SlideData[];\n  slideAnnotations: Record<number, SlideAnnotationState>;\n  generationProgress?: { current: number; total: number } | null;\n};" },
+    { type: "code", lang: "typescript", code: "// apis/request.ts — Interface 扩展 (extends)\nexport interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {\n  skipAuth?: boolean;\n  suppressAlert?: boolean;\n}\n\n// Module Augmentation（模块增强）\ndeclare module 'axios' {\n  interface AxiosRequestConfig {\n    skipAuth?: boolean;\n    suppressAlert?: boolean;\n  }\n}\n// 让 axios.get/post 也能接受自定义字段" },
+    { type: "code", lang: "typescript", code: "// apis/file.ts — 类型守卫风格的方法\nprivate shouldRetry(error: any): boolean {\n  if (error.name === 'AbortError') return false;\n  if (error.response) {\n    const status = error.response.status;\n    return status >= 500 || status === 408 || status === 429;\n  }\n  return error.code === 'NETWORK_ERROR' || error.code === 'TIMEOUT';\n}\n\n// ReturnType 工具类型\nprivate _generatingTimeoutTimer: ReturnType<typeof setTimeout> | null = null;" },
+    { type: "editor", code: "// TypeScript 核心概念练习 (纯 JS 演示)\n\n// 1. Discriminated Union 模拟\nvar annotations = [\n  { id: 'a1', type: 'point', x: 0.5, y: 0.3, text: 'Fix this' },\n  { id: 'a2', type: 'region', x: 0.1, y: 0.1, width: 0.3, height: 0.2, text: 'Redesign area' }\n];\n\nconsole.log('--- Discriminated Union ---');\nannotations.forEach(function(ann) {\n  if (ann.type === 'region') {\n    console.log('Region: ' + ann.text + ', area=' + (ann.width * ann.height).toFixed(2));\n  } else {\n    console.log('Point: ' + ann.text + ' at (' + ann.x + ', ' + ann.y + ')');\n  }\n});\n\n// 2. Record<K, V> 模拟\nconsole.log('\\n--- Record<number, State> ---');\nvar slideAnnotations = {};\nslideAnnotations[0] = { annotations: [{ id: 'a1', text: 'Fix logo' }] };\nslideAnnotations[2] = { annotations: [{ id: 'a2', text: 'Change color' }] };\nObject.entries(slideAnnotations).forEach(function(entry) {\n  console.log('Slide ' + entry[0] + ': ' + entry[1].annotations.length + ' annotation(s)');\n});" },
+    { type: "deepdive", heading: "Type Alias vs Interface：何时选择哪个？", content: "<p><strong>实用指南：</strong></p><ul><li><code>interface</code>：需要 <span class='en'>extends</span>、<span class='en'>implements</span>、或 <span class='en'>module augmentation</span> 时</li><li><code>type</code>：需要 <span class='en'>union types</span>、<span class='en'>intersection types</span>、<span class='en'>mapped types</span> 时</li><li>两者大部分场景可互换，保持一致即可</li></ul><p><code>declare module 'axios'</code> 只能用 <code>interface</code>（声明合并特性）。</p>" },
+    { type: "quiz", questions: [
+      { q: "SlideAnnotation 的 type 字段在 TypeScript 中叫什么？", options: ["A. Generic type", "B. Discriminant / tag field（可辨识联合的判别字段）", "C. Index signature", "D. Conditional type"], answer: 1 },
+      { q: "declare module 'axios' 的作用？", options: ["A. 导入 axios", "B. 创建替代品", "C. 扩展 axios 类型定义，让自定义字段被 TS 识别", "D. 运行时修改 axios"], answer: 2 },
+      { q: "ReturnType<typeof setTimeout> 含义？", options: ["A. setTimeout 函数本身的类型", "B. setTimeout 的参数类型", "C. setTimeout 的返回值类型", "D. setTimeout 的回调函数类型"], answer: 2 }
+    ]}
+  ]
+},
+{
+  id: 3, phase: 1,
+  title: "Axios Interceptor Pattern",
+  shortTitle: "Axios",
+  subtitle: "Axios Interceptor 模式 — Token 注入、错误分流与重试",
+  concepts: ["Axios interceptor", "token injection", "suppressAlert", "retry with backoff", "AbortController"],
+  sections: [
+    { type: "text", heading: "为什么需要 Interceptor 层", content: "<p><span class='en'>Axios Interceptor</span> 解决了几个核心问题：</p><ul><li><strong>Token 注入</strong>：每个请求自动附加 <code>Authorization</code> header</li><li><strong>请求追踪</strong>：自动生成 <code>X-Request-ID</code></li><li><strong>错误统一处理</strong>：非 200 自动弹 alert</li><li><strong>特殊状态分流</strong>：401 跳转登录、402 付费弹窗、<code>suppressAlert</code> 静默</li></ul>" },
+    { type: "code", lang: "typescript", code: "// 请求拦截器 (Request Interceptor)\naxiosInstance.interceptors.request.use(\n  async (config: CustomAxiosRequestConfig) => {\n    if (config.skipAuth) {\n      config.withCredentials = false;\n    } else {\n      const { getAccessToken } = useUserStore.getState();\n      const accessToken = await getAccessToken();\n      config.headers['Authorization'] = `Bearer ${accessToken}`;\n    }\n    config.headers['X-Request-ID'] = uuidv4();\n    return config;\n  },\n);" },
+    { type: "code", lang: "typescript", code: "// 响应拦截器 (Response Interceptor)\naxiosInstance.interceptors.response.use(\n  (response) => {\n    const config = response.config as CustomAxiosRequestConfig;\n    if (config?.suppressAlert) return response; // 跳过 alert\n    if (data.code !== 200) {\n      dispatchEvent(new CustomEvent('alert', {\n        detail: { message: data?.message, type: 'error' },\n      }));\n    }\n    return response;\n  },\n  (error) => {\n    const config = error.config as CustomAxiosRequestConfig;\n    if (config?.suppressAlert) return Promise.reject(error);\n    if (error.response?.status === 401) relogin();\n    return Promise.reject(error);\n  },\n);" },
+    { type: "code", lang: "typescript", code: "// 带重试的文件上传 — Exponential Backoff\nasync uploadFile(file: File, ...args): Promise<KsAssetEntity> {\n  const options = { maxRetries: 3, initialDelay: 1000,\n    maxDelay: 10000, backoffFactor: 2, ...retryOptions };\n\n  for (let attempt = 0; attempt <= options.maxRetries; attempt++) {\n    try {\n      if (signal?.aborted) throw new Error('Aborted');\n      const res = await request.post(url, formData, { signal });\n      return res.data;\n    } catch (error) {\n      if (attempt === options.maxRetries || !this.shouldRetry(error))\n        throw error;\n      const d = Math.min(\n        options.initialDelay * Math.pow(options.backoffFactor, attempt),\n        options.maxDelay\n      );\n      await this.delay(d, signal); // Abort-aware delay\n    }\n  }\n}" },
+    { type: "editor", code: "// 模拟 Interceptor 模式 + Exponential Backoff\nfunction createInterceptorChain() {\n  var interceptors = [];\n  return {\n    add: function(fn) { interceptors.push(fn); },\n    send: function(config) {\n      var processed = config;\n      interceptors.forEach(function(fn) { processed = fn(processed); });\n      return { data: { code: 200 }, config: processed };\n    }\n  };\n}\nvar client = createInterceptorChain();\nclient.add(function(config) {\n  config.headers = config.headers || {};\n  config.headers['Authorization'] = 'Bearer fake-token';\n  config.headers['X-Request-ID'] = 'uuid-' + Math.random().toString(36).slice(2, 8);\n  console.log('Headers:', JSON.stringify(config.headers));\n  return config;\n});\nclient.send({ url: '/api/slides' });\n\nconsole.log('\\n--- Exponential Backoff ---');\nfor (var i = 0; i < 5; i++) {\n  var delay = Math.min(1000 * Math.pow(2, i), 10000);\n  console.log('Attempt ' + (i+1) + ': wait ' + delay + 'ms');\n}" },
+    { type: "deepdive", heading: "dispatchEvent 的 SSR 安全问题", content: "<p><code>request.ts</code> 使用自定义的 <code>dispatchEvent</code> 包装函数：</p><p>因为 Next.js 是 SSR 框架，API 模块可能在 Node.js 中被导入。用 <code>typeof window !== 'undefined'</code> 检查避免 <code>ReferenceError</code>。</p><p>事件用 <code>document</code> 而非 <code>window</code>：因为 <code>useAlert</code> hook 在 <code>document</code> 上注册 listener。这是 <span class='en'>pub-sub</span> 模式，实现 API 层和 UI 层解耦。</p>" },
+    { type: "quiz", questions: [
+      { q: "suppressAlert: true 时响应拦截器如何处理？", options: ["A. 仍弹 alert", "B. 直接返回 response，跳过所有 alert 逻辑", "C. 静默吞掉错误", "D. 写入 localStorage"], answer: 1 },
+      { q: "第3次重试(attempt=2)等待时间？(initialDelay=1000, factor=2)", options: ["A. 1000ms", "B. 2000ms", "C. 4000ms", "D. 10000ms"], answer: 2 },
+      { q: "token 获取失败会怎样？", options: ["A. 请求被取消", "B. 抛出异常", "C. 打印 error，请求仍发送（不带 Authorization）", "D. 自动重试 3 次"], answer: 2 }
+    ]}
+  ]
+},
+// --- Phase 2: Topics 4-7 ---
+{
+  id: 4, phase: 2,
+  title: "JSZip Browser-Side Decompression",
+  shortTitle: "JSZip",
+  subtitle: "浏览器端 ZIP 解压与懒加载单例",
+  concepts: ["JSZip", "ArrayBuffer", "TypedArray", "Dynamic Import", "Singleton Pattern", "Lazy Loading"],
+  sections: [
+    { type: "text", heading: "Why Decompress in the Browser? 为什么在浏览器端解压？", content: "<p><code>.pptx</code> 文件实际上是一个 <span class='en'>ZIP archive</span>。NanoSlide 需要在浏览器端直接提取 slide 图片，采用 <span class='en'>lazy loading singleton</span> 模式。</p><ul><li><code>ArrayBuffer</code> — 原始二进制数据容器</li><li><code>TypedArray</code> — 如 <code>Uint8Array</code>，提供类型化视图</li><li><span class='en'>Dynamic Import</span> — <code>import('jszip')</code> 返回 Promise，Webpack 自动拆 chunk</li></ul>" },
+    { type: "code", lang: "typescript", code: "// utils/jszip-loader.ts — Lazy singleton loader\nlet cached: any = null;\nlet loading: Promise<any> | null = null;\n\nexport async function getJSZip(): Promise<any> {\n  if (cached) return cached;\n  if (!loading) {\n    loading = import('jszip').then((mod) => {\n      cached = mod.default || mod;\n      return cached;\n    });\n  }\n  return loading;  // Concurrent calls share the same Promise\n}\n\nexport function prefetchJSZip(): void {\n  if (!cached && !loading) getJSZip().catch(() => {});\n}" },
+    { type: "code", lang: "typescript", code: "// pptxParser.ts — Main entry\nconst PPTX_MAX_SIZE = 50 * 1024 * 1024;\n\nexport async function parsePPTXSlides(\n  data: ArrayBuffer\n): Promise<PPTXParseResult | null> {\n  if (data.byteLength > PPTX_MAX_SIZE) return null;\n  const JSZip = await getJSZip();\n  const zip = await JSZip.loadAsync(data);\n  const parser = new DOMParser();\n  const orderedSlidePaths = await getOrderedSlidePaths(zip, parser);\n  if (!orderedSlidePaths?.length) return null;\n  const slides: SlideData[] = [];\n  for (let i = 0; i < orderedSlidePaths.length; i++) {\n    const blobUrl = await extractSlideImage(zip, parser, orderedSlidePaths[i]);\n    if (blobUrl === null) {\n      for (const s of slides) {\n        if (s.url?.startsWith('blob:')) URL.revokeObjectURL(s.url);\n      }\n      return null;\n    }\n    if (blobUrl) slides.push({ index: i + 1, title: `Slide ${i+1}`, url: blobUrl });\n  }\n  return { title: '', slides };\n}" },
+    { type: "editor", code: "// Simulate lazy singleton pattern from jszip-loader\nlet cached = null;\nlet loadingPromise = null;\nlet loadCount = 0;\n\nfunction simulateImport() {\n  loadCount++;\n  console.log('[Load #' + loadCount + '] Network fetch started...');\n  return new Promise(function(resolve) {\n    setTimeout(function() { resolve({ default: { name: 'JSZip', version: '3.10.1' } }); }, 100);\n  });\n}\n\nfunction getLazyModule() {\n  if (cached) { console.log('Cache HIT'); return Promise.resolve(cached); }\n  if (!loadingPromise) {\n    console.log('Cache MISS — starting load');\n    loadingPromise = simulateImport().then(function(mod) { cached = mod.default; return cached; });\n  } else { console.log('Sharing existing Promise'); }\n  return loadingPromise;\n}\n\nPromise.all([getLazyModule(), getLazyModule(), getLazyModule()])\n  .then(function(results) {\n    console.log('All same instance:', results[0] === results[1] && results[1] === results[2]);\n    console.log('Total fetches:', loadCount);\n  });" },
+    { type: "deepdive", heading: "ArrayBuffer vs Blob vs TypedArray", content: "<p><strong>ArrayBuffer</strong> — 固定长度字节缓冲区，不能直接读写。JSZip 的 <code>loadAsync()</code> 接受它。</p><p><strong>Blob</strong> — 不可变的类文件对象，可能不在内存中。<code>zip.file(path).async('blob')</code> 返回它。</p><p><strong>TypedArray</strong> — 如 <code>Uint8Array</code>，提供结构化视图。</p><p>转换链：<code>ArrayBuffer</code> → <code>new Uint8Array(buf)</code> → <code>new Blob([uint8])</code> → <code>URL.createObjectURL(blob)</code>。</p>" },
+    { type: "quiz", questions: [
+      { q: "3 个组件同时调用 getJSZip() 会发生什么？", options: ["A. JSZip 被加载3次", "B. 只触发一次 import，三个调用共享同一个 Promise", "C. 后两个调用报错", "D. 各自创建缓存副本"], answer: 1 },
+      { q: "loadAsync 和 .async('text') 的区别？", options: ["A. loadAsync 解压所有文件", "B. loadAsync 解析 ZIP 目录，.async 按需解压单个文件", "C. 做同样的事", "D. loadAsync 其实是同步的"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 5, phase: 2,
+  title: "PPTX File Structure (Open XML)",
+  shortTitle: "OOXML",
+  subtitle: "Open XML 格式解析与 XML 关系链",
+  concepts: ["OOXML", "Relationship Chain", "DOMParser", "XML Namespaces", "presentation.xml"],
+  sections: [
+    { type: "text", heading: "PPTX 是 XML 文件的 ZIP 包", content: "<p><code>.pptx</code> 遵循 <span class='en'>OOXML</span> 标准。解压后的结构：</p><p><code>_rels/.rels</code> → <code>ppt/presentation.xml</code>（slide 顺序） → <code>ppt/_rels/presentation.xml.rels</code>（rId 映射） → <code>ppt/slides/slideN.xml</code></p><p>OOXML 使用 <span class='en'>Relationship Chain</span>：通过 <code>rId</code> 间接引用，允许文件重命名不破坏引用。</p>" },
+    { type: "code", lang: "typescript", code: "// getOrderedSlidePaths() — 获取正确的 slide 顺序\nasync function getOrderedSlidePaths(zip, parser) {\n  const presXml = await zip.file('ppt/presentation.xml')?.async('text');\n  const presDoc = parser.parseFromString(presXml, 'application/xml');\n  // 提取 <p:sldId r:id=\"rId2\"/> 元素\n  const sldIdElements = presDoc.getElementsByTagName('p:sldId');\n  const slideRIds = [];\n  for (let i = 0; i < sldIdElements.length; i++) {\n    const rId = sldIdElements[i].getAttribute('r:id');\n    if (rId) slideRIds.push(rId);\n  }\n  // 读取 .rels 解析 rId → 文件路径\n  const relsXml = await zip.file('ppt/_rels/presentation.xml.rels')?.async('text');\n  const relsDoc = parser.parseFromString(relsXml, 'application/xml');\n  const rIdToPath = {};\n  const rels = relsDoc.getElementsByTagName('Relationship');\n  for (let i = 0; i < rels.length; i++) {\n    rIdToPath[rels[i].getAttribute('Id')] = rels[i].getAttribute('Target');\n  }\n  return slideRIds.map(rId => rIdToPath[rId]).filter(Boolean)\n    .map(t => t.startsWith('slides/') ? `ppt/${t}` : `ppt/${t}`);\n}" },
+    { type: "code", lang: "typescript", code: "// extractSlideImage() — 提取单张 slide 图片\nasync function extractSlideImage(zip, parser, slidePath) {\n  const fileName = slidePath.split('/').pop();\n  const dirPath = slidePath.substring(0, slidePath.lastIndexOf('/'));\n  const relsPath = `${dirPath}/_rels/${fileName}.rels`;\n  const relsXml = await zip.file(relsPath)?.async('text');\n  if (!relsXml) return '';\n  const relsDoc = parser.parseFromString(relsXml, 'application/xml');\n  // 查找图片关系\n  let imageTarget = null;\n  const slideRels = relsDoc.getElementsByTagName('Relationship');\n  for (let j = 0; j < slideRels.length; j++) {\n    if ((slideRels[j].getAttribute('Type') || '').includes('/image')) {\n      imageTarget = slideRels[j].getAttribute('Target');\n      break;\n    }\n  }\n  if (!imageTarget) return null;\n  // 验证是否为纯图片 slide（无文字/图表/分组）\n  const slideXml = await zip.file(slidePath)?.async('text');\n  // ... validation checks ...\n  const mediaPath = imageTarget.startsWith('../')\n    ? `ppt/${imageTarget.substring(3)}` : `${dirPath}/${imageTarget}`;\n  const imageBlob = await zip.file(mediaPath).async('blob');\n  return URL.createObjectURL(imageBlob);\n}" },
+    { type: "editor", code: "// 模拟 OOXML 关系链解析\nvar presentationXml = '<p:presentation><p:sldIdLst>' +\n  '<p:sldId id=\"256\" r:id=\"rId2\"/>' +\n  '<p:sldId id=\"257\" r:id=\"rId4\"/>' +\n  '<p:sldId id=\"258\" r:id=\"rId3\"/>' +\n  '</p:sldIdLst></p:presentation>';\nvar relsXml = '<Relationships>' +\n  '<Relationship Id=\"rId2\" Target=\"slides/slide1.xml\"/>' +\n  '<Relationship Id=\"rId3\" Target=\"slides/slide2.xml\"/>' +\n  '<Relationship Id=\"rId4\" Target=\"slides/slide3.xml\"/>' +\n  '</Relationships>';\nvar parser = new DOMParser();\nvar presDoc = parser.parseFromString(presentationXml, 'application/xml');\nvar sldIds = presDoc.getElementsByTagName('p:sldId');\nvar orderedRIds = [];\nfor (var i = 0; i < sldIds.length; i++) orderedRIds.push(sldIds[i].getAttribute('r:id'));\nconsole.log('Slide order (rIds):', JSON.stringify(orderedRIds));\nvar relsDoc = parser.parseFromString(relsXml, 'application/xml');\nvar rels = relsDoc.getElementsByTagName('Relationship');\nvar rIdToPath = {};\nfor (var j = 0; j < rels.length; j++) rIdToPath[rels[j].getAttribute('Id')] = rels[j].getAttribute('Target');\nvar paths = orderedRIds.map(function(r) { return 'ppt/' + rIdToPath[r]; });\nconsole.log('Display order:');\npaths.forEach(function(p, i) { console.log('  Slide ' + (i+1) + ': ' + p); });\nconsole.log('File numbering != presentation order!');" },
+    { type: "deepdive", heading: "DOMParser 与 XML 命名空间", content: "<p>OOXML 使用 XML 命名空间：<code>p:</code> = PresentationML，<code>r:</code> = Relationships，<code>a:</code> = DrawingML。</p><p>代码用 <code>getElementsByTagName('p:sldId')</code> 而非 <code>getElementsByTagNameNS()</code>，这是实用主义选择——大多数浏览器支持带前缀的匹配。</p>" },
+    { type: "quiz", questions: [
+      { q: "为什么用 rId 间接引用而非直接路径？", options: ["A. 节省空间", "B. 允许文件重命名不破坏引用", "C. XML 不能包含路径", "D. 加密路径"], answer: 1 },
+      { q: "slides 顺序按什么决定？", options: ["A. 文件名排序", "B. presentation.xml 中 p:sldId 的顺序", "C. rId 编号排序", "D. 未定义"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 6, phase: 2,
+  title: "Blob & URL.createObjectURL",
+  shortTitle: "Blob URLs",
+  subtitle: "内存中的二进制操作与生命周期管理",
+  concepts: ["Blob", "URL.createObjectURL", "revokeObjectURL", "Memory Leak", "Session Cache", "Page Session Token"],
+  sections: [
+    { type: "text", heading: "From ZIP to Screen: Blob URL 管道", content: "<p>JSZip 提取图片返回 <span class='en'>Blob</span>。<code>URL.createObjectURL(blob)</code> 创建 <code>blob:</code> URL 供 <code>&lt;img&gt;</code> 使用。</p><ul><li>URL 只在<strong>当前页面会话</strong>有效</li><li><strong>必须</strong>调用 <code>URL.revokeObjectURL(url)</code> 释放内存</li><li>50 页 PPTX = 50 个 Blob URL，不释放就是内存泄漏</li></ul>" },
+    { type: "code", lang: "typescript", code: "// pptxParser.ts — 创建和释放 blob URLs\nconst imageBlob = await imageFile.async('blob');\nreturn URL.createObjectURL(imageBlob);\n\n// 中止时释放已创建的 blob URLs\nfor (const s of slides) {\n  if (s.url?.startsWith('blob:')) URL.revokeObjectURL(s.url);\n}\n\n// 专用清理函数\nexport function revokeSlideBlobUrls(slides: SlideData[]): void {\n  for (const slide of slides) {\n    if (slide.url?.startsWith('blob:')) URL.revokeObjectURL(slide.url);\n  }\n}" },
+    { type: "code", lang: "typescript", code: "// PptxPreview.ts — dispose 生命周期\ndispose(): void {\n  this._disposeController?.abort();\n  this.saveToSessionCache();\n  const cacheKey = this.getCacheKey();\n  if (!cacheKey) {\n    for (const s of this.slides) {\n      if (s.url?.startsWith('blob:')) URL.revokeObjectURL(s.url);\n    }\n  }\n  super.dispose();\n}\n\n// LRU 驱逐时也释放 blob URLs\nwhile (sessionCache.size > MAX_CACHE_ENTRIES) {\n  const oldest = sessionCache.keys().next().value;\n  const evicted = sessionCache.get(oldest);\n  if (evicted) {\n    for (const s of evicted.slides) {\n      if (s.url?.startsWith('blob:')) URL.revokeObjectURL(s.url);\n    }\n  }\n  sessionCache.delete(oldest);\n}" },
+    { type: "code", lang: "typescript", code: "// Page session token: blob URL 只在同次页面加载有效\nif (!(globalThis as any).__pptxPageSessionToken) {\n  (globalThis as any).__pptxPageSessionToken =\n    Date.now().toString(36) + Math.random().toString(36).slice(2, 6);\n}\n\nexport function isCacheBlobValid(cached: PPTXSessionCache): boolean {\n  const hasBlobUrl = cached.slides.some(s => s.url?.startsWith('blob:'));\n  if (!hasBlobUrl) return true;\n  return cached._pageSessionToken === (globalThis as any).__pptxPageSessionToken;\n}" },
+    { type: "editor", code: "// Blob URL 创建与释放演示\nvar data = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);\nconsole.log('PNG header bytes:', Array.from(data).map(function(b) { return '0x' + b.toString(16); }).join(' '));\nvar blob = new Blob([data], { type: 'image/png' });\nconsole.log('Blob size:', blob.size, 'bytes');\nvar url = URL.createObjectURL(blob);\nconsole.log('Blob URL:', url);\nconsole.log('Starts with blob:', url.startsWith('blob:'));\n\nfunction safeRevoke(u) {\n  if (u && u.startsWith('blob:')) {\n    URL.revokeObjectURL(u);\n    console.log('Revoked: ' + u.substring(0, 30) + '...');\n  } else console.log('Skipped:', u);\n}\nconsole.log('\\n--- Revocation ---');\nsafeRevoke(url);\nsafeRevoke('https://cdn.kuse.ai/img.png');\nsafeRevoke(undefined);" },
+    { type: "deepdive", heading: "三层安全网防止内存泄漏", content: "<p><strong>Layer 1: Parser-level</strong> — 解析中途发现不合格时立即回收所有已创建的 Blob URL</p><p><strong>Layer 2: Instance-level</strong> — <code>dispose()</code> 在没有缓存键时释放</p><p><strong>Layer 3: Cache eviction</strong> — LRU 淘汰时释放被驱逐条目的 Blob URL</p>" },
+    { type: "quiz", questions: [
+      { q: "页面刷新后 blob URL 缓存会怎样？", options: ["A. 仍然有效", "B. isCacheBlobValid 检测到 token 不匹配，丢弃缓存并重新解析", "C. 显示损坏图片", "D. 浏览器自动更新"], answer: 1 },
+      { q: "setCacheEntry 中为什么先 delete 再 set？", options: ["A. 防止重复", "B. 将条目移到 Map 末尾（最新位置）以支持 LRU", "C. 触发 GC", "D. 顺序无关"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 7, phase: 2,
+  title: "File Upload Patterns",
+  shortTitle: "Upload",
+  subtitle: "多部分上传、重试策略与中止控制",
+  concepts: ["FormData", "multipart/form-data", "AbortController", "Exponential Backoff", "onUploadProgress"],
+  sections: [
+    { type: "text", heading: "FileAPI Upload Architecture", content: "<p><code>apis/file.ts</code> 实现了企业级文件上传：</p><ul><li><span class='en'>FormData</span> + multipart/form-data</li><li><span class='en'>AbortController</span> — 支持用户取消</li><li><span class='en'>Exponential Backoff</span> — 1s → 2s → 4s，最大 10s</li><li><span class='en'>Progress Tracking</span> — 实时上传进度</li><li>Smart retry — 5xx/408/429 重试，4xx 不重试</li></ul>" },
+    { type: "code", lang: "typescript", code: "// shouldRetry — 智能重试条件\nprivate shouldRetry(error: any): boolean {\n  if (error.name === 'AbortError') return false;\n  if (error.response) {\n    const status = error.response.status;\n    return status >= 500 || status === 408 || status === 429;\n  }\n  return error.code === 'NETWORK_ERROR' || error.code === 'TIMEOUT';\n}\n\n// Abort-aware delay\nprivate async delay(ms: number, signal?: AbortSignal): Promise<void> {\n  return new Promise((resolve, reject) => {\n    if (signal?.aborted) { reject(new Error('Aborted')); return; }\n    const timeout = setTimeout(resolve, ms);\n    signal?.addEventListener('abort', () => {\n      clearTimeout(timeout);\n      reject(new Error('Aborted'));\n    });\n  });\n}" },
+    { type: "code", lang: "typescript", code: "// 核心上传循环\nfor (let attempt = 0; attempt <= options.maxRetries; attempt++) {\n  try {\n    if (signal?.aborted) throw new Error('Aborted');\n    const formData = new FormData();\n    formData.append('file', file);\n    const res = await request.post(url, formData, {\n      onUploadProgress: (e) => {\n        if (e.total) onProgress?.((e.loaded / e.total) * 100, attempt > 0, attempt + 1);\n      },\n      signal,\n    });\n    return res.data;\n  } catch (error) {\n    if (attempt === options.maxRetries || !this.shouldRetry(error)) throw error;\n    const delay = Math.min(\n      options.initialDelay * Math.pow(options.backoffFactor, attempt),\n      options.maxDelay\n    );\n    await this.delay(delay, signal);\n  }\n}" },
+    { type: "editor", code: "// Exponential backoff 模拟\nfunction calcDelay(attempt, init, factor, max) {\n  return Math.min(init * Math.pow(factor, attempt), max);\n}\nconsole.log('=== Delay Sequence ===');\nfor (var i = 0; i < 6; i++) {\n  var d = calcDelay(i, 1000, 2, 10000);\n  console.log('Attempt ' + (i+1) + ': ' + d + 'ms' + (d >= 10000 ? ' (capped)' : ''));\n}\nconsole.log('\\n=== AbortController ===');\nvar ctrl = new AbortController();\nconsole.log('Before abort:', ctrl.signal.aborted);\nctrl.abort();\nconsole.log('After abort:', ctrl.signal.aborted);" },
+    { type: "deepdive", heading: "FormData 与 Metadata Mutex", content: "<p><code>FormData</code> 让浏览器自动设置 <code>Content-Type: multipart/form-data</code> 并编码文件。</p><p><code>file.ts</code> 中还实现了 per-key mutex 防止并发 metadata 更新的竞态条件。</p><p><code>onProgress</code> 回调提供 <code>isRetry</code> 和 <code>attempt</code> 参数，UI 可显示「上传中 (重试 2/3)」。</p>" },
+    { type: "quiz", questions: [
+      { q: "第4次重试(attempt=3)延迟？(init=1000, factor=2, max=10000)", options: ["A. 3000ms", "B. 8000ms", "C. 10000ms", "D. 6000ms"], answer: 1 },
+      { q: "重试等待期间用户取消会怎样？", options: ["A. setTimeout 继续", "B. abort 监听器清除 timeout 并立即 reject", "C. AbortController 被忽略", "D. 在 Promise 外抛错"], answer: 1 }
+    ]}
+  ]
+},
+// --- Phase 3: Topics 8-11 ---
+{
+  id: 8, phase: 3,
+  title: "HTML5 Canvas 2D API",
+  shortTitle: "Canvas 2D",
+  subtitle: "Canvas 2D 绘图基元与四角星绘制",
+  concepts: ["Canvas2D", "beginPath", "quadraticCurveTo", "fillRect", "clearRect", "fillStyle"],
+  sections: [
+    { type: "text", heading: "Canvas 2D 绘图上下文", content: "<p>HTML5 <span class='en'>Canvas</span> 提供底层 <span class='en'>2D rendering context</span>。在 <code>GeneratingOverlay.tsx</code> 中，整个星星波纹动画都是通过 Canvas 2D API 手绘的。</p><ul><li><code>ctx.clearRect(0, 0, W, H)</code> — 每帧清空画布</li><li><code>ctx.fillStyle</code> — 设置填充颜色（rgba 格式）</li><li><code>ctx.beginPath()</code> — 开始新路径</li><li><code>ctx.quadraticCurveTo()</code> — 二次贝塞尔曲线</li></ul>" },
+    { type: "text", heading: "四角星绘制原理", content: "<p><code>drawStar</code> 函数绘制四角星：四个外顶点在上下左右，四个 <span class='en'>pinch points</span> 在 45° 方向。<code>PINCH = 0.22</code> 控制星星腰部窄度。每条臂通过 <span class='en'>quadratic Bézier curve</span> 连接。</p>" },
+    { type: "code", lang: "typescript", code: "// GeneratingOverlay.tsx — drawStar function\nconst PINCH = 0.22;\nconst drawStar = (cx: number, cy: number, r: number) => {\n  const inner = r * PINCH;\n  ctx.beginPath();\n  ctx.moveTo(cx, cy - r);         // top\n  ctx.quadraticCurveTo(cx + inner, cy - inner, cx + r, cy); // → right\n  ctx.quadraticCurveTo(cx + inner, cy + inner, cx, cy + r); // → bottom\n  ctx.quadraticCurveTo(cx - inner, cy + inner, cx - r, cy); // → left\n  ctx.quadraticCurveTo(cx - inner, cy - inner, cx, cy - r); // → top\n  ctx.fill();\n};\n\n// 星星大小随波纹影响缩放\nif (influence > 0.01) {\n  const starR = (CELL / 2) * influence * 0.35;\n  const alpha = influence * 0.3;\n  ctx.fillStyle = `rgba(${Math.round(tR)},${Math.round(tG)},${Math.round(tB)},${alpha.toFixed(3)})`;\n  drawStar(cx, cy, starR);\n}" },
+    { type: "editor", code: "// 四角星顶点计算\nconst PINCH = 0.22;\nfunction starVertices(cx, cy, r) {\n  const inner = r * PINCH;\n  return [\n    { label: 'Top (moveTo)', x: cx, y: cy - r },\n    { label: 'Control → Right', x: cx + inner, y: cy - inner },\n    { label: 'Right (outer)', x: cx + r, y: cy },\n    { label: 'Control → Bottom', x: cx + inner, y: cy + inner },\n    { label: 'Bottom (outer)', x: cx, y: cy + r },\n    { label: 'Control → Left', x: cx - inner, y: cy + inner },\n    { label: 'Left (outer)', x: cx - r, y: cy },\n    { label: 'Control → Top', x: cx - inner, y: cy - inner },\n  ];\n}\nvar star = starVertices(50, 50, 30);\nconsole.log('Four-pointed star vertices:');\nstar.forEach(v => console.log('  ' + v.label + ': (' + v.x.toFixed(1) + ', ' + v.y.toFixed(1) + ')'));\nconsole.log('\\nPINCH ' + PINCH + ' → inner radius: ' + (30 * PINCH).toFixed(1) + 'px');\nconsole.log('Ratio: ' + (PINCH * 100) + '% — controls arm thickness');\nvar CELL = 6;\nconsole.log('\\nStar size at different influences:');\n[0.2, 0.5, 0.8, 1.0].forEach(function(inf) {\n  console.log('  influence=' + inf + ' → starR=' + ((CELL/2)*inf*0.35).toFixed(2) + 'px, alpha=' + (inf*0.3).toFixed(2));\n});" },
+    { type: "deepdive", heading: "为什么用 quadraticCurveTo 而不是 lineTo？", content: "<p><code>lineTo</code> 连接得到尖锐钻石形。<code>quadraticCurveTo</code> 引入控制点让路径成为平滑曲线。</p><p><code>beginPath()</code> 在每颗星前调用至关重要——否则所有星的路径累积，<code>fill()</code> 开销呈指数增长。对于约 20,000 颗星的网格，这个错误足以让帧率崩溃。</p>" },
+    { type: "quiz", questions: [
+      { q: "ctx.beginPath() 的作用？", options: ["A. 开始新路径，防止与之前路径合并", "B. 清除画布", "C. 设置颜色", "D. 创建新 Canvas"], answer: 0 },
+      { q: "PINCH = 0.22 控制什么？", options: ["A. 透明度", "B. 星星腰部宽窄比例", "C. 总体大小", "D. 星星间距"], answer: 1 },
+      { q: "为什么每帧调用 clearRect？", options: ["A. retained mode 需要", "B. Canvas 是 immediate mode，必须手动清空再重绘", "C. 只在 resize 时需要", "D. 初始化步骤"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 9, phase: 3,
+  title: "requestAnimationFrame Animation Loop",
+  shortTitle: "rAF Loop",
+  subtitle: "帧率无关动画循环与帧率节流",
+  concepts: ["requestAnimationFrame", "deltaTime", "frameClamping", "frameThrottling", "cancelAnimationFrame"],
+  sections: [
+    { type: "text", heading: "requestAnimationFrame 基础", content: "<p><code>requestAnimationFrame</code>（rAF）告诉浏览器在下一次 <span class='en'>repaint</span> 前调用回调。与 <code>setInterval</code> 不同，rAF 在页面不可见时自动暂停。</p><p><code>GeneratingOverlay</code> 使用两个帧控制策略：</p><ul><li><span class='en'>Frame Throttling</span>：<code>FRAME_INTERVAL = 1000 / 30</code> 限制为约 30fps</li><li><span class='en'>Delta Time Clamping</span>：<code>Math.min(dt, 0.1)</code> 防止切标签页后动画跳跃</li></ul>" },
+    { type: "code", lang: "typescript", code: "// GeneratingOverlay.tsx — animation loop\nconst FRAME_INTERVAL = 1000 / 30;\n\nconst draw = useCallback((t: number) => {\n  // Throttle to ~30fps\n  if (t - lastDrawRef.current < FRAME_INTERVAL) {\n    rafRef.current = requestAnimationFrame(draw);\n    return;\n  }\n  lastDrawRef.current = t;\n\n  // Delta time: ms→sec, clamp to 0.1s\n  if (prevTRef.current === 0) prevTRef.current = t;\n  const dt = Math.min((t - prevTRef.current) / 1000, 0.1);\n  prevTRef.current = t;\n\n  // Update waves using dt (frame-rate independent)\n  for (const w of waves) {\n    w.radius += w.speed * dt;\n  }\n\n  rafRef.current = requestAnimationFrame(draw);\n}, []);\n\n// Lifecycle: start & cleanup\nuseEffect(() => {\n  rafRef.current = requestAnimationFrame(draw);\n  return () => cancelAnimationFrame(rafRef.current);\n}, [draw]);" },
+    { type: "editor", code: "// 模拟 rAF throttle + dt clamping\nvar FRAME_INTERVAL = 1000 / 30;\nvar prevT = 0, lastDraw = 0, waveRadius = 0, waveSpeed = 0.06;\n\nfunction simulateFrame(t) {\n  if (t - lastDraw < FRAME_INTERVAL) return { skipped: true, dt: 0, radius: waveRadius };\n  lastDraw = t;\n  if (prevT === 0) prevT = t;\n  var dt = Math.min((t - prevT) / 1000, 0.1);\n  prevT = t;\n  waveRadius += waveSpeed * dt;\n  return { skipped: false, dt: dt, radius: waveRadius };\n}\n\nconsole.log('=== Normal 60fps frames ===');\n[0, 16.67, 33.34, 50.01, 66.68, 83.35, 100.02].forEach(function(t) {\n  var r = simulateFrame(t);\n  if (r.skipped) console.log('  t=' + t.toFixed(1) + 'ms → SKIPPED');\n  else console.log('  t=' + t.toFixed(1) + 'ms → dt=' + r.dt.toFixed(4) + 's, radius=' + r.radius.toFixed(4));\n});\n\nconsole.log('\\n=== Tab hidden 5 seconds ===');\nprevT = 100; lastDraw = 100; waveRadius = 0;\n[100, 5100, 5116.67].forEach(function(t) {\n  var r = simulateFrame(t);\n  if (!r.skipped) console.log('  t=' + t.toFixed(0) + 'ms → dt=' + r.dt.toFixed(4) + 's (clamped to 0.1)');\n});\nconsole.log('Without clamping dt would be ' + ((5100-100)/1000) + 's!');" },
+    { type: "deepdive", heading: "为什么 30fps 足够？", content: "<p>每帧遍历约 26,934 个网格单元，每个对 5 个波做距离和噪声计算。60fps 需在 16ms 内完成，30fps 预算翻倍到 33ms。</p><p><span class='en'>Delta time</span> 确保动画速度与帧率解耦：<code>w.radius += w.speed * dt</code>，无论 30 还是 60fps 视觉速度一致。</p><p><code>cancelAnimationFrame</code> cleanup 也很关键——忘记它会导致组件卸载后仍尝试操作已销毁的 Canvas。</p>" },
+    { type: "quiz", questions: [
+      { q: "Math.min(dt, 0.1) 中 0.1 代表什么？", options: ["A. 最大帧率 0.1fps", "B. 单帧 dt 上限 0.1 秒，防止标签页切换后跳跃", "C. 动画总时长", "D. Canvas 最小透明度"], answer: 1 },
+      { q: "忘记 cancelAnimationFrame 会怎样？", options: ["A. 动画变慢", "B. 卸载后 draw 仍执行，操作已销毁的 Canvas，内存泄漏", "C. Canvas 自动停止", "D. 语法错误"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 10, phase: 3,
+  title: "Procedural Noise (程序化噪声)",
+  shortTitle: "Noise",
+  subtitle: "值噪声与湍流叠加 — value noise & turbulence",
+  concepts: ["valueNoise", "hashFunction", "smoothstep", "bilinearInterpolation", "turbulence", "octaves"],
+  sections: [
+    { type: "text", heading: "什么是程序化噪声？", content: "<p><span class='en'>Procedural noise</span> 是通过数学函数生成的连续伪随机数值场。与 <code>Math.random()</code> 不同，噪声在相邻点间平滑过渡。</p><p>三层实现：</p><ul><li><code>hash(x, y)</code> — 整数格点哈希</li><li><code>smoothNoise(x, y)</code> — 值噪声，格点间平滑插值</li><li><code>turbulence(x, y, octaves)</code> — 多层噪声叠加产生丰富细节</li></ul>" },
+    { type: "code", lang: "typescript", code: "// GeneratingOverlay.tsx — noise functions\nfunction hash(x: number, y: number): number {\n  let h = (x * 374761393 + y * 668265263 + 1013) | 0;\n  h = Math.imul(h ^ (h >>> 13), 1274126177);\n  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;\n}\n\nfunction smoothNoise(x: number, y: number): number {\n  const ix = Math.floor(x), iy = Math.floor(y);\n  const fx = x - ix, fy = y - iy;\n  // Smoothstep: 3t² - 2t³\n  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);\n  const n00 = hash(ix, iy), n10 = hash(ix+1, iy);\n  const n01 = hash(ix, iy+1), n11 = hash(ix+1, iy+1);\n  return n00*(1-sx)*(1-sy) + n10*sx*(1-sy) + n01*(1-sx)*sy + n11*sx*sy;\n}\n\nfunction turbulence(x: number, y: number, octaves: number): number {\n  let val = 0, scale = 1, total = 0;\n  for (let i = 0; i < octaves; i++) {\n    val += smoothNoise(x * scale, y * scale) / scale;\n    total += 1 / scale;\n    scale *= 2;\n  }\n  return val / total;\n}" },
+    { type: "code", lang: "typescript", code: "// 噪声应用于波前扭曲\nfor (const w of waves) {\n  const dx = cx - w.cx * W;\n  const dy = cy - w.cy * H;\n  const baseDist = Math.sqrt(dx*dx + dy*dy) / diag;\n  const angle = Math.atan2(dy, dx);\n  const noiseVal = turbulence(\n    angle * 1.5 + w.seed,\n    w.radius * 4 + w.seed,\n    3,  // NOISE_OCTAVES\n  );\n  const distortion = (noiseVal - 0.5) * 0.12;\n  const dist = baseDist + distortion;\n}" },
+    { type: "editor", code: "// 复现 GeneratingOverlay 的噪声函数\nfunction hash(x, y) {\n  var h = (x * 374761393 + y * 668265263 + 1013) | 0;\n  h = Math.imul(h ^ (h >>> 13), 1274126177);\n  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;\n}\nfunction smoothNoise(x, y) {\n  var ix = Math.floor(x), iy = Math.floor(y);\n  var fx = x - ix, fy = y - iy;\n  var sx = fx*fx*(3-2*fx), sy = fy*fy*(3-2*fy);\n  var n00=hash(ix,iy), n10=hash(ix+1,iy), n01=hash(ix,iy+1), n11=hash(ix+1,iy+1);\n  return n00*(1-sx)*(1-sy)+n10*sx*(1-sy)+n01*(1-sx)*sy+n11*sx*sy;\n}\nfunction turbulence(x, y, oct) {\n  var val=0, scale=1, total=0;\n  for (var i=0; i<oct; i++) { val+=smoothNoise(x*scale,y*scale)/scale; total+=1/scale; scale*=2; }\n  return val/total;\n}\nconsole.log('hash determinism:', hash(0,0).toFixed(6), '=', hash(0,0).toFixed(6));\nconsole.log('\\nSmooth Noise (y=0):');\nfor (var x=0; x<=2; x+=0.5) console.log('  x='+x.toFixed(1)+' → '+smoothNoise(x,0).toFixed(4));\nconsole.log('\\nTurbulence octaves at (1.5, 2.3):');\nfor (var o=1; o<=4; o++) console.log('  oct='+o+' → '+turbulence(1.5,2.3,o).toFixed(6));" },
+    { type: "deepdive", heading: "三层抽象的工程设计", content: "<p><strong>hash</strong>：大质数乘法 + 位运算做 bit mixing，<code>>>> 0</code> 转无符号后除以 2³² 归一化到 [0,1)。</p><p><strong>smoothNoise</strong>：用 smoothstep <code>t²(3-2t)</code> 代替线性插值，保证整数边界导数为零，消除网格感。</p><p><strong>turbulence</strong>：第 i 层频率 2ⁱ，振幅 1/2ⁱ，模拟自然界的分形结构。3 层叠加足够产生有机感。</p>" },
+    { type: "quiz", questions: [
+      { q: "smoothstep fx*fx*(3-2*fx) 实现的是？", options: ["A. 线性插值", "B. Hermite 插值，保证边界导数为零", "C. 正弦插值", "D. 指数衰减"], answer: 1 },
+      { q: "turbulence 中 scale *= 2 的作用？", options: ["A. 每层频率翻倍，模拟分形细节层级", "B. 噪声值放大", "C. 采样点移动", "D. 增加动画速度"], answer: 0 }
+    ]}
+  ]
+},
+{
+  id: 11, phase: 3,
+  title: "Canvas DPR Adaptation",
+  shortTitle: "DPR 适配",
+  subtitle: "设备像素比与清晰渲染",
+  concepts: ["devicePixelRatio", "logicalPixels", "physicalPixels", "ctx.scale", "getBoundingClientRect"],
+  sections: [
+    { type: "text", heading: "为什么需要 DPR 适配？", content: "<p>Retina 屏的 <span class='en'>devicePixelRatio</span>（DPR）大于 1。MacBook Pro DPR=2 意味着 1 个逻辑像素 = 2×2 物理像素。</p><p>Canvas 的 <code>width/height</code> 设置位图尺寸。如果直接用 CSS 尺寸赋值，位图分辨率只有 1/DPR，会模糊。</p><p>解决方案：<code>canvas.width = rect.width * dpr</code> + <code>ctx.scale(dpr, dpr)</code></p>" },
+    { type: "code", lang: "typescript", code: "// GeneratingOverlay.tsx — DPR-aware resize\nconst resize = () => {\n  const dpr = window.devicePixelRatio || 1;\n  const rect = canvas.getBoundingClientRect();\n  // 物理像素尺寸\n  canvas.width = Math.round(rect.width * dpr);\n  canvas.height = Math.round(rect.height * dpr);\n  // 缩放上下文，绘图代码使用逻辑像素\n  const ctx = canvas.getContext('2d');\n  if (ctx) ctx.scale(dpr, dpr);\n  // 存储逻辑尺寸用于计算\n  sizeRef.current = { w: rect.width, h: rect.height };\n};" },
+    { type: "editor", code: "// DPR 适配模拟\nfunction simulateDPR(cssW, cssH, dpr) {\n  var canvasW = Math.round(cssW * dpr);\n  var canvasH = Math.round(cssH * dpr);\n  var CELL = 6;\n  var cols = Math.ceil(cssW / CELL) + 1;\n  var rows = Math.ceil(cssH / CELL) + 1;\n  return { css: cssW+'x'+cssH, bitmap: canvasW+'x'+canvasH,\n    ratio: ((canvasW*canvasH)/(cssW*cssH)).toFixed(1)+'x', grid: cols+'x'+rows+'='+cols*rows+' stars' };\n}\nconsole.log('=== DPR Scenarios ===');\n[\n  { w:800, h:600, dpr:1, label:'Standard (DPR=1)' },\n  { w:800, h:600, dpr:2, label:'Retina (DPR=2)' },\n  { w:800, h:600, dpr:3, label:'High-end phone (DPR=3)' },\n].forEach(function(s) {\n  var r = simulateDPR(s.w, s.h, s.dpr);\n  console.log('\\n' + s.label + ':');\n  console.log('  CSS: ' + r.css + ', Bitmap: ' + r.bitmap + ', Pixels: ' + r.ratio);\n  console.log('  Grid: ' + r.grid);\n});\nconsole.log('\\n--- ctx.scale mapping (DPR=2) ---');\n[[0,0],[100,50],[399.5,299.5]].forEach(function(p) {\n  console.log('  draw('+p[0]+','+p[1]+') → physical('+(p[0]*2)+','+(p[1]*2)+')');\n});" },
+    { type: "deepdive", heading: "DPR 适配的常见陷阱", content: "<p><strong>陷阱 1：重复 scale 累积</strong> — 设置 canvas.width/height 会重置变换矩阵，所以必须在设置尺寸<em>之后</em>再 scale。</p><p><strong>陷阱 2：CSS vs 属性双重设置</strong> — GeneratingOverlay 用 CSS 让 canvas 填满容器，只设置位图属性。</p><p><strong>陷阱 3：Math.round</strong> — canvas 宽高必须是整数，rect.width * dpr 可能是小数。</p>" },
+    { type: "quiz", questions: [
+      { q: "DPR=2 屏幕上 800x600 CSS 的 Canvas bitmap 应设多大？", options: ["A. 800×600", "B. 1600×1200", "C. 400×300", "D. 800×600 + crisp-edges"], answer: 1 },
+      { q: "为什么先设 canvas.width 再调 ctx.scale？", options: ["A. 顺序无关", "B. 设置宽高会重置变换矩阵，必须之后重新 scale", "C. scale 必须在创建后立即调用", "D. TypeScript 要求"], answer: 1 }
+    ]}
+  ]
+},
+// --- Phase 4: Topics 12-15 ---
+{
+  id: 12, phase: 4,
+  title: "Radix UI Headless Components",
+  shortTitle: "Radix UI",
+  subtitle: "无头组件与可访问性原语",
+  concepts: ["Radix UI", "Popover", "asChild", "Slot", "Compound Components", "WAI-ARIA"],
+  sections: [
+    { type: "text", heading: "什么是 Headless UI 组件？", content: "<p><span class='en'>Headless Components</span> 只提供行为逻辑和可访问性，不强制样式。NanoSlide 的 <code>SlideAnnotationToolbar.tsx</code> 使用 <span class='en'>Radix Popover</span>：</p><ul><li><span class='en'>Compound Components</span>：Root、Trigger、Portal、Content 协同工作</li><li><code>asChild</code>：不渲染自身 DOM，将行为合并到子元素</li><li>内建 WAI-ARIA：自动管理 <code>aria-expanded</code>、焦点捕获</li><li>Portal：渲染到 <code>document.body</code>，避免 overflow 裁切</li></ul>" },
+    { type: "code", lang: "typescript", code: "// SlideAnnotationToolbar.tsx — Radix Popover\nimport * as PopoverPrimitive from '@radix-ui/react-popover';\n\nfunction AnnotationListPopover({ open, onOpenChange, children, pptx }) {\n  return (\n    <PopoverPrimitive.Root open={open} onOpenChange={onOpenChange}>\n      <PopoverPrimitive.Trigger asChild>\n        {children}  {/* Button becomes trigger via asChild */}\n      </PopoverPrimitive.Trigger>\n      <PopoverPrimitive.Portal>\n        <PopoverPrimitive.Content\n          side=\"top\" sideOffset={8} align=\"start\"\n          className=\"z-50 w-72 rounded-xl border ...\"\n        >\n          {/* Annotation list */}\n        </PopoverPrimitive.Content>\n      </PopoverPrimitive.Portal>\n    </PopoverPrimitive.Root>\n  );\n}" },
+    { type: "code", lang: "typescript", code: "// Usage — the button IS the trigger\n{totalCount > 0 && (\n  <AnnotationListPopover open={listOpen} onOpenChange={setListOpen} pptx={pptx}>\n    <button className=\"flex items-center gap-1.5 ...\">\n      <AnnotationIcon />\n      <span>{totalCount}</span>\n    </button>\n  </AnnotationListPopover>\n)}" },
+    { type: "editor", code: "// 模拟 Radix Slot 的属性合并\nfunction mergeProps(slotProps, childProps) {\n  var merged = Object.assign({}, childProps);\n  Object.keys(slotProps).forEach(function(key) {\n    if (key === 'className') {\n      merged.className = [slotProps.className, childProps.className].filter(Boolean).join(' ');\n    } else if (key.startsWith('on') && typeof slotProps[key] === 'function') {\n      var slotFn = slotProps[key], childFn = childProps[key];\n      merged[key] = function() { if (childFn) childFn(); slotFn(); };\n    } else if (!(key in childProps)) {\n      merged[key] = slotProps[key];\n    }\n  });\n  return merged;\n}\nvar slotProps = { onClick: function() { console.log('Radix: toggle popover'); }, 'aria-expanded': true, className: 'radix-trigger' };\nvar childProps = { onClick: function() { console.log('User: custom click'); }, className: 'my-btn text-sm' };\nvar result = mergeProps(slotProps, childProps);\nconsole.log('Merged className:', result.className);\nconsole.log('aria-expanded:', result['aria-expanded']);\nconsole.log('--- Click handler chain ---');\nresult.onClick();" },
+    { type: "deepdive", heading: "Compound Component 的内部通信", content: "<p>Root 创建 Context 持有 open/onOpenChange。Trigger 消费 Context 绑定 onClick。Content 根据 open 渲染。Portal 用 createPortal 渲染到 body。</p><p><strong>data-state 动画</strong>：Radix 在 Content 上注入 <code>data-state=\"open|closed\"</code>，Tailwind 可用 <code>data-[state=open]:fade-in</code> 做动画。</p>" },
+    { type: "quiz", questions: [
+      { q: "asChild 属性的作用？", options: ["A. 不渲染自身 DOM，将行为属性合并到子元素", "B. 深拷贝子组件", "C. 渲染为 <child> 标签", "D. 禁用事件"], answer: 0 },
+      { q: "Radix Compound Components 之间如何通信？", options: ["A. 全局 Zustand store", "B. DOM 事件冒泡", "C. React Context 共享内部状态", "D. Props 逐层传递"], answer: 2 }
+    ]}
+  ]
+},
+{
+  id: 13, phase: 4,
+  title: "Lingui i18n Internationalization",
+  shortTitle: "Lingui i18n",
+  subtitle: "宏提取与动态语言切换",
+  concepts: ["Lingui", "i18n", "Macro Extraction", "PO Files", "Dynamic Import", "Code Splitting"],
+  sections: [
+    { type: "text", heading: "Lingui 国际化架构", content: "<p><span class='en'>Lingui</span> 基于编译时宏提取。NanoSlide 支持 9 种语言：</p><ul><li><span class='en'>Macro extraction</span>：<code>t</code> 模板标签在构建时被提取为消息 ID</li><li><span class='en'>Static preload</span>：英文静态导入，避免阻塞首屏</li><li><span class='en'>Dynamic import</span>：其他语言按需加载</li><li><span class='en'>Custom Event</span>：<code>interfaceLanguageChanged</code> 通知全局</li></ul>" },
+    { type: "code", lang: "typescript", code: "// lib/i18n.ts — Core setup\nimport { i18n } from '@lingui/core';\nimport { messages as enMessages } from '@/locales/en/messages.mjs';\n\ni18n.load('en', enMessages); // 英文静态加载\ni18n.activate('en');\n\nexport async function loadCatalog(locale: Locale) {\n  if (locale === 'en') { i18n.activate('en'); return; }\n  try {\n    const { messages } = await import(`../locales/${locale}/messages`);\n    i18n.load(locale, messages);\n    i18n.activate(locale);\n  } catch {\n    i18n.activate(defaultLocale); // Fallback to English\n  }\n}\n\nexport async function changeLocale(locale: Locale) {\n  localStorage.setItem('interface_language', locale);\n  await loadCatalog(locale);\n  window.dispatchEvent(\n    new CustomEvent('interfaceLanguageChanged', { detail: { language: locale } })\n  );\n}" },
+    { type: "code", lang: "typescript", code: "// Lingui macro 使用\nimport { useLingui } from '@lingui/react/macro';\n\nfunction SlideAnnotationToolbar({ pptx }) {\n  const { t } = useLingui();\n  return (\n    <div>\n      <button>{t`Discard`}</button>\n      <button>{t`Apply`}</button>\n    </div>\n  );\n}\n// 构建时提取到 PO 文件:\n// msgid \"Discard\"\n// msgstr \"\"  ← 翻译者填写" },
+    { type: "editor", code: "// 模拟语言检测瀑布逻辑\nfunction getInitialLocale(storage, cookie, browserLang) {\n  var locales = ['en','zh-TW','zh-CN','ja','ko','fr','es'];\n  function isValid(l) { return locales.indexOf(l) !== -1; }\n  if (storage && isValid(storage)) { console.log('Level 1 - localStorage:', storage); return storage; }\n  if (cookie && isValid(cookie)) { console.log('Level 2 - Cookie:', cookie); return cookie; }\n  console.log('Level 3 - Browser:', browserLang);\n  if (isValid(browserLang)) return browserLang;\n  if (browserLang.indexOf('zh') === 0) {\n    if (browserLang.indexOf('TW') >= 0 || browserLang === 'zh-HK') return 'zh-TW';\n    return 'zh-CN';\n  }\n  var prefix = browserLang.split('-')[0];\n  var match = locales.find(function(l) { return l.indexOf(prefix) === 0; });\n  return match || 'en';\n}\nconsole.log('Test 1:', getInitialLocale('ja', null, 'en-US'));\nconsole.log('Test 2:', getInitialLocale(null, null, 'zh-HK'));\nconsole.log('Test 3:', getInitialLocale(null, null, 'fr-FR'));" },
+    { type: "deepdive", heading: "Lingui Macro 的编译时魔法", content: "<p><code>t\\`Apply\\`</code> 在编译时被转换为 <code>i18n._('Apply')</code>。提取工具扫描所有 <code>t\\`...\\`</code> 生成 PO 文件。编译后优化为 .mjs 字典查找。</p><p>英文静态导入（无延迟），其他语言 <code>import()</code> 动态加载。Webpack 为每个 locale 生成独立 chunk。</p>" },
+    { type: "quiz", questions: [
+      { q: "为什么英文静态导入，其他语言动态导入？", options: ["A. 英文文件最小", "B. 英文是默认语言避免首屏白屏，其他按需加载减小 bundle", "C. 动态导入不支持英文", "D. 更安全"], answer: 1 },
+      { q: "getInitialLocale 三级检测顺序？", options: ["A. Cookie → Browser → localStorage", "B. Browser → localStorage → Cookie", "C. localStorage → Cookie → Browser", "D. Server → Cookie → Browser"], answer: 2 }
+    ]}
+  ]
+},
+{
+  id: 14, phase: 4,
+  title: "Optimistic Updates & Error Recovery",
+  shortTitle: "Error Recovery",
+  subtitle: "Token 预刷新、重试、中止与批处理管线",
+  concepts: ["Optimistic Update", "Token Pre-refresh", "401 Retry", "suppressAlert", "AbortController", "Batch Pipeline"],
+  sections: [
+    { type: "text", heading: "网络请求的防御式编程", content: "<p><code>applyAnnotations</code> 是多步骤 <span class='en'>batch pipeline</span>，使用多层防御：</p><ul><li><span class='en'>Token Pre-refresh</span>：每轮迭代前刷新 token</li><li><span class='en'>401 Retry</span>：检测到 401 后刷新 token 重试一次</li><li><code>suppressAlert</code>：防止批处理弹出多个 toast</li><li><span class='en'>AbortController</span>：支持用户取消和组件卸载</li><li>Safety-net Timeout：每张 180s + 缓冲</li></ul>" },
+    { type: "code", lang: "typescript", code: "// PptxPreview.ts — applyAnnotations (simplified)\nasync applyAnnotations(): Promise<void> {\n  if (this.isGenerating) return; // Mutex guard\n  this._disposeController = new AbortController();\n\n  const ensureFreshToken = async () => {\n    try { await useUserStore.getState().getAccessToken(); }\n    catch { /* will retry on 401 */ }\n  };\n\n  const is401 = (err) => err?.response?.status === 401;\n\n  for (let i = 0; i < annotatedEntries.length; i++) {\n    if (this._disposeController?.signal.aborted) break;\n    await ensureFreshToken();\n\n    let retries = 1;\n    while (retries >= 0) {\n      try {\n        const result = await editImage(\n          { prompt, image_paths: [...] },\n          controller.signal,\n          { suppressAlert: true }  // Silent during batch\n        );\n        break; // success\n      } catch (err) {\n        retries--;\n        if (retries < 0) failedIndices.push(slideIndex);\n        else if (is401(err)) await ensureFreshToken();\n      }\n    }\n  }\n}" },
+    { type: "editor", code: "// 模拟指数退避重试\nfunction simulateRetry(config) {\n  var max = config.maxRetries || 3;\n  var init = config.initialDelay || 1000;\n  var maxD = config.maxDelay || 10000;\n  var factor = config.backoffFactor || 2;\n  var failUntil = config.failUntil || 2;\n  for (var a = 0; a <= max; a++) {\n    if (a >= failUntil) { console.log('Attempt ' + (a+1) + ': SUCCESS'); return; }\n    console.log('Attempt ' + (a+1) + ': FAILED');\n    if (a < max) {\n      var delay = Math.min(init * Math.pow(factor, a), maxD);\n      console.log('  Wait ' + delay + 'ms');\n    }\n  }\n  console.log('All retries exhausted!');\n}\nconsole.log('=== Succeeds on attempt 3 ===');\nsimulateRetry({ failUntil: 2 });\nconsole.log('\\n=== All fail ===');\nsimulateRetry({ failUntil: 99 });" },
+    { type: "deepdive", heading: "suppressAlert 与容错设计", content: "<p>批量处理 5 张 slide 时若 slide 3 返回 500，<code>suppressAlert</code> 让错误静默，最后统一汇总。</p><p>Token 三重保护：预刷新 → Axios 拦截器自动附 token → 401 检测重试。</p>" },
+    { type: "quiz", questions: [
+      { q: "suppressAlert: true 的作用？", options: ["A. 加速请求", "B. 让错误静默，避免批处理中弹多个 toast", "C. 禁用 Sentry", "D. 跳过认证"], answer: 1 },
+      { q: "为什么循环中每次调用 ensureFreshToken？", options: ["A. Axios 不自动添加 token", "B. 批处理可能跑数分钟，token 可能过期", "C. 每张 slide 需不同 token", "D. 清除缓存"], answer: 1 }
+    ]}
+  ]
+},
+{
+  id: 15, phase: 4,
+  title: "Undo/Redo Implementation",
+  shortTitle: "Undo/Redo",
+  subtitle: "快照栈模式与不可变状态",
+  concepts: ["Undo/Redo", "Snapshot Stack", "Command Pattern", "Immutable State", "structuredClone"],
+  sections: [
+    { type: "text", heading: "两种 Undo/Redo 设计模式", content: "<p><span class='en'>Command Pattern</span>：记录每个操作的正向和逆向命令。内存效率高但实现复杂。</p><p><span class='en'>Snapshot Stack</span>：每次修改前保存整个状态快照。实现极简但内存占用高。</p><p>NanoSlide 选择<strong>快照栈</strong>：标注数据量小，且 renumber 联动使 Command 逆操作极复杂。</p>" },
+    { type: "code", lang: "typescript", code: "// PptxPreview.ts — Snapshot undo/redo\naddAnnotation(slideIndex, annotation) {\n  // 1. 保存快照\n  this.annotationUndoStack = [\n    ...this.annotationUndoStack,\n    { ...this.slideAnnotations }\n  ];\n  // 2. 清空 redo\n  this.annotationRedoStack = [];\n  // 3. 不可变更新\n  this.slideAnnotations = {\n    ...this.slideAnnotations,\n    [slideIndex]: { annotations: [...state.annotations, numbered] },\n  };\n}\n\nundoAnnotation() {\n  if (this.annotationUndoStack.length === 0) return;\n  const prev = this.annotationUndoStack[this.annotationUndoStack.length - 1];\n  this.annotationRedoStack = [...this.annotationRedoStack, this.slideAnnotations];\n  this.annotationUndoStack = this.annotationUndoStack.slice(0, -1);\n  this.slideAnnotations = prev;\n}\n\nredoAnnotation() {\n  if (this.annotationRedoStack.length === 0) return;\n  const next = this.annotationRedoStack[this.annotationRedoStack.length - 1];\n  this.annotationUndoStack = [...this.annotationUndoStack, this.slideAnnotations];\n  this.annotationRedoStack = this.annotationRedoStack.slice(0, -1);\n  this.slideAnnotations = next;\n}" },
+    { type: "code", lang: "typescript", code: "// Session cache 使用 structuredClone 深拷贝\nsaveToSessionCache(): void {\n  setCacheEntry(cacheKey, {\n    slides: this.slides.map(s => ({ ...s })),\n    slideAnnotations: structuredClone(this.slideAnnotations),\n    annotationUndoStack: structuredClone(this.annotationUndoStack),\n    annotationRedoStack: structuredClone(this.annotationRedoStack),\n    _pageSessionToken: getPageSessionToken(),\n  });\n}\n// Undo 快照用浅拷贝（immutable update 保证安全）\n// Session cache 用深拷贝（实例可能被 dispose）" },
+    { type: "editor", code: "// 模拟 snapshot-based undo/redo\nvar state = { items: ['A', 'B'] };\nvar undoStack = [], redoStack = [];\nfunction snapshot() { return { items: state.items.slice() }; }\nfunction addItem(item) {\n  undoStack.push(snapshot());\n  redoStack = [];\n  state = { items: state.items.concat([item]) };\n  console.log('Add \"' + item + '\" →', JSON.stringify(state.items));\n}\nfunction undo() {\n  if (!undoStack.length) { console.log('Nothing to undo'); return; }\n  redoStack.push(snapshot());\n  state = undoStack.pop();\n  console.log('Undo →', JSON.stringify(state.items));\n}\nfunction redo() {\n  if (!redoStack.length) { console.log('Nothing to redo'); return; }\n  undoStack.push(snapshot());\n  state = redoStack.pop();\n  console.log('Redo →', JSON.stringify(state.items));\n}\nconsole.log('Initial:', JSON.stringify(state.items));\naddItem('C'); addItem('D'); addItem('E');\nconsole.log('\\n--- Undo twice ---');\nundo(); undo();\nconsole.log('\\n--- Redo once ---');\nredo();\nconsole.log('\\n--- New action clears redo ---');\naddItem('F');\nredo();\nconsole.log('\\nFinal:', JSON.stringify(state.items));" },
+    { type: "deepdive", heading: "Snapshot Stack vs Command Pattern 工程权衡", content: "<p><strong>Snapshot</strong>：3 行代码实现（push/pop/assign），天然正确。<strong>Command</strong>：每种操作需 execute/undo 配对，renumber 联动极其复杂。</p><p><strong>Structural Sharing</strong>：浅拷贝 <code>{ ...slideAnnotations }</code> 中未修改的 slide 共享同一引用，大幅节省内存。</p><p><strong>Session cache 用 structuredClone</strong>：因为原实例可能被 dispose，深拷贝确保独立。</p>" },
+    { type: "quiz", questions: [
+      { q: "选择 Snapshot Stack 的主要原因？", options: ["A. 更节省内存", "B. 标注数据小且 renumber 联动使 Command 逆操作极复杂", "C. Command 不支持 TS", "D. 运行速度更快"], answer: 1 },
+      { q: "浅拷贝快照为什么不会导致 undo 数据错误？", options: ["A. 每次修改都创建新内部对象（immutable update），旧引用不变", "B. spread 自动深拷贝", "C. TypeScript 防止修改", "D. 浏览器自动冻结"], answer: 0 }
+    ]}
+  ]
+}
+];
+
+// ===== APP STATE =====
+const STATE_KEY = 'nanoslide-learning-hub';
+let state = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+if (!state.completed) state.completed = {};
+if (!state.quizAnswers) state.quizAnswers = {};
+if (!state.activeTopic) state.activeTopic = 0;
+
+function saveState() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
+
+// ===== RENDER SIDEBAR =====
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  const phases = [
+    { num: 1, label: 'Phase 1: 基础必备 / Fundamentals' },
+    { num: 2, label: 'Phase 2: 文件处理 / File Processing' },
+    { num: 3, label: 'Phase 3: Canvas 动效 / Canvas Animation' },
+    { num: 4, label: 'Phase 4: 架构与模式 / Architecture' }
+  ];
+  let html = '';
+  phases.forEach(phase => {
+    const items = TOPICS.filter(t => t.phase === phase.num);
+    html += `<div class="phase-group">
+      <div class="phase-title" data-phase="${phase.num}" onclick="togglePhase(this)">
+        <span class="arrow">&#9662;</span> ${phase.label}
+      </div>
+      <div class="phase-items" id="phase-${phase.num}">
+        ${items.map(t => `
+          <div class="nav-item" data-phase="${t.phase}" data-id="${t.id}" onclick="goToTopic(${t.id})">
+            <span class="check ${state.completed[t.id] ? 'done' : ''}" id="check-${t.id}">${state.completed[t.id] ? '&#10003;' : ''}</span>
+            <span class="topic-num">${t.id + 1}.</span>
+            <span>${t.shortTitle}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  });
+  nav.innerHTML = html;
+  updateProgress();
+}
+
+function togglePhase(el) {
+  const phase = el.dataset.phase;
+  const items = document.getElementById('phase-' + phase);
+  el.classList.toggle('collapsed');
+  items.classList.toggle('collapsed');
+}
+
+// ===== RENDER TOPICS =====
+function renderTopics() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = TOPICS.map(t => `
+    <div class="topic-page" id="topic-${t.id}" data-id="${t.id}">
+      <span class="topic-phase-badge" data-phase="${t.phase}">Phase ${t.phase}</span>
+      <h2 class="topic-title">${t.title}</h2>
+      <p class="topic-subtitle">${t.subtitle}</p>
+      <div class="concept-map">${t.concepts.map(c => `<span class="concept-tag">${c}</span>`).join('')}</div>
+      ${t.sections.map(s => renderSection(s, t.id)).join('')}
+      <div class="topic-footer">
+        <button class="mark-complete ${state.completed[t.id] ? 'done' : ''}" id="markBtn-${t.id}" onclick="toggleComplete(${t.id})">
+          ${state.completed[t.id] ? '&#10003; Completed' : '&#9744; Mark Complete'}
+        </button>
+        <div style="display:flex;gap:8px">
+          ${t.id > 0 ? `<button class="nav-btn" onclick="goToTopic(${t.id - 1})">&larr; Previous</button>` : ''}
+          ${t.id < TOPICS.length - 1 ? `<button class="nav-btn" onclick="goToTopic(${t.id + 1})">Next &rarr;</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSection(s, topicId) {
+  if (s.type === 'text') return `<div class="section"><h3>${s.heading}</h3>${s.content}</div>`;
+  if (s.type === 'code') return `<div class="code-block"><div class="code-header"><span class="lang">${s.lang || 'javascript'}</span><button onclick="copyCode(this)">Copy</button></div><pre><code class="language-${s.lang || 'javascript'}">${escapeHtml(s.code)}</code></pre></div>`;
+  if (s.type === 'editor') return `<div class="live-editor"><div class="editor-header"><span class="label">&#9655; Live Editor</span><div class="editor-buttons"><button class="btn-run" onclick="runCode(this)">&#9654; Run</button><button class="btn-reset" onclick="resetCode(this, ${JSON.stringify(s.code).replace(/"/g, '&quot;')})">Reset</button></div></div><textarea class="editor-textarea" spellcheck="false">${escapeHtml(s.code)}</textarea><div class="editor-output"><span class="out-label">Output:</span></div></div>`;
+  if (s.type === 'deepdive') return `<div class="deep-dive"><button class="deep-dive-toggle" onclick="toggleDeepDive(this)"><span class="icon">&#9654;</span> Deep Dive: ${s.heading}</button><div class="deep-dive-content">${s.content}</div></div>`;
+  if (s.type === 'quiz') return renderQuiz(s, topicId);
+  if (s.type === 'diagram') return `<div class="diagram"><pre>${s.content}</pre></div>`;
+  return '';
+}
+
+function renderQuiz(s, topicId) {
+  return `<div class="quiz"><h4><span class="quiz-icon">&#128300;</span> Quiz / 测验</h4>
+    ${s.questions.map((q, qi) => {
+      const qKey = `${topicId}-${qi}`;
+      return `<div class="quiz-question" data-key="${qKey}">
+        <div class="quiz-q">${qi + 1}. ${q.q}</div>
+        <div class="quiz-options">
+          ${q.options.map((o, oi) => `
+            <label class="quiz-option" onclick="selectQuizOption(this, '${qKey}', ${oi})">
+              <span class="radio"></span> ${o}
+            </label>
+          `).join('')}
+        </div>
+        <div class="quiz-feedback" id="feedback-${qKey}"></div>
+      </div>`;
+    }).join('')}
+    <button class="quiz-check-btn" onclick="checkQuiz(this, ${topicId}, ${JSON.stringify(s.questions.map(q=>q.answer)).replace(/"/g, '&quot;')})">Check Answers / 检查答案</button>
+  </div>`;
+}
+
+// ===== INTERACTIONS =====
+function goToTopic(id) {
+  state.activeTopic = id;
+  saveState();
+  document.querySelectorAll('.topic-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('topic-' + id);
+  if (page) { page.classList.add('active'); }
+  const navItem = document.querySelector(`.nav-item[data-id="${id}"]`);
+  if (navItem) { navItem.classList.add('active'); navItem.scrollIntoView({ block: 'nearest' }); }
+  document.querySelector('.main').scrollTop = 0;
+  document.querySelector('.sidebar').classList.remove('open');
+  Prism.highlightAllUnder(page);
+}
+
+function toggleComplete(id) {
+  state.completed[id] = !state.completed[id];
+  saveState();
+  const btn = document.getElementById('markBtn-' + id);
+  const check = document.getElementById('check-' + id);
+  if (state.completed[id]) {
+    btn.classList.add('done'); btn.innerHTML = '&#10003; Completed';
+    check.classList.add('done'); check.innerHTML = '&#10003;';
+  } else {
+    btn.classList.remove('done'); btn.innerHTML = '&#9744; Mark Complete';
+    check.classList.remove('done'); check.innerHTML = '';
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = Object.values(state.completed).filter(Boolean).length;
+  const pct = Math.round((done / TOPICS.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${done} / ${TOPICS.length} completed (${pct}%)`;
+}
+
+function runCode(btn) {
+  const editor = btn.closest('.live-editor');
+  const textarea = editor.querySelector('.editor-textarea');
+  const output = editor.querySelector('.editor-output');
+  const code = textarea.value;
+  let logs = [];
+  const fakeConsole = { log: (...args) => logs.push({type:'log', text:args.map(a => typeof a === 'object' ? JSON.stringify(a,null,2) : String(a)).join(' ')}), error: (...args) => logs.push({type:'error', text:args.join(' ')}), warn: (...args) => logs.push({type:'log', text:args.join(' ')}) };
+  try {
+    const fn = new Function('console', code);
+    fn(fakeConsole);
+  } catch(e) { logs.push({type:'error', text: e.message}); }
+  output.innerHTML = '<span class="out-label">Output:</span>' + logs.map(l => `<div class="${l.type === 'error' ? 'error' : 'log'}">${escapeHtml(l.text)}</div>`).join('');
+}
+
+function resetCode(btn, original) {
+  const editor = btn.closest('.live-editor');
+  editor.querySelector('.editor-textarea').value = original;
+  editor.querySelector('.editor-output').innerHTML = '<span class="out-label">Output:</span>';
+}
+
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('code').textContent;
+  navigator.clipboard.writeText(code);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 1500);
+}
+
+function toggleDeepDive(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+
+function selectQuizOption(label, qKey, optIndex) {
+  const question = label.closest('.quiz-question');
+  question.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+  label.classList.add('selected');
+  if (!state.quizAnswers[qKey]) state.quizAnswers[qKey] = {};
+  state.quizAnswers[qKey] = optIndex;
+  saveState();
+}
+
+function checkQuiz(btn, topicId, answers) {
+  answers.forEach((correct, qi) => {
+    const qKey = `${topicId}-${qi}`;
+    const question = document.querySelector(`.quiz-question[data-key="${qKey}"]`);
+    const selected = state.quizAnswers[qKey];
+    const feedback = document.getElementById('feedback-' + qKey);
+    question.querySelectorAll('.quiz-option').forEach((o, i) => {
+      o.classList.remove('correct', 'wrong');
+      if (i === correct) o.classList.add('correct');
+      else if (i === selected && selected !== correct) o.classList.add('wrong');
+    });
+    if (selected === correct) {
+      feedback.className = 'quiz-feedback show correct';
+      feedback.textContent = '&#10003; Correct! / 正确！';
+    } else if (selected !== undefined) {
+      feedback.className = 'quiz-feedback show wrong';
+      feedback.textContent = '&#10007; Incorrect / 不正确 — review the concept above.';
+    }
+  });
+}
+
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== INIT =====
+renderSidebar();
+renderTopics();
+goToTopic(state.activeTopic || 0);
+</script>
+</body>
+</html>

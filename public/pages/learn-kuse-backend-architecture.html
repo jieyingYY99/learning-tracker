@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuse 後端探險記 — 兩個 Repo 的故事</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fef9f0;--bg-warm:#fff5e6;--bg-cool:#f0f4ff;
+  --ink:#2d2a26;--ink-light:#6b6560;--ink-faint:#a09890;
+  --studio-primary:#e8644a;--studio-secondary:#f4a261;--studio-accent:#ffcf56;--studio-bg:#fff7f0;
+  --factory-primary:#4a90d9;--factory-secondary:#6ec6a0;--factory-accent:#a78bfa;--factory-bg:#f0f6ff;
+  --api-primary:#10b981;--api-secondary:#34d399;
+  --success:#22c55e;--warning:#f59e0b;--danger:#ef4444;
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+  --shadow-soft:0 4px 24px rgba(45,42,38,.08);
+  --shadow-lifted:0 8px 32px rgba(45,42,38,.12);
+  --shadow-float:0 16px 48px rgba(45,42,38,.16);
+  --font-display:'Fredoka',sans-serif;
+  --font-body:'Noto Sans TC','Fredoka',sans-serif;
+  --font-mono:'Fira Code',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font-body);color:var(--ink);background:var(--bg);
+  line-height:1.7;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 20% 20%,rgba(232,100,74,.04) 0%,transparent 50%),
+    radial-gradient(circle at 80% 80%,rgba(74,144,217,.04) 0%,transparent 50%);
+}
+
+/* === NAV === */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(254,249,240,.92);backdrop-filter:blur(16px);
+  border-bottom:2px solid rgba(45,42,38,.06);
+  padding:0 2rem;height:60px;display:flex;align-items:center;gap:1.5rem;
+  font-family:var(--font-display);
+}
+.top-nav .logo{font-weight:700;font-size:1.2rem;color:var(--studio-primary);letter-spacing:-.02em}
+.top-nav .logo span{color:var(--factory-primary)}
+.nav-links{display:flex;gap:.5rem;margin-left:auto;flex-wrap:wrap}
+.nav-links a{
+  text-decoration:none;color:var(--ink-light);font-size:.82rem;font-weight:500;
+  padding:.35rem .75rem;border-radius:20px;transition:all .2s;
+}
+.nav-links a:hover{background:var(--studio-primary);color:#fff}
+
+/* === HERO === */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5rem 2rem 3rem;position:relative;
+}
+.hero::before{
+  content:'';position:absolute;top:10%;left:5%;width:200px;height:200px;
+  background:var(--studio-accent);border-radius:50%;opacity:.15;filter:blur(80px);
+  animation:float 8s ease-in-out infinite;
+}
+.hero::after{
+  content:'';position:absolute;bottom:15%;right:8%;width:250px;height:250px;
+  background:var(--factory-accent);border-radius:50%;opacity:.12;filter:blur(80px);
+  animation:float 10s ease-in-out infinite reverse;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:#fff;border:2px dashed var(--studio-secondary);
+  padding:.4rem 1.2rem;border-radius:30px;font-size:.85rem;font-weight:500;
+  color:var(--studio-primary);margin-bottom:1.5rem;
+  animation:fadeUp .8s ease-out both;
+}
+.hero h1{
+  font-family:var(--font-display);font-size:clamp(2.5rem,6vw,4.5rem);
+  font-weight:700;line-height:1.15;margin-bottom:1rem;
+  animation:fadeUp .8s ease-out .1s both;
+}
+.hero h1 .studio{color:var(--studio-primary)}
+.hero h1 .factory{color:var(--factory-primary)}
+.hero .subtitle{
+  font-size:clamp(1rem,2.5vw,1.35rem);color:var(--ink-light);max-width:600px;
+  font-weight:400;animation:fadeUp .8s ease-out .2s both;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+.hero-buildings{
+  display:flex;gap:3rem;margin-top:3rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .8s ease-out .4s both;
+}
+.building-card{
+  width:240px;padding:2rem 1.5rem;border-radius:var(--radius);cursor:pointer;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;
+}
+.building-card::before{
+  content:'';position:absolute;inset:0;border-radius:var(--radius);
+  border:2.5px solid transparent;transition:border-color .3s;
+}
+.building-card:hover{transform:translateY(-6px) scale(1.02);box-shadow:var(--shadow-float)}
+.building-card:hover::before{border-color:currentColor}
+.building-card.studio{background:var(--studio-bg);color:var(--studio-primary)}
+.building-card.factory{background:var(--factory-bg);color:var(--factory-primary)}
+.building-icon{font-size:3rem;margin-bottom:.75rem;display:block}
+.building-card h3{font-family:var(--font-display);font-size:1.15rem;margin-bottom:.4rem}
+.building-card p{font-size:.82rem;color:var(--ink-light);line-height:1.5}
+
+.scroll-hint{
+  margin-top:3rem;color:var(--ink-faint);font-size:.85rem;
+  animation:bounce 2s ease-in-out infinite;
+}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+/* === SECTIONS === */
+.section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.section-label{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--font-display);font-size:.8rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.08em;
+  padding:.35rem 1rem;border-radius:20px;margin-bottom:1.2rem;
+}
+.section-label.studio-label{background:var(--studio-bg);color:var(--studio-primary)}
+.section-label.factory-label{background:var(--factory-bg);color:var(--factory-primary)}
+.section-label.neutral-label{background:#f3f0eb;color:var(--ink-light)}
+.section h2{
+  font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);
+  font-weight:700;line-height:1.2;margin-bottom:1rem;
+}
+.section .lead{font-size:1.1rem;color:var(--ink-light);max-width:700px;margin-bottom:2.5rem}
+
+/* === WHY TWO REPOS — STORY === */
+.story-container{
+  display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:2rem 0;
+}
+@media(max-width:768px){.story-container{grid-template-columns:1fr}}
+.story-card{
+  background:#fff;border-radius:var(--radius);padding:2rem;
+  box-shadow:var(--shadow-soft);position:relative;overflow:hidden;
+  transition:transform .3s,box-shadow .3s;
+}
+.story-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lifted)}
+.story-card .emoji-scene{
+  font-size:2.5rem;margin-bottom:1rem;display:flex;gap:.3rem;
+}
+.story-card h3{font-family:var(--font-display);font-size:1.25rem;margin-bottom:.6rem}
+.story-card p{color:var(--ink-light);font-size:.95rem}
+.story-card.studio-card{border-left:4px solid var(--studio-primary)}
+.story-card.factory-card{border-left:4px solid var(--factory-primary)}
+
+.metaphor-box{
+  background:linear-gradient(135deg,var(--studio-bg),var(--factory-bg));
+  border-radius:var(--radius);padding:2.5rem;margin:2.5rem 0;
+  border:2px dashed rgba(45,42,38,.1);position:relative;
+}
+.metaphor-box::before{
+  content:'💡';position:absolute;top:-16px;left:24px;
+  font-size:1.5rem;background:var(--bg);padding:0 .5rem;
+}
+.metaphor-box h4{font-family:var(--font-display);font-size:1.1rem;margin-bottom:.8rem;color:var(--ink)}
+.metaphor-box p{color:var(--ink-light);font-size:.95rem}
+
+/* === INTERACTIVE DIAGRAM === */
+.diagram-container{
+  background:#fff;border-radius:var(--radius);padding:2.5rem;
+  box-shadow:var(--shadow-soft);margin:2rem 0;overflow:hidden;
+}
+.diagram-svg{width:100%;max-width:900px;margin:0 auto;display:block}
+
+.flow-diagram{
+  display:flex;flex-direction:column;gap:1.5rem;align-items:center;
+}
+.flow-row{
+  display:flex;gap:1.5rem;align-items:center;justify-content:center;flex-wrap:wrap;
+}
+.flow-node{
+  padding:1rem 1.5rem;border-radius:var(--radius-sm);font-family:var(--font-display);
+  font-weight:600;font-size:.9rem;cursor:pointer;transition:all .3s;
+  position:relative;min-width:140px;text-align:center;
+  border:2px solid transparent;
+}
+.flow-node:hover{transform:scale(1.08);z-index:2}
+.flow-node.user-node{background:#fef3c7;color:#92400e;border-color:#fbbf24}
+.flow-node.studio-node{background:var(--studio-bg);color:var(--studio-primary);border-color:var(--studio-secondary)}
+.flow-node.factory-node{background:var(--factory-bg);color:var(--factory-primary);border-color:var(--factory-secondary)}
+.flow-node.k8s-node{background:#ecfdf5;color:#065f46;border-color:var(--api-secondary)}
+.flow-node.tenant-node{background:#f5f3ff;color:#5b21b6;border-color:var(--factory-accent)}
+
+.flow-arrow{
+  font-size:1.5rem;color:var(--ink-faint);
+  animation:arrowPulse 2s ease-in-out infinite;
+}
+.flow-arrow.down{transform:rotate(90deg)}
+@keyframes arrowPulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+.node-tooltip{
+  display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:.75rem 1rem;border-radius:var(--radius-xs);
+  font-size:.8rem;font-weight:400;white-space:nowrap;z-index:10;
+  font-family:var(--font-body);
+}
+.node-tooltip::before{
+  content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  border:6px solid transparent;border-bottom-color:var(--ink);border-top:0;
+}
+.flow-node:hover .node-tooltip{display:block}
+
+/* === EXPANDABLE DETAILS === */
+.detail-accordion{margin:2rem 0;display:flex;flex-direction:column;gap:.75rem}
+.accordion-item{
+  background:#fff;border-radius:var(--radius-sm);overflow:hidden;
+  box-shadow:0 2px 8px rgba(45,42,38,.05);border:1.5px solid rgba(45,42,38,.06);
+  transition:box-shadow .3s;
+}
+.accordion-item:hover{box-shadow:var(--shadow-soft)}
+.accordion-header{
+  padding:1.2rem 1.5rem;cursor:pointer;display:flex;align-items:center;gap:1rem;
+  font-family:var(--font-display);font-weight:600;font-size:1rem;
+  transition:background .2s;user-select:none;
+}
+.accordion-header:hover{background:rgba(45,42,38,.02)}
+.accordion-header .icon{font-size:1.3rem;flex-shrink:0}
+.accordion-header .chevron{
+  margin-left:auto;transition:transform .3s;font-size:.8rem;color:var(--ink-faint);
+}
+.accordion-item.open .accordion-header .chevron{transform:rotate(180deg)}
+.accordion-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;
+}
+.accordion-item.open .accordion-body{max-height:800px;padding:0 1.5rem 1.5rem}
+.accordion-body-inner{
+  padding-top:1rem;border-top:1px solid rgba(45,42,38,.06);
+  color:var(--ink-light);font-size:.92rem;line-height:1.8;
+}
+.accordion-body-inner code{
+  font-family:var(--font-mono);font-size:.82rem;
+  background:rgba(45,42,38,.06);padding:.15rem .4rem;border-radius:4px;
+}
+.accordion-body-inner ul{padding-left:1.2rem;margin:.5rem 0}
+.accordion-body-inner li{margin:.3rem 0}
+
+.tag{
+  display:inline-block;padding:.15rem .5rem;border-radius:12px;
+  font-size:.72rem;font-weight:600;font-family:var(--font-display);
+}
+.tag-go{background:#e0f2fe;color:#0369a1}
+.tag-ts{background:#dbeafe;color:#1d4ed8}
+.tag-k8s{background:#d1fae5;color:#065f46}
+.tag-next{background:#fce7f3;color:#9d174d}
+
+/* === COMPARISON TABLE === */
+.compare-table-wrap{overflow-x:auto;margin:2rem 0;border-radius:var(--radius);box-shadow:var(--shadow-soft)}
+.compare-table{width:100%;border-collapse:collapse;background:#fff;font-size:.9rem}
+.compare-table thead{background:var(--ink);color:#fff;font-family:var(--font-display)}
+.compare-table th{padding:1rem 1.2rem;text-align:left;font-weight:600;font-size:.85rem}
+.compare-table td{padding:.85rem 1.2rem;border-bottom:1px solid rgba(45,42,38,.06)}
+.compare-table tbody tr:hover{background:rgba(45,42,38,.02)}
+.compare-table .col-label{font-weight:600;color:var(--ink);font-family:var(--font-display)}
+.compare-table .studio-col{color:var(--studio-primary)}
+.compare-table .factory-col{color:var(--factory-primary)}
+
+/* === ANIMATED FLOW === */
+.animated-flow{
+  background:linear-gradient(170deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
+  border-radius:var(--radius);padding:3rem 2rem;margin:2rem 0;
+  color:#fff;position:relative;overflow:hidden;
+}
+.animated-flow h3{font-family:var(--font-display);font-size:1.3rem;margin-bottom:.5rem;text-align:center}
+.animated-flow .flow-desc{text-align:center;opacity:.6;font-size:.85rem;margin-bottom:2rem}
+
+.flow-steps{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  flex-wrap:wrap;padding:1rem 0;
+}
+.flow-step{
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  padding:1rem;border-radius:var(--radius-sm);min-width:120px;
+  background:rgba(255,255,255,.08);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);
+  transition:all .3s;cursor:pointer;position:relative;
+}
+.flow-step:hover{background:rgba(255,255,255,.15);transform:translateY(-4px)}
+.flow-step .step-num{
+  position:absolute;top:-8px;right:-8px;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--studio-primary);color:#fff;
+  font-family:var(--font-display);font-size:.7rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.flow-step .step-icon{font-size:1.8rem}
+.flow-step .step-label{font-size:.75rem;font-weight:500;text-align:center;opacity:.9}
+.flow-connector{color:rgba(255,255,255,.3);font-size:1.2rem}
+
+.flow-step.active{
+  background:rgba(232,100,74,.25);border-color:var(--studio-primary);
+  box-shadow:0 0 20px rgba(232,100,74,.3);
+}
+
+/* play button */
+.play-btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin:1.5rem auto 0;padding:.6rem 1.5rem;
+  background:var(--studio-primary);color:#fff;border:none;
+  border-radius:30px;font-family:var(--font-display);font-size:.9rem;
+  font-weight:600;cursor:pointer;transition:all .25s;
+}
+.play-btn:hover{background:var(--studio-secondary);transform:scale(1.05)}
+.play-btn:active{transform:scale(.98)}
+
+/* === QUIZ === */
+.quiz-section{
+  background:#fff;border-radius:var(--radius);padding:2.5rem;
+  box-shadow:var(--shadow-soft);margin:2rem 0;
+}
+.quiz-section h3{font-family:var(--font-display);font-size:1.3rem;margin-bottom:.3rem}
+.quiz-section .quiz-desc{color:var(--ink-light);font-size:.9rem;margin-bottom:2rem}
+.quiz-progress{
+  display:flex;gap:.4rem;margin-bottom:2rem;
+}
+.quiz-dot{
+  width:32px;height:5px;border-radius:3px;background:rgba(45,42,38,.1);
+  transition:background .3s;
+}
+.quiz-dot.done{background:var(--success)}
+.quiz-dot.current{background:var(--studio-primary)}
+
+.quiz-card{display:none}
+.quiz-card.active{display:block;animation:fadeUp .4s ease-out}
+.quiz-question{
+  font-family:var(--font-display);font-size:1.1rem;font-weight:600;
+  margin-bottom:1.5rem;line-height:1.4;
+}
+.quiz-options{display:flex;flex-direction:column;gap:.6rem}
+.quiz-option{
+  padding:1rem 1.2rem;border-radius:var(--radius-sm);
+  border:2px solid rgba(45,42,38,.08);cursor:pointer;
+  font-size:.92rem;transition:all .25s;display:flex;align-items:center;gap:.75rem;
+}
+.quiz-option:hover{border-color:var(--studio-secondary);background:var(--studio-bg)}
+.quiz-option .opt-letter{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(45,42,38,.06);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:.8rem;flex-shrink:0;
+}
+.quiz-option.correct{border-color:var(--success);background:#f0fdf4}
+.quiz-option.correct .opt-letter{background:var(--success);color:#fff}
+.quiz-option.wrong{border-color:var(--danger);background:#fef2f2}
+.quiz-option.wrong .opt-letter{background:var(--danger);color:#fff}
+.quiz-option.disabled{pointer-events:none;opacity:.7}
+
+.quiz-feedback{
+  margin-top:1.2rem;padding:1rem;border-radius:var(--radius-xs);
+  font-size:.9rem;display:none;
+}
+.quiz-feedback.show{display:block;animation:fadeUp .3s ease-out}
+.quiz-feedback.correct-fb{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.quiz-feedback.wrong-fb{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+
+.quiz-nav{display:flex;justify-content:flex-end;margin-top:1.5rem}
+.quiz-next{
+  padding:.5rem 1.2rem;background:var(--ink);color:#fff;border:none;
+  border-radius:20px;font-family:var(--font-display);font-size:.85rem;
+  font-weight:600;cursor:pointer;transition:all .2s;display:none;
+}
+.quiz-next.show{display:inline-flex}
+.quiz-next:hover{background:var(--studio-primary)}
+
+.quiz-result{
+  display:none;text-align:center;padding:2rem;
+}
+.quiz-result.show{display:block;animation:fadeUp .5s ease-out}
+.quiz-result .score-circle{
+  width:120px;height:120px;border-radius:50%;margin:0 auto 1.5rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+  border:4px solid;
+}
+.quiz-result .score-num{font-size:2.2rem;font-weight:700;line-height:1}
+.quiz-result .score-label{font-size:.75rem;font-weight:500;opacity:.7}
+.quiz-result .score-msg{font-size:1.1rem;font-weight:600;font-family:var(--font-display)}
+
+/* === CODE PEEK === */
+.code-peek{
+  background:#1e1e2e;border-radius:var(--radius-sm);padding:1.2rem 1.5rem;
+  margin:.8rem 0;overflow-x:auto;font-family:var(--font-mono);font-size:.8rem;
+  color:#cdd6f4;line-height:1.7;border:1px solid rgba(255,255,255,.06);
+}
+.code-peek .comment{color:#6c7086;font-style:italic}
+.code-peek .keyword{color:#cba6f7}
+.code-peek .string{color:#a6e3a1}
+.code-peek .func{color:#89b4fa}
+.code-peek .type{color:#f9e2af}
+
+/* === FOOTER === */
+.footer{
+  text-align:center;padding:4rem 2rem;color:var(--ink-faint);
+  font-size:.85rem;border-top:1px solid rgba(45,42,38,.06);
+}
+.footer .hearts{font-size:1.5rem;margin-bottom:.5rem}
+
+/* === RESPONSIVE === */
+@media(max-width:640px){
+  .section{padding:3rem 1.2rem}
+  .hero{padding:4rem 1.2rem 2rem}
+  .hero-buildings{gap:1.5rem}
+  .building-card{width:100%;max-width:300px}
+  .flow-steps{gap:.3rem}
+  .flow-step{min-width:80px;padding:.6rem}
+  .flow-step .step-icon{font-size:1.3rem}
+  .flow-step .step-label{font-size:.65rem}
+  .compare-table{font-size:.8rem}
+  .compare-table th,.compare-table td{padding:.6rem .8rem}
+  .nav-links{display:none}
+}
+
+/* === SCROLL REVEAL === */
+.reveal{opacity:0;transform:translateY(30px);transition:all .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* === DOODLE DECORATION === */
+.doodle{position:absolute;opacity:.06;pointer-events:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="logo">🎨 Kuse <span>Explorer</span></div>
+  <div class="nav-links">
+    <a href="#why">為什麼兩個 Repo</a>
+    <a href="#studio">創意工作室</a>
+    <a href="#factory">機器人工廠</a>
+    <a href="#flow">資料流動</a>
+    <a href="#compare">比較表</a>
+    <a href="#quiz">小測驗</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🧒 給小朋友的後端探險</div>
+  <h1>一間公司，<br><span class="studio">兩棟建築</span>的故事</h1>
+  <p class="subtitle">
+    為什麼 Kuse 的後端需要兩個 Repo？<br>
+    讓我們用「創意工作室」和「機器人工廠」的故事來理解！
+  </p>
+
+  <div class="hero-buildings">
+    <a href="#studio" class="building-card studio" style="text-decoration:none">
+      <span class="building-icon">🎨</span>
+      <h3>創意工作室</h3>
+      <p>kuse-app-v2<br>使用者進來畫畫、聊天、管理檔案的地方</p>
+    </a>
+    <a href="#factory" class="building-card factory" style="text-decoration:none">
+      <span class="building-icon">🏭</span>
+      <h3>機器人工廠</h3>
+      <p>junior-api + junior-app<br>製造和管理 AI 機器人員工的地方</p>
+    </a>
+  </div>
+
+  <div class="scroll-hint">↓ 向下滑動開始探險 ↓</div>
+</section>
+
+<!-- WHY TWO REPOS -->
+<section class="section reveal" id="why">
+  <span class="section-label neutral-label">📖 第一章</span>
+  <h2>為什麼需要「兩棟建築」？</h2>
+  <p class="lead">
+    想像你開了一間很酷的公司。你需要一個地方讓客人進來用你的產品，
+    還需要一個地方製造產品。這兩件事情完全不一樣，所以需要分開的地方！
+  </p>
+
+  <div class="story-container">
+    <div class="story-card studio-card reveal">
+      <div class="emoji-scene">🏠 🎨 🖼️ 💬</div>
+      <h3>創意工作室 = kuse-app-v2</h3>
+      <p>
+        這是客人走進來的地方！他們在這裡可以：
+        <strong>畫畫</strong>（Canvas 白板）、<strong>聊天</strong>（AI Chat）、
+        <strong>管理檔案</strong>（上傳圖片、PDF）。
+        就像一間漂亮的咖啡廳，客人在這裡享受服務。
+      </p>
+    </div>
+    <div class="story-card factory-card reveal">
+      <div class="emoji-scene">🏭 🤖 ⚙️ 📦</div>
+      <h3>機器人工廠 = junior 系列</h3>
+      <p>
+        這是在後面的工廠！客人看不到它，但它負責：
+        <strong>製造 AI 機器人</strong>（開 Kubernetes Pod）、
+        <strong>教機器人做事</strong>（性格注入）、
+        <strong>管理機器人宿舍</strong>（租戶隔離）。
+      </p>
+    </div>
+  </div>
+
+  <div class="metaphor-box reveal">
+    <h4>🍕 用披薩店來比喻</h4>
+    <p>
+      <strong>kuse-app-v2</strong> 就像披薩店的「前台」— 客人在這裡點餐、看菜單、拿披薩。
+      前台本身不會做披薩，它只是把訂單遞給廚房。<br><br>
+      <strong>junior-api</strong> 就像「廚房管理員」— 他決定用哪個烤箱（Kubernetes Pod），
+      確保每個烤箱有足夠的材料（CPU/記憶體），並且客人之間的披薩不會搞混（租戶隔離）。<br><br>
+      <strong>junior-app</strong> 就像「大廚」— 他接到訂單後，安排製作流程（Provisioning 狀態機），
+      跟廚房管理員溝通要用哪個烤箱，還負責結帳（Stripe 計費）。
+    </p>
+  </div>
+</section>
+
+<!-- KUSE-APP-V2 -->
+<section class="section reveal" id="studio">
+  <span class="section-label studio-label">🎨 第二章</span>
+  <h2>創意工作室：kuse-app-v2</h2>
+  <p class="lead">
+    這是使用者直接互動的地方。它是一個 Next.js 應用程式，
+    負責畫面顯示和簡單的後端代理工作。
+  </p>
+
+  <div class="detail-accordion">
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🔐</span>
+        <span>身份驗證（Auth）— 門口的警衛</span>
+        <span class="tag tag-ts">TypeScript</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        就像進入工作室前要刷門禁卡一樣！
+        <ul>
+          <li>使用 <strong>自訂 Token 系統</strong>（取代了以前的 Auth0）</li>
+          <li>透過 <code>HTTP-only Cookie</code> 儲存登入狀態，像是一張看不見的通行證</li>
+          <li>支援 <strong>Google OAuth</strong> — 用 Google 帳號一鍵登入</li>
+          <li>Token 有 7 天有效期，過期要重新登入</li>
+        </ul>
+        <div class="code-peek">
+<span class="comment">// 每次打 API 都會自動帶上通行證</span>
+axios.interceptors.request.use((config) => {
+  config.headers[<span class="string">'Authorization'</span>] = <span class="string">`Bearer ${token}`</span>
+  <span class="keyword">return</span> config
+})
+        </div>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">📡</span>
+        <span>API 代理（Proxy）— 前台的傳話員</span>
+        <span class="tag tag-next">Next.js</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        工作室前台不會自己做事，它把客人的需求「轉傳」給真正的後端：
+        <ul>
+          <li><code>/api/pdf</code> → 轉傳給 Browser API 生成 PDF</li>
+          <li><code>/api/screenshot</code> → 轉傳給截圖服務</li>
+          <li><code>/api/proxy-image</code> → 幫忙代理外部圖片（避免跨域問題）</li>
+          <li><code>/api/version</code> → 回報目前版本號</li>
+        </ul>
+        <strong>重點：</strong>它自己沒有資料庫！所有資料都存在真正的後端 API 上。
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🎭</span>
+        <span>V1 Gateway — 通往舊世界的秘密通道</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        V2 正在漸進式取代 V1，但有些舊功能還在 V1 上。
+        就像新餐廳開張了，但甜點還在隔壁舊餐廳做：
+        <ul>
+          <li><code>/boards/*</code>、<code>/p/*</code>、<code>/favorite</code> → 轉到 V1 後端</li>
+          <li>所有 <code>/api/*</code> 路由留在 V2 處理</li>
+          <li>根據環境（DEV/STAGING/PROD）決定轉去哪個 V1 伺服器</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🖌️</span>
+        <span>前端功能 — 客人使用的工具</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        這些是使用者直接看到和使用的東西：
+        <ul>
+          <li><strong>Canvas 白板</strong>（Konva.js）— 在上面拖拉、縮放、畫圖</li>
+          <li><strong>AI 聊天</strong>（SSE 串流）— 跟 AI 即時對話</li>
+          <li><strong>檔案管理</strong>（Uppy + DnD Kit）— 上傳、拖曳、預覽各種檔案</li>
+          <li><strong>富文本編輯</strong>（Tiptap）— 像 Notion 一樣的文字編輯器</li>
+          <li><strong>Zustand 狀態管理</strong> — 6 個專門的 Store 管理不同資料</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- JUNIOR (FACTORY) -->
+<section class="section reveal" id="factory">
+  <span class="section-label factory-label">🏭 第三章</span>
+  <h2>機器人工廠：junior-api + junior-app</h2>
+  <p class="lead">
+    這裡是真正有趣的地方！機器人工廠由兩個部門組成：
+    「基礎設施部門」（junior-api）和「營運部門」（junior-app）。
+  </p>
+
+  <!-- junior-api -->
+  <h3 style="font-family:var(--font-display);color:var(--factory-primary);margin:2rem 0 1rem;font-size:1.4rem">
+    ⚙️ 基礎設施部門：junior-api（Go 語言）
+  </h3>
+  <p style="color:var(--ink-light);margin-bottom:1.5rem">
+    這就是「廚房管理員」— 他管理所有的烤箱（Kubernetes Pods），
+    確保每個客人的機器人都有獨立的空間。
+  </p>
+
+  <div class="detail-accordion">
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">📦</span>
+        <span>每個客人都有自己的小房間（Namespace）</span>
+        <span class="tag tag-go">Go</span>
+        <span class="tag tag-k8s">K8s</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        想像一棟公寓大樓，每個租戶都有自己的房間：
+        <ul>
+          <li><strong>Namespace</strong> = 一間公寓（<code>tenant-abc123</code>）</li>
+          <li><strong>PVC</strong> = 公寓裡的衣櫃（2GB 存儲空間）</li>
+          <li><strong>Deployment</strong> = 住在裡面的機器人（2 CPU / 8GB 記憶體）</li>
+          <li><strong>Service</strong> = 公寓門牌號碼（ClusterIP）</li>
+          <li><strong>Ingress</strong> = 郵局地址（<code>abc123.claw.staging.junior.so</code>）</li>
+          <li><strong>Network Policy</strong> = 公寓的安全規則（只能從特定入口進出）</li>
+        </ul>
+        <div class="code-peek">
+<span class="comment">// Go 程式碼：為新租戶建立 Kubernetes Namespace</span>
+<span class="keyword">func</span> <span class="func">allocateTenant</span>(tenantID <span class="type">string</span>) {
+    <span class="comment">// 1. 建立 namespace</span>
+    createNamespace(<span class="string">"tenant-"</span> + tenantID)
+    <span class="comment">// 2. 建立存儲空間</span>
+    createPVC(tenantID, <span class="string">"2Gi"</span>)
+    <span class="comment">// 3. 部署 AI 機器人</span>
+    createDeployment(tenantID, image)
+    <span class="comment">// 4. 建立網路入口</span>
+    createIngress(tenantID)
+}
+        </div>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🔒</span>
+        <span>每個操作都有鎖（Per-Tenant Mutex）</span>
+        <span class="tag tag-go">Go</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        就像廁所的門一樣 — 一次只能一個人用！
+        <ul>
+          <li>每個租戶有自己的「鎖」</li>
+          <li>防止兩個請求同時修改同一個租戶的資源</li>
+          <li>失敗時自動回滾（rollback），把公寓拆掉重來</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">📋</span>
+        <span>提供的 API 端點</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        <ul>
+          <li><code>POST /api/tenants/allocate</code> — 建造新的機器人房間</li>
+          <li><code>POST /api/tenants/status</code> — 查看機器人狀態</li>
+          <li><code>POST /api/tenants/setEnv</code> — 更新機器人的設定</li>
+          <li><code>POST /api/tenants/redeploy</code> — 重啟機器人</li>
+          <li><code>POST /api/tenants/delete</code> — 拆掉房間</li>
+          <li><code>POST /api/admin/pool/status</code> — 查看整棟大樓的狀況</li>
+        </ul>
+        所有 API 都需要 <code>x-api-key</code> 才能呼叫，就像工廠的員工證。
+      </div></div>
+    </div>
+  </div>
+
+  <!-- junior-app -->
+  <h3 style="font-family:var(--font-display);color:var(--factory-accent);margin:3rem 0 1rem;font-size:1.4rem">
+    🧑‍🍳 營運部門：junior-app（Next.js + 自訂 Server）
+  </h3>
+  <p style="color:var(--ink-light);margin-bottom:1.5rem">
+    這就是「大廚」— 他知道製作流程的每一步，
+    從接單到出餐，還負責跟客人溝通和收錢。
+  </p>
+
+  <div class="detail-accordion">
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🔄</span>
+        <span>7 步驟 Provisioning 狀態機 — 製作流程</span>
+        <span class="tag tag-ts">TypeScript</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        就像做一個玩具機器人的步驟：
+        <ol>
+          <li>📋 <strong>queued</strong> — 訂單排隊中</li>
+          <li>📧 <strong>creating_google_account</strong> — 幫機器人辦 email</li>
+          <li>🏗️ <strong>creating_service</strong> — 叫 junior-api 建造房間</li>
+          <li>🎭 <strong>configuring_service</strong> — 注入機器人的「性格」</li>
+          <li>🌐 <strong>waiting_domain</strong> — 等網址準備好</li>
+          <li>💓 <strong>waiting_ready</strong> — 送出第一則訊息，確認機器人活著</li>
+          <li>✅ <strong>ready</strong> — 完成！機器人上線了！</li>
+        </ol>
+        <div class="code-peek">
+<span class="comment">// 性格注入：讓每個機器人都獨一無二！</span>
+<span class="keyword">const</span> personality = {
+  <span class="string">'IDENTITY_MD'</span>:  generateIdentity(agentName),
+  <span class="string">'SOUL_MD'</span>:      generateSoul(traits),
+  <span class="string">'DAY1_PLAN_MD'</span>: generateDay1Plan(company),
+  <span class="string">'TOOLS_MD'</span>:     generateTools(integrations),
+}
+<span class="comment">// 把性格當作環境變數注入到 Pod 裡</span>
+<span class="keyword">await</span> <span class="func">juniorApi.setEnv</span>(tenantId, personality)
+        </div>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🔌</span>
+        <span>WebSocket 代理 — 即時聊天的秘密通道</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        就像翻譯員，在客人和機器人之間傳話：
+        <ul>
+          <li>客人透過 <code>/chat</code> WebSocket 連線</li>
+          <li>server.js 驗證身份 → 解密 Gateway Token → 連到機器人的 Pod</li>
+          <li>雙向即時傳遞訊息</li>
+          <li>機器人掛了？自動觸發恢復機制（5 分鐘冷卻時間）</li>
+          <li>還支援 <code>/vnc</code> — 可以看到機器人的「螢幕」！</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">💳</span>
+        <span>Stripe 計費 — 收銀台</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        <ul>
+          <li>透過 Stripe Webhook 追蹤訂閱狀態</li>
+          <li>管理信用額度（每個用戶預設 20,000 credits）</li>
+          <li>信用不足時顯示升級提示</li>
+          <li>LiteLLM 整合 — 為每個租戶生成虛擬 API Key 追蹤用量</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="accordion-item">
+      <div class="accordion-header" onclick="toggleAccordion(this)">
+        <span class="icon">🗄️</span>
+        <span>MySQL 資料庫 — 工廠的檔案室</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="accordion-body"><div class="accordion-body-inner">
+        儲存所有重要的資料：
+        <ul>
+          <li><strong>users</strong> — 誰是客人</li>
+          <li><strong>tenant_data</strong> — 機器人的狀態、網址、加密 Token</li>
+          <li><strong>session</strong> — 登入通行證</li>
+          <li><strong>billing</strong> — 付費狀態</li>
+          <li><strong>agent_pool</strong> — 機器人的個人資料</li>
+          <li><strong>invite_code</strong> — 邀請碼</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA FLOW -->
+<section class="section reveal" id="flow">
+  <span class="section-label neutral-label">🔄 第四章</span>
+  <h2>它們怎麼交流？</h2>
+  <p class="lead">讓我們看看當一個使用者從註冊到開始使用 AI 機器人，資料是怎麼流動的。</p>
+
+  <!-- Static clickable flow -->
+  <div class="diagram-container reveal">
+    <h3 style="font-family:var(--font-display);text-align:center;margin-bottom:1.5rem">互動架構圖 <span style="font-size:.8rem;color:var(--ink-faint)">（點擊節點查看細節）</span></h3>
+    <div class="flow-diagram">
+      <div class="flow-row">
+        <div class="flow-node user-node" onclick="showDetail(this,'使用者在瀏覽器中操作，所有互動都從這裡開始')">
+          👤 使用者
+          <div class="node-tooltip">瀏覽器端，所有故事的起點</div>
+        </div>
+      </div>
+      <div class="flow-arrow down">→</div>
+      <div class="flow-row">
+        <div class="flow-node studio-node" onclick="showDetail(this,'kuse-app-v2：處理 UI 渲染、Auth、檔案預覽、API 代理')">
+          🎨 kuse-app-v2
+          <div class="node-tooltip">前端 + 薄後端代理（Next.js）</div>
+        </div>
+      </div>
+      <div class="flow-row" style="gap:2rem">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.3rem">
+          <div class="flow-arrow down">→</div>
+          <span style="font-size:.7rem;color:var(--ink-faint)">REST API</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.3rem">
+          <div class="flow-arrow down">→</div>
+          <span style="font-size:.7rem;color:var(--ink-faint)">Rewrite</span>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-node factory-node" onclick="showDetail(this,'junior-app：BFF 層，處理 Provisioning、WebSocket 代理、Stripe 計費、OAuth')">
+          🧑‍🍳 junior-app
+          <div class="node-tooltip">BFF：認證、Provisioning 狀態機、WS 代理</div>
+        </div>
+        <div class="flow-node studio-node" style="opacity:.5" onclick="showDetail(this,'V1 舊版後端，處理白板、專案等舊功能')">
+          🏚️ V1 Backend
+          <div class="node-tooltip">舊版功能（逐步遷移中）</div>
+        </div>
+      </div>
+      <div class="flow-arrow down">→</div>
+      <div class="flow-row">
+        <div class="flow-node k8s-node" onclick="showDetail(this,'junior-api：Go 服務，直接操作 Kubernetes API 管理 Pod/Namespace/Ingress')">
+          ⚙️ junior-api
+          <div class="node-tooltip">K8s 控制面板（Go + Gin）</div>
+        </div>
+      </div>
+      <div class="flow-arrow down">→</div>
+      <div class="flow-row" style="gap:1rem">
+        <div class="flow-node tenant-node" onclick="showDetail(this,'每個租戶的獨立 Pod：運行 OpenClaw + Chromium + VNC')">
+          🤖 Tenant Pod A
+          <div class="node-tooltip">獨立 K8s Pod（OpenClaw 實例）</div>
+        </div>
+        <div class="flow-node tenant-node" onclick="showDetail(this,'每個租戶的獨立 Pod：運行 OpenClaw + Chromium + VNC')">
+          🤖 Tenant Pod B
+          <div class="node-tooltip">獨立 K8s Pod（OpenClaw 實例）</div>
+        </div>
+        <div class="flow-node tenant-node" style="opacity:.5">
+          🤖 ...更多
+          <div class="node-tooltip">每個客戶一個 Pod</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animated provision flow -->
+  <div class="animated-flow reveal">
+    <h3>🎬 Provisioning 動畫流程</h3>
+    <p class="flow-desc">點擊「播放」看看一個 AI 機器人是怎麼被製造出來的</p>
+    <div class="flow-steps" id="provisionFlow">
+      <div class="flow-step" data-step="0">
+        <span class="step-num">1</span>
+        <span class="step-icon">👤</span>
+        <span class="step-label">使用者<br>註冊</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="1">
+        <span class="step-num">2</span>
+        <span class="step-icon">📝</span>
+        <span class="step-label">填寫<br>Onboarding</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="2">
+        <span class="step-num">3</span>
+        <span class="step-icon">📧</span>
+        <span class="step-label">建立<br>Google 帳號</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="3">
+        <span class="step-num">4</span>
+        <span class="step-icon">🏗️</span>
+        <span class="step-label">建造<br>K8s Pod</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="4">
+        <span class="step-num">5</span>
+        <span class="step-icon">🎭</span>
+        <span class="step-label">注入<br>性格</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="5">
+        <span class="step-num">6</span>
+        <span class="step-icon">🌐</span>
+        <span class="step-label">等待<br>網址</span>
+      </div>
+      <div class="flow-connector">→</div>
+      <div class="flow-step" data-step="6">
+        <span class="step-num">7</span>
+        <span class="step-icon">✅</span>
+        <span class="step-label">機器人<br>上線！</span>
+      </div>
+    </div>
+    <button class="play-btn" onclick="playProvision()">▶ 播放動畫</button>
+    <p id="stepDesc" style="text-align:center;margin-top:1rem;font-size:.85rem;opacity:.7;min-height:2.5em"></p>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="section reveal" id="compare">
+  <span class="section-label neutral-label">📊 第五章</span>
+  <h2>三兄弟比較表</h2>
+  <p class="lead">一張表看清楚每個 Repo 負責什麼。</p>
+
+  <div class="compare-table-wrap reveal">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>特性</th>
+          <th class="studio-col">🎨 kuse-app-v2</th>
+          <th class="factory-col">⚙️ junior-api</th>
+          <th class="factory-col">🧑‍🍳 junior-app</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-label">比喻</td>
+          <td>前台 / 門面</td>
+          <td>廚房管理員</td>
+          <td>大廚</td>
+        </tr>
+        <tr>
+          <td class="col-label">語言</td>
+          <td>TypeScript (Next.js)</td>
+          <td>Go (Gin)</td>
+          <td>TypeScript (Next.js + 自訂 Server)</td>
+        </tr>
+        <tr>
+          <td class="col-label">資料庫</td>
+          <td>❌ 沒有（純前端）</td>
+          <td>MySQL (GORM)</td>
+          <td>MySQL</td>
+        </tr>
+        <tr>
+          <td class="col-label">主要職責</td>
+          <td>UI 渲染、Auth、API 代理</td>
+          <td>K8s 資源管理</td>
+          <td>Provisioning、WS 代理、計費</td>
+        </tr>
+        <tr>
+          <td class="col-label">對外接觸</td>
+          <td>使用者直接使用</td>
+          <td>只有 junior-app 會呼叫</td>
+          <td>使用者透過瀏覽器使用</td>
+        </tr>
+        <tr>
+          <td class="col-label">API 數量</td>
+          <td>~6 個（代理為主）</td>
+          <td>~6 個（租戶管理）</td>
+          <td>~25 個（完整 CRUD）</td>
+        </tr>
+        <tr>
+          <td class="col-label">認證方式</td>
+          <td>Bearer Token（Cookie）</td>
+          <td>x-api-key Header</td>
+          <td>Google OAuth + Session</td>
+        </tr>
+        <tr>
+          <td class="col-label">部署位置</td>
+          <td>Vercel / 獨立伺服器</td>
+          <td>EKS junior-system NS</td>
+          <td>EKS junior-system NS</td>
+        </tr>
+        <tr>
+          <td class="col-label">WebSocket</td>
+          <td>❌</td>
+          <td>❌</td>
+          <td>✅（Chat + VNC 代理）</td>
+        </tr>
+        <tr>
+          <td class="col-label">與 K8s 互動</td>
+          <td>❌</td>
+          <td>✅ 直接操作</td>
+          <td>透過 junior-api</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="section reveal" id="quiz">
+  <span class="section-label neutral-label">🧠 第六章</span>
+  <h2>小測驗時間！</h2>
+  <p class="lead">來測試一下你學到了多少吧！</p>
+
+  <div class="quiz-section reveal">
+    <h3>🎯 Kuse 後端小測驗</h3>
+    <p class="quiz-desc">5 道題目，看你能拿幾分！</p>
+
+    <div class="quiz-progress" id="quizProgress"></div>
+
+    <div id="quizCards"></div>
+
+    <div class="quiz-result" id="quizResult">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-num" id="scoreNum">0</span>
+        <span class="score-label">/ 5</span>
+      </div>
+      <p class="score-msg" id="scoreMsg"></p>
+      <button class="play-btn" onclick="resetQuiz()" style="margin-top:1rem">🔄 再試一次</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="hearts">🎨 ⚙️ 🤖</div>
+  <p>Kuse 後端探險記 — 用愛和好奇心製作</p>
+  <p style="margin-top:.3rem;font-size:.75rem">Generated for self-learning · 2026-03-15</p>
+</footer>
+
+<script>
+// Accordion
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  const wasOpen = item.classList.contains('open');
+  // Close siblings
+  item.parentElement.querySelectorAll('.accordion-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Provision animation
+const stepDescs = [
+  '👤 使用者透過 Google OAuth 註冊，junior-app 建立帳號和 Session',
+  '📝 使用者填寫 Onboarding：幫機器人取名字、選擇 IM 工具、設定整合',
+  '📧 junior-app 透過 Google Workspace API 幫機器人建立 email 帳號',
+  '🏗️ junior-app 呼叫 junior-api 的 /api/tenants/allocate，建立 K8s Namespace + Pod',
+  '🎭 junior-app 產生 IDENTITY.md、SOUL.md 等性格文件，透過 setEnv 注入 Pod',
+  '🌐 等待 AWS ALB Ingress 分配域名，Pod 可以被外部訪問',
+  '✅ 透過 WebSocket 發送 Bootstrap 訊息，確認機器人活著 → 狀態設為 Ready！'
+];
+let animating = false;
+function playProvision() {
+  if (animating) return;
+  animating = true;
+  const steps = document.querySelectorAll('#provisionFlow .flow-step');
+  const desc = document.getElementById('stepDesc');
+  steps.forEach(s => s.classList.remove('active'));
+  desc.textContent = '';
+
+  let i = 0;
+  function next() {
+    if (i > 0) steps[i-1].classList.remove('active');
+    if (i >= steps.length) { animating = false; desc.textContent = '🎉 完成！機器人已經準備好為你工作了！'; return; }
+    steps[i].classList.add('active');
+    desc.textContent = stepDescs[i];
+    i++;
+    setTimeout(next, 2000);
+  }
+  next();
+}
+
+// Node detail
+function showDetail(node, text) {
+  // Pulse effect
+  node.style.transform = 'scale(1.12)';
+  setTimeout(() => node.style.transform = '', 300);
+}
+
+// Quiz
+const questions = [
+  {
+    q: 'kuse-app-v2 有自己的資料庫嗎？',
+    opts: ['有，用 PostgreSQL', '有，用 SQLite', '沒有，它把所有資料存在後端 API', '有，用 MongoDB'],
+    correct: 2,
+    explain: '正確！kuse-app-v2 是一個純前端 + 薄代理層，所有資料都存在後端的 API 服務中。'
+  },
+  {
+    q: 'junior-api 是用什麼語言寫的？',
+    opts: ['Python', 'TypeScript', 'Go', 'Rust'],
+    correct: 2,
+    explain: '沒錯！junior-api 用 Go 語言搭配 Gin 框架，直接操作 Kubernetes API。'
+  },
+  {
+    q: '每個 AI 機器人的「性格」是怎麼注入的？',
+    opts: ['寫在資料庫裡', '透過環境變數（Env Vars）注入到 Pod', '用 API 即時傳送', '硬寫在程式碼裡'],
+    correct: 1,
+    explain: '答對了！junior-app 會生成 IDENTITY.md、SOUL.md 等 Markdown 檔案，透過 setEnv API 當作環境變數注入到租戶的 Kubernetes Pod 裡。'
+  },
+  {
+    q: 'Provisioning 狀態機有幾個步驟？',
+    opts: ['3 個', '5 個', '7 個', '10 個'],
+    correct: 2,
+    explain: '正確！從 queued → creating_google_account → creating_service → configuring_service → waiting_domain → waiting_ready → ready，共 7 步。'
+  },
+  {
+    q: '如果機器人的 Pod 掛了，系統會怎麼做？',
+    opts: ['什麼都不做，等使用者回報', '自動觸發恢復機制（有 5 分鐘冷卻時間）', '直接刪除帳號', '發 email 給管理員'],
+    correct: 1,
+    explain: '沒錯！server.js 偵測到連線失敗時會自動呼叫 recoverTenant()，透過 junior-api 重新部署 Pod。每個使用者有 5 分鐘的冷卻時間防止頻繁重啟。'
+  }
+];
+
+let currentQ = 0, score = 0, answered = [];
+
+function initQuiz() {
+  const progress = document.getElementById('quizProgress');
+  const cards = document.getElementById('quizCards');
+  progress.innerHTML = questions.map((_, i) => `<div class="quiz-dot" data-i="${i}"></div>`).join('');
+  cards.innerHTML = questions.map((q, i) => `
+    <div class="quiz-card${i===0?' active':''}" data-i="${i}">
+      <div class="quiz-question">${i+1}. ${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((o, j) => `
+          <div class="quiz-option" data-q="${i}" data-o="${j}" onclick="answerQuiz(${i},${j})">
+            <span class="opt-letter">${'ABCD'[j]}</span>
+            <span>${o}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="quiz-feedback" id="fb-${i}"></div>
+      <div class="quiz-nav">
+        <button class="quiz-next" id="next-${i}" onclick="nextQuestion(${i})">${i<questions.length-1?'下一題 →':'看結果 🎉'}</button>
+      </div>
+    </div>
+  `).join('');
+  updateProgress();
+}
+
+function answerQuiz(qi, oi) {
+  if (answered[qi] !== undefined) return;
+  answered[qi] = oi;
+  const correct = questions[qi].correct;
+  const isCorrect = oi === correct;
+  if (isCorrect) score++;
+
+  const opts = document.querySelectorAll(`.quiz-option[data-q="${qi}"]`);
+  opts.forEach((o, j) => {
+    o.classList.add('disabled');
+    if (j === correct) o.classList.add('correct');
+    if (j === oi && !isCorrect) o.classList.add('wrong');
+  });
+
+  const fb = document.getElementById(`fb-${qi}`);
+  fb.textContent = isCorrect ? `✅ ${questions[qi].explain}` : `❌ 答錯了！${questions[qi].explain}`;
+  fb.className = `quiz-feedback show ${isCorrect ? 'correct-fb' : 'wrong-fb'}`;
+
+  document.getElementById(`next-${qi}`).classList.add('show');
+  updateProgress();
+}
+
+function nextQuestion(qi) {
+  document.querySelectorAll('.quiz-card').forEach(c => c.classList.remove('active'));
+  if (qi < questions.length - 1) {
+    currentQ = qi + 1;
+    document.querySelector(`.quiz-card[data-i="${currentQ}"]`).classList.add('active');
+    updateProgress();
+  } else {
+    showResult();
+  }
+}
+
+function updateProgress() {
+  document.querySelectorAll('.quiz-dot').forEach((d, i) => {
+    d.className = 'quiz-dot';
+    if (answered[i] !== undefined) d.classList.add('done');
+    else if (i === currentQ) d.classList.add('current');
+  });
+}
+
+function showResult() {
+  document.querySelectorAll('.quiz-card').forEach(c => c.classList.remove('active'));
+  const result = document.getElementById('quizResult');
+  result.classList.add('show');
+  document.getElementById('scoreNum').textContent = score;
+  const circle = document.getElementById('scoreCircle');
+  const msg = document.getElementById('scoreMsg');
+  if (score >= 4) {
+    circle.style.borderColor = 'var(--success)'; circle.style.color = 'var(--success)';
+    msg.textContent = '🎉 太厲害了！你已經是 Kuse 後端專家了！';
+  } else if (score >= 2) {
+    circle.style.borderColor = 'var(--warning)'; circle.style.color = 'var(--warning)';
+    msg.textContent = '👍 不錯！再看一遍上面的內容，你會更強的！';
+  } else {
+    circle.style.borderColor = 'var(--danger)'; circle.style.color = 'var(--danger)';
+    msg.textContent = '💪 沒關係！回去看看故事，再來挑戰一次吧！';
+  }
+}
+
+function resetQuiz() {
+  currentQ = 0; score = 0; answered = [];
+  document.getElementById('quizResult').classList.remove('show');
+  initQuiz();
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Init
+initQuiz();
+</script>
+</body>
+</html>

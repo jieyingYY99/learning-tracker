@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet Service 架構全解析 — 從入口到資料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fef9f0;--bg-warm:#fff5e6;--bg-cool:#f0f4ff;
+  --ink:#2d2a26;--ink-light:#6b6560;--ink-faint:#a09890;
+  --wallet-primary:#10b981;--wallet-secondary:#34d399;--wallet-accent:#6ee7b7;--wallet-bg:#ecfdf5;
+  --python-primary:#e8644a;--python-secondary:#f4a261;--python-accent:#ffcf56;--python-bg:#fff7f0;
+  --go-primary:#4a90d9;--go-secondary:#6ec6a0;--go-accent:#a78bfa;--go-bg:#f0f6ff;
+  --async-primary:#8b5cf6;--async-secondary:#a78bfa;
+  --success:#22c55e;--warning:#f59e0b;--danger:#ef4444;
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+  --shadow-soft:0 4px 24px rgba(45,42,38,.08);
+  --shadow-lifted:0 8px 32px rgba(45,42,38,.12);
+  --shadow-float:0 16px 48px rgba(45,42,38,.16);
+  --font-display:'Fredoka',sans-serif;
+  --font-body:'Noto Sans TC','Fredoka',sans-serif;
+  --font-mono:'Fira Code',monospace;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font-body);color:var(--ink);background:var(--bg);
+  line-height:1.7;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 20% 20%,rgba(16,185,129,.04) 0%,transparent 50%),
+    radial-gradient(circle at 80% 80%,rgba(74,144,217,.04) 0%,transparent 50%);
+}
+
+/* === NAV === */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(254,249,240,.92);backdrop-filter:blur(16px);
+  border-bottom:2px solid rgba(45,42,38,.06);
+  padding:0 2rem;height:60px;display:flex;align-items:center;gap:1.5rem;
+  font-family:var(--font-display);
+}
+.top-nav .logo{font-weight:700;font-size:1.2rem;color:var(--wallet-primary);letter-spacing:-.02em}
+.top-nav .logo span{color:var(--go-primary)}
+.nav-links{display:flex;gap:.5rem;margin-left:auto;flex-wrap:wrap}
+.nav-links a{
+  text-decoration:none;color:var(--ink-light);font-size:.82rem;font-weight:500;
+  padding:.35rem .75rem;border-radius:20px;transition:all .2s;
+}
+.nav-links a:hover,.nav-links a.active{background:var(--wallet-primary);color:#fff}
+
+/* === HERO === */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5rem 2rem 3rem;position:relative;
+}
+.hero::before{
+  content:'';position:absolute;top:10%;left:5%;width:200px;height:200px;
+  background:var(--wallet-accent);border-radius:50%;opacity:.15;filter:blur(80px);
+  animation:float 8s ease-in-out infinite;
+}
+.hero::after{
+  content:'';position:absolute;bottom:15%;right:8%;width:250px;height:250px;
+  background:var(--go-accent);border-radius:50%;opacity:.12;filter:blur(80px);
+  animation:float 10s ease-in-out infinite reverse;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-30px)}}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:#fff;border:2px dashed var(--wallet-secondary);
+  padding:.4rem 1.2rem;border-radius:30px;font-size:.85rem;font-weight:500;
+  color:var(--wallet-primary);margin-bottom:1.5rem;
+  animation:fadeUp .8s ease-out both;
+}
+.hero h1{
+  font-family:var(--font-display);font-size:clamp(2.5rem,6vw,4.5rem);
+  font-weight:700;line-height:1.15;margin-bottom:1rem;
+  animation:fadeUp .8s ease-out .1s both;
+}
+.hero h1 .green{color:var(--wallet-primary)}
+.hero h1 .blue{color:var(--go-primary)}
+.hero h1 .orange{color:var(--python-primary)}
+.hero-sub{
+  font-size:1.15rem;color:var(--ink-light);max-width:600px;
+  animation:fadeUp .8s ease-out .2s both;
+}
+.hero-stats{
+  display:flex;gap:2rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center;
+  animation:fadeUp .8s ease-out .3s both;
+}
+.hero-stat{text-align:center}
+.hero-stat .num{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--wallet-primary)}
+.hero-stat .label{font-size:.8rem;color:var(--ink-faint);margin-top:.2rem}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* === SECTIONS === */
+.section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.section-title{
+  font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.5rem);
+  font-weight:700;text-align:center;margin-bottom:.5rem;
+}
+.section-sub{text-align:center;color:var(--ink-light);margin-bottom:3rem;font-size:1rem}
+
+/* === CARDS === */
+.card{
+  background:#fff;border-radius:var(--radius);padding:2rem;
+  box-shadow:var(--shadow-soft);transition:all .3s;position:relative;overflow:hidden;
+}
+.card:hover{box-shadow:var(--shadow-lifted);transform:translateY(-2px)}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--wallet-primary),var(--go-primary));
+}
+.card.python-card::before{background:linear-gradient(90deg,var(--python-primary),var(--python-secondary))}
+.card.go-card::before{background:linear-gradient(90deg,var(--go-primary),var(--go-secondary))}
+.card.async-card::before{background:linear-gradient(90deg,var(--async-primary),var(--async-secondary))}
+
+/* === ARCHITECTURE DIAGRAM === */
+.arch-diagram{
+  display:grid;grid-template-columns:1fr;gap:1.5rem;margin:2rem 0;
+}
+.arch-layer{
+  background:#fff;border-radius:var(--radius);padding:1.5rem 2rem;
+  border-left:5px solid var(--wallet-primary);
+  box-shadow:var(--shadow-soft);position:relative;
+  cursor:pointer;transition:all .3s;
+}
+.arch-layer:hover{box-shadow:var(--shadow-lifted);transform:translateX(4px)}
+.arch-layer.layer-api{border-left-color:#e8644a}
+.arch-layer.layer-service{border-left-color:#4a90d9}
+.arch-layer.layer-repo{border-left-color:#8b5cf6}
+.arch-layer.layer-db{border-left-color:#10b981}
+.arch-layer .layer-num{
+  position:absolute;top:-10px;left:-10px;width:36px;height:36px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:.9rem;color:#fff;
+}
+.layer-api .layer-num{background:#e8644a}
+.layer-service .layer-num{background:#4a90d9}
+.layer-repo .layer-num{background:#8b5cf6}
+.layer-db .layer-num{background:#10b981}
+.arch-layer h3{font-family:var(--font-display);font-size:1.2rem;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.arch-layer .layer-path{font-family:var(--font-mono);font-size:.75rem;color:var(--ink-faint);margin-bottom:.5rem}
+.arch-layer .layer-desc{color:var(--ink-light);font-size:.9rem;line-height:1.6}
+.arch-layer .layer-detail{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+  margin-top:0;
+}
+.arch-layer.expanded .layer-detail{max-height:800px;margin-top:1rem}
+.arch-arrow{
+  text-align:center;color:var(--ink-faint);font-size:1.5rem;margin:-.5rem 0;
+  font-family:var(--font-display);
+}
+
+/* === FLOW DIAGRAMS === */
+.flow-container{
+  display:flex;flex-direction:column;gap:.8rem;
+  padding:2rem;background:#fff;border-radius:var(--radius);
+  box-shadow:var(--shadow-soft);margin:1.5rem 0;
+}
+.flow-step{
+  display:flex;align-items:flex-start;gap:1rem;padding:1rem;
+  border-radius:var(--radius-sm);transition:all .3s;cursor:pointer;
+}
+.flow-step:hover{background:var(--bg-warm)}
+.flow-step.active{background:var(--wallet-bg);border-left:3px solid var(--wallet-primary)}
+.flow-num{
+  min-width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:600;font-size:.85rem;
+  background:var(--wallet-bg);color:var(--wallet-primary);
+  flex-shrink:0;
+}
+.flow-step.active .flow-num{background:var(--wallet-primary);color:#fff}
+.flow-content h4{font-family:var(--font-display);font-size:.95rem;margin-bottom:.2rem}
+.flow-content p{font-size:.82rem;color:var(--ink-light);line-height:1.5}
+.flow-arrow{text-align:center;color:var(--ink-faint);font-size:1rem;margin-left:15px}
+
+/* === CODE BLOCKS === */
+.code-block{
+  background:#1e1e2e;color:#cdd6f4;border-radius:var(--radius-sm);
+  padding:1.2rem 1.5rem;font-family:var(--font-mono);font-size:.8rem;
+  overflow-x:auto;line-height:1.7;margin:.8rem 0;position:relative;
+}
+.code-block .lang-tag{
+  position:absolute;top:.5rem;right:.8rem;font-size:.65rem;
+  background:rgba(255,255,255,.1);padding:.15rem .5rem;border-radius:10px;
+  color:rgba(255,255,255,.5);
+}
+.code-block .comment{color:#6c7086}
+.code-block .keyword{color:#cba6f7}
+.code-block .string{color:#a6e3a1}
+.code-block .func{color:#89b4fa}
+.code-block .type{color:#f9e2af}
+.code-block .number{color:#fab387}
+
+/* === TABS === */
+.tab-group{margin:2rem 0}
+.tab-nav{display:flex;gap:.3rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{
+  padding:.6rem 1.2rem;border:none;background:transparent;
+  font-family:var(--font-display);font-size:.85rem;font-weight:500;
+  color:var(--ink-light);cursor:pointer;border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  transition:all .2s;
+}
+.tab-btn:hover{background:rgba(16,185,129,.08);color:var(--wallet-primary)}
+.tab-btn.active{background:#fff;color:var(--wallet-primary);box-shadow:var(--shadow-soft)}
+.tab-content{
+  background:#fff;border-radius:0 var(--radius) var(--radius) var(--radius);
+  padding:2rem;box-shadow:var(--shadow-soft);
+}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* === COMPARISON TABLE === */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0}
+@media(max-width:768px){.compare-grid{grid-template-columns:1fr}}
+.compare-card{
+  background:#fff;border-radius:var(--radius);padding:1.5rem;
+  box-shadow:var(--shadow-soft);
+}
+.compare-card h3{
+  font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.compare-card .tag{
+  font-size:.65rem;padding:.2rem .5rem;border-radius:12px;font-weight:600;
+}
+.tag-python{background:var(--python-bg);color:var(--python-primary)}
+.tag-go{background:var(--go-bg);color:var(--go-primary)}
+
+/* === TABLE === */
+.info-table{width:100%;border-collapse:separate;border-spacing:0;margin:1rem 0}
+.info-table th{
+  background:var(--wallet-bg);padding:.6rem 1rem;text-align:left;
+  font-family:var(--font-display);font-size:.82rem;font-weight:600;
+  color:var(--wallet-primary);border-bottom:2px solid var(--wallet-accent);
+}
+.info-table td{
+  padding:.6rem 1rem;border-bottom:1px solid rgba(0,0,0,.05);
+  font-size:.82rem;color:var(--ink);
+}
+.info-table tr:hover td{background:rgba(16,185,129,.03)}
+.info-table code{
+  font-family:var(--font-mono);font-size:.75rem;background:rgba(0,0,0,.04);
+  padding:.1rem .4rem;border-radius:4px;
+}
+
+/* === ENDPOINT LIST === */
+.endpoint{
+  display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;
+  border-radius:var(--radius-sm);margin:.4rem 0;transition:all .2s;
+  cursor:pointer;
+}
+.endpoint:hover{background:var(--bg-warm)}
+.endpoint.expanded{background:var(--wallet-bg)}
+.method-badge{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:700;
+  padding:.2rem .6rem;border-radius:6px;min-width:50px;text-align:center;
+}
+.method-get{background:#dbeafe;color:#1d4ed8}
+.method-post{background:#dcfce7;color:#166534}
+.endpoint-path{font-family:var(--font-mono);font-size:.82rem;color:var(--ink)}
+.endpoint-desc{font-size:.78rem;color:var(--ink-faint);margin-left:auto}
+.endpoint-detail{
+  display:none;padding:1rem 1rem 1rem 4.5rem;
+  font-size:.82rem;color:var(--ink-light);line-height:1.7;
+}
+.endpoint.expanded+.endpoint-detail{display:block}
+
+/* === QUIZ === */
+.quiz-box{
+  background:#fff;border-radius:var(--radius);padding:2rem;
+  box-shadow:var(--shadow-soft);margin:1.5rem 0;
+}
+.quiz-box h3{font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem}
+.quiz-option{
+  display:block;padding:.8rem 1.2rem;margin:.4rem 0;
+  border:2px solid rgba(0,0,0,.08);border-radius:var(--radius-sm);
+  cursor:pointer;transition:all .2s;font-size:.9rem;
+}
+.quiz-option:hover{border-color:var(--wallet-primary);background:var(--wallet-bg)}
+.quiz-option.correct{border-color:var(--success);background:#f0fdf4}
+.quiz-option.wrong{border-color:var(--danger);background:#fef2f2}
+.quiz-feedback{
+  margin-top:1rem;padding:1rem;border-radius:var(--radius-sm);
+  font-size:.85rem;display:none;
+}
+.quiz-feedback.show{display:block}
+.quiz-feedback.correct-fb{background:#f0fdf4;border-left:4px solid var(--success);color:#166534}
+.quiz-feedback.wrong-fb{background:#fef2f2;border-left:4px solid var(--danger);color:#991b1b}
+
+/* === INTERACTIVE DB SCHEMA === */
+.schema-visual{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;margin:1.5rem 0;
+}
+.schema-table-card{
+  background:#fff;border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow-soft);transition:all .3s;
+}
+.schema-table-card:hover{box-shadow:var(--shadow-lifted);transform:translateY(-2px)}
+.schema-header{
+  padding:.8rem 1.2rem;font-family:var(--font-display);font-weight:600;
+  color:#fff;display:flex;align-items:center;gap:.5rem;
+}
+.schema-header.credits-h{background:linear-gradient(135deg,#10b981,#34d399)}
+.schema-header.consume-h{background:linear-gradient(135deg,#e8644a,#f4a261)}
+.schema-header.token-h{background:linear-gradient(135deg,#8b5cf6,#a78bfa)}
+.schema-header.billing-h{background:linear-gradient(135deg,#4a90d9,#6ec6a0)}
+.schema-cols{padding:.5rem 0}
+.schema-col{
+  display:flex;align-items:center;gap:.6rem;padding:.35rem 1.2rem;
+  font-size:.78rem;transition:background .2s;
+}
+.schema-col:hover{background:rgba(0,0,0,.03)}
+.schema-col .col-icon{font-size:.7rem;min-width:16px}
+.schema-col .col-name{font-family:var(--font-mono);font-weight:500;color:var(--ink)}
+.schema-col .col-type{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-faint);margin-left:auto}
+
+/* === TIMELINE === */
+.timeline{position:relative;padding-left:2rem;margin:1.5rem 0}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:0;bottom:0;width:3px;
+  background:linear-gradient(to bottom,var(--wallet-primary),var(--go-primary),var(--async-primary));
+  border-radius:2px;
+}
+.timeline-item{position:relative;padding-bottom:2rem}
+.timeline-item::before{
+  content:'';position:absolute;left:-2rem;top:.35rem;width:18px;height:18px;
+  border-radius:50%;background:#fff;border:3px solid var(--wallet-primary);
+  margin-left:0;
+}
+.timeline-item:nth-child(2)::before{border-color:var(--go-primary)}
+.timeline-item:nth-child(3)::before{border-color:var(--async-primary)}
+.timeline-item:nth-child(4)::before{border-color:var(--python-primary)}
+.timeline-item h4{font-family:var(--font-display);font-size:.95rem;margin-bottom:.3rem}
+.timeline-item p{font-size:.82rem;color:var(--ink-light);line-height:1.6}
+
+/* === PILL TAGS === */
+.pill{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.2rem .7rem;border-radius:20px;font-size:.72rem;font-weight:600;
+}
+.pill-green{background:var(--wallet-bg);color:var(--wallet-primary)}
+.pill-blue{background:var(--go-bg);color:var(--go-primary)}
+.pill-orange{background:var(--python-bg);color:var(--python-primary)}
+.pill-purple{background:#f3e8ff;color:var(--async-primary)}
+
+/* === TOGGLE SECTION === */
+.toggle-section{margin:1rem 0}
+.toggle-header{
+  display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;
+  background:#fff;border-radius:var(--radius-sm);cursor:pointer;
+  box-shadow:var(--shadow-soft);transition:all .2s;
+  font-family:var(--font-display);font-weight:500;font-size:.95rem;
+}
+.toggle-header:hover{box-shadow:var(--shadow-lifted)}
+.toggle-arrow{transition:transform .3s;font-size:.8rem}
+.toggle-section.open .toggle-arrow{transform:rotate(90deg)}
+.toggle-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+  padding:0 1rem;
+}
+.toggle-section.open .toggle-body{max-height:2000px;padding:1rem}
+
+/* === PROGRESS INDICATOR === */
+.progress-bar{
+  position:fixed;top:60px;left:0;height:3px;
+  background:linear-gradient(90deg,var(--wallet-primary),var(--go-primary));
+  z-index:99;transition:width .3s;width:0%;
+}
+
+/* === FOOTER === */
+.footer{
+  text-align:center;padding:3rem 2rem;color:var(--ink-faint);font-size:.8rem;
+  border-top:1px solid rgba(0,0,0,.06);margin-top:3rem;
+}
+
+/* === RESPONSIVE === */
+@media(max-width:768px){
+  .top-nav{padding:0 1rem;height:50px}
+  .nav-links a{font-size:.72rem;padding:.3rem .5rem}
+  .section{padding:3rem 1rem}
+  .arch-layer{padding:1rem 1.2rem}
+  .compare-grid{grid-template-columns:1fr}
+  .hero-stats{gap:1rem}
+  .flow-step{padding:.6rem}
+}
+
+/* === SCROLL ANIMATION === */
+.reveal{opacity:0;transform:translateY(30px);transition:all .6s ease-out}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="top-nav">
+  <div class="logo">Wallet <span>Architecture</span></div>
+  <div class="nav-links">
+    <a href="#overview">概覽</a>
+    <a href="#entry">入口</a>
+    <a href="#layers">四層架構</a>
+    <a href="#endpoints">API 端點</a>
+    <a href="#flow">資料流</a>
+    <a href="#schema">資料庫</a>
+    <a href="#compare">Python vs Go</a>
+    <a href="#billing">計費邏輯</a>
+    <a href="#quiz">小測驗</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="hero-badge">💰 Kuse AI Wallet Service Deep Dive</div>
+  <h1>Wallet Service<br><span class="green">整體架構</span>全解析</h1>
+  <p class="hero-sub">
+    從 Python BFF 到 Go 微服務，從 API 入口到 Pub/Sub 異步消費——<br>
+    這裡是你理解 Kuse AI 積分系統的一站式指南。
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">2</div><div class="label">語言 / 項目</div></div>
+    <div class="hero-stat"><div class="num">4</div><div class="label">架構層級</div></div>
+    <div class="hero-stat"><div class="num">11</div><div class="label">API 端點</div></div>
+    <div class="hero-stat"><div class="num">4</div><div class="label">資料表</div></div>
+  </div>
+</header>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="section" id="overview">
+  <h2 class="section-title reveal">系統全景圖</h2>
+  <p class="section-sub reveal">兩個 Repo，一個錢包——理解它們的分工</p>
+
+  <div class="compare-grid reveal">
+    <div class="compare-card python-card">
+      <h3><span class="tag tag-python">Python</span> kuse_ai（BFF 層）</h3>
+      <ul style="font-size:.85rem;color:var(--ink-light);padding-left:1.2rem;line-height:2">
+        <li><strong>角色：</strong>Backend-For-Frontend，面向前端</li>
+        <li><strong>框架：</strong>FastAPI + Ormar ORM</li>
+        <li><strong>職責：</strong>用戶認證、路由、DTO 轉換、聚合回應</li>
+        <li><strong>錢包邏輯：</strong>轉發請求到 Go Wallet Service</li>
+        <li><strong>額外：</strong>Stripe 支付、禮品碼、每日獎勵</li>
+      </ul>
+    </div>
+    <div class="compare-card go-card">
+      <h3><span class="tag tag-go">Go</span> kuse-ai-go/wallet（核心服務）</h3>
+      <ul style="font-size:.85rem;color:var(--ink-light);padding-left:1.2rem;line-height:2">
+        <li><strong>角色：</strong>Wallet 微服務，積分帳本</li>
+        <li><strong>框架：</strong>Gin + 原生 database/sql</li>
+        <li><strong>職責：</strong>積分增減、餘額查詢、消費記錄</li>
+        <li><strong>異步：</strong>Google Cloud Pub/Sub 消費者</li>
+        <li><strong>端口：</strong><code>:8089</code>（HTTP）+ <code>:6061</code>（pprof）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:1.5rem">
+    <h3 style="font-family:var(--font-display);margin-bottom:1rem">整體請求流向</h3>
+    <div class="code-block">
+      <span class="lang-tag">FLOW</span>
+<span class="comment">┌──────────────┐</span>
+<span class="comment">│</span>  <span class="type">Web Client</span>   <span class="comment">│</span>
+<span class="comment">└──────┬───────┘</span>
+       <span class="comment">│ HTTP</span>
+<span class="comment">┌──────▼───────────────────────────────┐</span>
+<span class="comment">│</span> <span class="keyword">Python BFF</span> <span class="string">(kuse_ai)</span>                  <span class="comment">│</span>
+<span class="comment">│</span>  Auth Middleware → Credit Views        <span class="comment">│</span>
+<span class="comment">│</span>  → credits_sys service (HTTP client)   <span class="comment">│</span>
+<span class="comment">└──────┬───────────────────────────────┘</span>
+       <span class="comment">│ HTTP (wallet:8089)</span>
+<span class="comment">┌──────▼───────────────────────────────┐</span>
+<span class="comment">│</span> <span class="func">Go Wallet Service</span> <span class="string">(kuse-ai-go)</span>        <span class="comment">│</span>
+<span class="comment">│</span>  Handlers → Service → Repository      <span class="comment">│</span>
+<span class="comment">│</span>  ← MySQL (credits, consume_history)   <span class="comment">│</span>
+<span class="comment">└──────────────────────────────────────┘</span>
+       <span class="comment">│ Pub/Sub (async)</span>
+<span class="comment">┌──────▼───────────────────────────────┐</span>
+<span class="comment">│</span> <span class="keyword">KSStream Consumer</span> (Worker Pool)       <span class="comment">│</span>
+<span class="comment">│</span>  Token 計費 → FIFO 扣款 → 記錄歷史    <span class="comment">│</span>
+<span class="comment">└──────────────────────────────────────┘</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ENTRY POINT ===== -->
+<section class="section" id="entry">
+  <h2 class="section-title reveal">入口在哪？</h2>
+  <p class="section-sub reveal">兩個入口，不同角色</p>
+
+  <div class="compare-grid reveal">
+    <div class="card python-card">
+      <h3 style="font-family:var(--font-display);margin-bottom:1rem">
+        <span class="pill pill-orange">Python 入口</span>
+      </h3>
+      <div class="code-block">
+        <span class="lang-tag">Python</span>
+<span class="comment"># kuse_ai/web/api/router.py</span>
+api_router.<span class="func">include_router</span>(
+    credit_router,
+    prefix=<span class="string">"/credits"</span>,
+    tags=[<span class="string">"credits"</span>]
+)
+
+<span class="comment"># kuse_ai/web/api/credit/views.py</span>
+<span class="comment"># 所有 /api/credits/* 端點定義在此</span>
+<span class="comment"># AuthMiddleware 攔截 → 提取 user_id</span>
+<span class="comment"># 調用 credits_sys 轉發到 wallet:8089</span>
+      </div>
+      <p style="font-size:.82rem;color:var(--ink-light);margin-top:.8rem">
+        <strong>關鍵文件：</strong><br>
+        <code>web/api/credit/views.py</code>（1042 行，所有端點）<br>
+        <code>services/credits/credits_sys.py</code>（HTTP 轉發層）<br>
+        <code>web/middleware/auth_middleware.py</code>（認證）
+      </p>
+    </div>
+
+    <div class="card go-card">
+      <h3 style="font-family:var(--font-display);margin-bottom:1rem">
+        <span class="pill pill-blue">Go 入口</span>
+      </h3>
+      <div class="code-block">
+        <span class="lang-tag">Go</span>
+<span class="comment">// cmd/server/main.go</span>
+<span class="keyword">func</span> <span class="func">main</span>() {
+    cfg := config.<span class="func">LoadConfig</span>()
+    db  := storage.<span class="func">InitDB</span>(cfg)
+    srv := api.<span class="func">NewServer</span>(cfg, db)
+
+    <span class="comment">// 初始化 Pub/Sub 消費者</span>
+    ksstream.<span class="func">Init</span>(cfg, db)
+
+    <span class="comment">// HTTP 服務 :8089</span>
+    srv.<span class="func">ListenAndServe</span>()
+
+    <span class="comment">// pprof :6061</span>
+    <span class="keyword">go</span> http.<span class="func">ListenAndServe</span>(<span class="string">":6061"</span>, <span class="keyword">nil</span>)
+}
+      </div>
+      <p style="font-size:.82rem;color:var(--ink-light);margin-top:.8rem">
+        <strong>關鍵文件：</strong><br>
+        <code>cmd/server/main.go</code>（程式入口）<br>
+        <code>internal/api/server.go</code>（路由註冊）<br>
+        <code>internal/api/wallet/handlers.go</code>（處理器）<br>
+        <code>internal/service/ksstream/</code>（異步消費）
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4 LAYERS ===== -->
+<section class="section" id="layers">
+  <h2 class="section-title reveal">四層架構</h2>
+  <p class="section-sub reveal">Go Wallet Service 的 Clean Architecture</p>
+
+  <div class="arch-diagram reveal">
+    <div class="arch-layer layer-api" onclick="toggleLayer(this)">
+      <div class="layer-num">1</div>
+      <h3>API 層 — HTTP Handlers</h3>
+      <div class="layer-path">internal/api/wallet/handlers.go + billing_adapter.go</div>
+      <div class="layer-desc">
+        接收 HTTP 請求，解析 Header（X-User-ID, X-Tenant-Id），調用 Storage 層，組裝回應。
+        <span style="color:var(--ink-faint);font-size:.78rem">（點擊展開詳情）</span>
+      </div>
+      <div class="layer-detail">
+        <div class="code-block">
+          <span class="lang-tag">Go</span>
+<span class="comment">// handlers.go — GetBalance 處理器</span>
+<span class="keyword">func</span> (h *Handler) <span class="func">GetBalance</span>(c *gin.Context) {
+    userID := c.GetHeader(<span class="string">"X-User-ID"</span>)
+    tenantID := c.GetHeader(<span class="string">"X-Tenant-Id"</span>)
+
+    credits, _ := h.walletStorage.<span class="func">GetActiveCredits</span>(userID)
+    user, _ := h.userStorage.<span class="func">GetUser</span>(userID)
+
+    <span class="comment">// 按 reason_tag 聚合</span>
+    details := <span class="func">aggregateCreditDetails</span>(credits, user)
+    c.JSON(<span class="number">200</span>, GetBalanceOutput{...})
+}
+        </div>
+        <p style="font-size:.82rem;color:var(--ink-light);margin-top:.5rem">
+          <strong>職責邊界：</strong>只做請求解析和回應組裝，<strong>不含業務邏輯</strong>。
+          Billing Adapter 端點（precheck、token-usage）需要 Bearer Token 認證。
+        </p>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓ calls</div>
+
+    <div class="arch-layer layer-service" onclick="toggleLayer(this)">
+      <div class="layer-num">2</div>
+      <h3>Service 層 — 業務邏輯</h3>
+      <div class="layer-path">internal/service/ksstream/ksstream.go + handlers.go</div>
+      <div class="layer-desc">
+        KSStream 消費者：從 Pub/Sub 接收消息，計算 Token 價格，執行 FIFO 扣款。
+        <span style="color:var(--ink-faint);font-size:.78rem">（點擊展開詳情）</span>
+      </div>
+      <div class="layer-detail">
+        <div class="code-block">
+          <span class="lang-tag">Go</span>
+<span class="comment">// Token 計費公式</span>
+credits = (input_tokens × input_price
+         + output_tokens × output_price
+         + cache_read × cache_read_price
+         + cache_write × cache_write_price)
+         / <span class="number">1_000_000</span>
+         × <span class="number">1.25</span>  <span class="comment">// gross margin</span>
+         × <span class="number">904.523</span> <span class="comment">// credits per dollar (18000/19.9)</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--ink-light);margin-top:.5rem">
+          <strong>Worker Pool：</strong>GOMAXPROCS × 2 個 goroutine，按 user_id 分片防止並發衝突。<br>
+          <strong>重試策略：</strong>指數退避，最多 3 次，處理 deadlock/busy 錯誤。
+        </p>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓ uses</div>
+
+    <div class="arch-layer layer-repo" onclick="toggleLayer(this)">
+      <div class="layer-num">3</div>
+      <h3>Repository 層 — 數據存取</h3>
+      <div class="layer-path">storage/wallet/wallet.go + storage/user/user.go</div>
+      <div class="layer-desc">
+        原生 SQL 操作，4 個 DAO：Credits、ConsumeHistory、TokenDetails、BillingAdapter。
+        <span style="color:var(--ink-faint);font-size:.78rem">（點擊展開詳情）</span>
+      </div>
+      <div class="layer-detail">
+        <div class="code-block">
+          <span class="lang-tag">Go</span>
+<span class="comment">// FIFO 扣款核心邏輯 — executeConsumeCredits()</span>
+<span class="keyword">func</span> <span class="func">executeConsumeCredits</span>(tx, userID, amount) {
+    <span class="comment">// 1. SELECT ... FOR UPDATE 鎖定</span>
+    credits := tx.<span class="func">Query</span>(<span class="string">"SELECT * FROM credits
+        WHERE user_id=? AND status='active'
+        AND remaining_amount > 0
+        ORDER BY expires_at ASC
+        FOR UPDATE"</span>, userID)
+
+    <span class="comment">// 2. 依過期時間先後扣款</span>
+    remaining := amount
+    <span class="keyword">for</span> _, c := <span class="keyword">range</span> credits {
+        deduct := <span class="func">min</span>(remaining, c.RemainingAmount)
+        c.RemainingAmount -= deduct
+        remaining -= deduct
+        <span class="keyword">if</span> remaining == <span class="number">0</span> { <span class="keyword">break</span> }
+    }
+
+    <span class="comment">// 3. 寫入 consume_history</span>
+    <span class="func">insertConsumeHistory</span>(tx, userID, amount)
+}
+        </div>
+        <p style="font-size:.82rem;color:var(--ink-light);margin-top:.5rem">
+          <strong>鎖策略：</strong>悲觀鎖（FOR UPDATE）+ 樂觀鎖（WHERE remaining = expected）雙模式。
+        </p>
+      </div>
+    </div>
+
+    <div class="arch-arrow">↓ accesses</div>
+
+    <div class="arch-layer layer-db" onclick="toggleLayer(this)">
+      <div class="layer-num">4</div>
+      <h3>Data 層 — MySQL</h3>
+      <div class="layer-path">credits + consume_history + token_based_consume_details + billing_adapter_requests</div>
+      <div class="layer-desc">
+        4 張核心表，多層索引優化查詢性能。
+        <span style="color:var(--ink-faint);font-size:.78rem">（點擊展開詳情）</span>
+      </div>
+      <div class="layer-detail">
+        <table class="info-table" style="margin-top:.5rem">
+          <tr><th>表名</th><th>用途</th><th>索引數</th></tr>
+          <tr><td><code>credits</code></td><td>積分帳本（餘額 + 過期時間）</td><td>2</td></tr>
+          <tr><td><code>consume_history</code></td><td>消費記錄（含退款狀態）</td><td>8</td></tr>
+          <tr><td><code>token_based_consume_details</code></td><td>Token 消費明細（含 JSON metadata）</td><td>4</td></tr>
+          <tr><td><code>billing_adapter_requests</code></td><td>冪等性控制（防重複扣款）</td><td>UNIQUE(scope, request_id)</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== API ENDPOINTS ===== -->
+<section class="section" id="endpoints">
+  <h2 class="section-title reveal">API 端點一覽</h2>
+  <p class="section-sub reveal">Go Wallet Service（:8089）的完整 API</p>
+
+  <div class="card reveal">
+    <h3 style="font-family:var(--font-display);margin-bottom:1rem">核心錢包端點</h3>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/wallet/v1/balance</span>
+      <span class="endpoint-desc">查詢餘額</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Headers：</strong><code>X-User-ID</code>（必填）, <code>X-Tenant-Id</code>（選填）<br>
+      <strong>回應：</strong>total_amount、credit_details（按類型分組，含過期時間）<br>
+      <strong>特點：</strong>含訂閱續約/結束日期資訊
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-post">POST</span>
+      <span class="endpoint-path">/api/wallet/v1/award</span>
+      <span class="endpoint-desc">發放積分</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Payload：</strong>user_id/user_email, amount, reason, expires_at, tenant_id<br>
+      <strong>用途：</strong>管理員手動發放積分，支援設定過期時間
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-post">POST</span>
+      <span class="endpoint-path">/api/wallet/v1/revoke</span>
+      <span class="endpoint-desc">撤銷積分</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Payload：</strong>credit_ids 陣列<br>
+      <strong>用途：</strong>將指定積分標記為 revoked 狀態
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/wallet/v1/credit_history</span>
+      <span class="endpoint-desc">積分歷史</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Query：</strong>start_time, end_time, page_num, page_size<br>
+      <strong>回應：</strong>分頁的積分增加記錄
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/wallet/v1/consumption_history</span>
+      <span class="endpoint-desc">消費歷史</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Query：</strong>start_time, end_time, page_num, page_size<br>
+      <strong>回應：</strong>分頁消費記錄，含對話標題、prompt、退款狀態
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/wallet/v1/download_consumption_history</span>
+      <span class="endpoint-desc">CSV 匯出</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>回應：</strong>CSV 串流下載，支援 tenant owner 存取控制
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/wallet/v1/subscription_credits</span>
+      <span class="endpoint-desc">訂閱積分映射</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>Query：</strong>price_ids（陣列）<br>
+      <strong>回應：</strong>Stripe price ID → 對應積分數量
+    </div>
+
+    <h3 style="font-family:var(--font-display);margin:1.5rem 0 1rem">OpenClaw 計費端點 <span class="pill pill-purple">Bearer Token</span></h3>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-post">POST</span>
+      <span class="endpoint-path">/api/wallet/v1/precheck</span>
+      <span class="endpoint-desc">消費預檢</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>用途：</strong>模型執行前檢查用戶是否有足夠積分<br>
+      <strong>Payload：</strong>user_id, tenant_id, request_id, conversation_uid, execution_kind<br>
+      <strong>回應：</strong><code>{ ok, allowed, reason, total_remaining }</code>
+    </div>
+
+    <div class="endpoint" onclick="toggleEndpoint(this)">
+      <span class="method-badge method-post">POST</span>
+      <span class="endpoint-path">/api/wallet/v1/token-usage</span>
+      <span class="endpoint-desc">上報 Token 用量</span>
+    </div>
+    <div class="endpoint-detail">
+      <strong>用途：</strong>OpenClaw 回報 Token 消耗，觸發異步扣款<br>
+      <strong>Payload：</strong>user_id, token_usage (input/output/cache tokens), metadata (model, provider)<br>
+      <strong>流程：</strong>驗證冪等性 → 發布到 Pub/Sub → 異步處理
+    </div>
+  </div>
+</section>
+
+<!-- ===== DATA FLOW ===== -->
+<section class="section" id="flow">
+  <h2 class="section-title reveal">核心資料流</h2>
+  <p class="section-sub reveal">跟著一個 AI 對話請求走一遍完整鏈路</p>
+
+  <div class="tab-group reveal">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(event,'flow-balance')">查詢餘額</button>
+      <button class="tab-btn" onclick="switchTab(event,'flow-consume')">AI 消費扣款</button>
+      <button class="tab-btn" onclick="switchTab(event,'flow-award')">積分發放</button>
+      <button class="tab-btn" onclick="switchTab(event,'flow-refund')">退款</button>
+    </div>
+
+    <div class="tab-content">
+      <div class="tab-panel active" id="flow-balance">
+        <div class="flow-container" style="box-shadow:none;padding:0">
+          <div class="flow-step active">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>前端發起請求</h4>
+              <p>GET /api/credits/balancev2 → Python BFF</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>Auth Middleware 認證</h4>
+              <p>提取 JWT / Session Cookie → 解析 user_id、tenant_id</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <h4>credits_sys 轉發</h4>
+              <p>HTTP GET → wallet:8089/api/wallet/v1/balance<br>附帶 X-User-ID、X-Tenant-Id 等 Header</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-content">
+              <h4>Go Handler 查詢</h4>
+              <p>從 credits 表讀取 active 積分 → 按 reason_tag 聚合 → 計算總額</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-content">
+              <h4>回應組裝</h4>
+              <p>返回 total_amount + credit_details（每種積分的剩餘、過期時間、描述）</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="flow-consume">
+        <div class="flow-container" style="box-shadow:none;padding:0">
+          <div class="flow-step active">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>用戶發起 AI 對話</h4>
+              <p>請求到達 OpenClaw agent</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>Precheck 預檢</h4>
+              <p>POST /precheck → 檢查餘額是否足夠 → 返回 allowed: true/false</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <h4>模型推理執行</h4>
+              <p>OpenClaw → llm_proxy → Claude/GPT 等模型 → 返回結果 + token 用量</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-content">
+              <h4>上報 Token Usage</h4>
+              <p>POST /token-usage → 冪等性檢查 → 發布到 Google Cloud Pub/Sub</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-content">
+              <h4>KSStream 異步消費</h4>
+              <p>Worker 接收消息 → 計算 token 價格 → FIFO 扣款（最快過期的先扣）→ 寫入 consume_history</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="flow-award">
+        <div class="flow-container" style="box-shadow:none;padding:0">
+          <div class="flow-step active">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>管理員發放積分</h4>
+              <p>POST /api/wallet/v1/award (admin user_id in header)</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>驗證目標用戶</h4>
+              <p>通過 user_id 或 email 查找用戶是否存在</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <h4>寫入 credits 表</h4>
+              <p>新增一筆 status=active 的積分記錄，含 initial_amount、expires_at、reason_tag</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="flow-refund">
+        <div class="flow-container" style="box-shadow:none;padding:0">
+          <div class="flow-step active">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <h4>Agent 執行失敗</h4>
+              <p>外部服務偵測到 OpenClaw 執行錯誤</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <h4>觸發退款</h4>
+              <p>調用 RefundCredits(requestID) → 找到對應的 consume_history 記錄</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <h4>積分回滾</h4>
+              <p>將 consume_history.refund_status 改為 refunded → 積分返還到原帳戶</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DATABASE SCHEMA ===== -->
+<section class="section" id="schema">
+  <h2 class="section-title reveal">資料庫 Schema</h2>
+  <p class="section-sub reveal">4 張核心表，撐起整個積分系統</p>
+
+  <div class="schema-visual reveal">
+    <div class="schema-table-card">
+      <div class="schema-header credits-h">💰 credits</div>
+      <div class="schema-cols">
+        <div class="schema-col"><span class="col-icon">🔑</span><span class="col-name">id</span><span class="col-type">BIGINT PK</span></div>
+        <div class="schema-col"><span class="col-icon">👤</span><span class="col-name">user_id</span><span class="col-type">BIGINT</span></div>
+        <div class="schema-col"><span class="col-icon">🏢</span><span class="col-name">tenant_id</span><span class="col-type">BIGINT?</span></div>
+        <div class="schema-col"><span class="col-icon">📌</span><span class="col-name">status</span><span class="col-type">active|revoked|expired</span></div>
+        <div class="schema-col"><span class="col-icon">💵</span><span class="col-name">initial_amount</span><span class="col-type">INT</span></div>
+        <div class="schema-col"><span class="col-icon">💵</span><span class="col-name">remaining_amount</span><span class="col-type">INT</span></div>
+        <div class="schema-col"><span class="col-icon">🏷️</span><span class="col-name">reason_tag</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">⏰</span><span class="col-name">expires_at</span><span class="col-type">TIMESTAMP</span></div>
+        <div class="schema-col"><span class="col-icon">📅</span><span class="col-name">created_at</span><span class="col-type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+    <div class="schema-table-card">
+      <div class="schema-header consume-h">📊 consume_history</div>
+      <div class="schema-cols">
+        <div class="schema-col"><span class="col-icon">🔑</span><span class="col-name">id</span><span class="col-type">BIGINT PK</span></div>
+        <div class="schema-col"><span class="col-icon">👤</span><span class="col-name">user_id</span><span class="col-type">BIGINT</span></div>
+        <div class="schema-col"><span class="col-icon">💵</span><span class="col-name">amount</span><span class="col-type">INT</span></div>
+        <div class="schema-col"><span class="col-icon">🏷️</span><span class="col-name">reason_tag</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">💬</span><span class="col-name">conversation_uid</span><span class="col-type">VARCHAR?</span></div>
+        <div class="schema-col"><span class="col-icon">📝</span><span class="col-name">prompt</span><span class="col-type">VARCHAR(8000)</span></div>
+        <div class="schema-col"><span class="col-icon">🔖</span><span class="col-name">request_id</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">↩️</span><span class="col-name">refund_status</span><span class="col-type">none|refunded</span></div>
+        <div class="schema-col"><span class="col-icon">📅</span><span class="col-name">created_at</span><span class="col-type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+    <div class="schema-table-card">
+      <div class="schema-header token-h">🔢 token_based_consume_details</div>
+      <div class="schema-cols">
+        <div class="schema-col"><span class="col-icon">🔑</span><span class="col-name">id</span><span class="col-type">BIGINT PK</span></div>
+        <div class="schema-col"><span class="col-icon">👤</span><span class="col-name">user_id</span><span class="col-type">BIGINT</span></div>
+        <div class="schema-col"><span class="col-icon">💵</span><span class="col-name">amount</span><span class="col-type">INT</span></div>
+        <div class="schema-col"><span class="col-icon">💬</span><span class="col-name">conversation_uid</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">🔖</span><span class="col-name">request_id</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">📦</span><span class="col-name">metadata</span><span class="col-type">JSON</span></div>
+        <div class="schema-col"><span class="col-icon">📅</span><span class="col-name">created_at</span><span class="col-type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+    <div class="schema-table-card">
+      <div class="schema-header billing-h">🔒 billing_adapter_requests</div>
+      <div class="schema-cols">
+        <div class="schema-col"><span class="col-icon">🔑</span><span class="col-name">id</span><span class="col-type">BIGINT PK</span></div>
+        <div class="schema-col"><span class="col-icon">📌</span><span class="col-name">scope</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">🔖</span><span class="col-name">request_id</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">👤</span><span class="col-name">user_id</span><span class="col-type">BIGINT</span></div>
+        <div class="schema-col"><span class="col-icon">📌</span><span class="col-name">status</span><span class="col-type">pending|published|failed</span></div>
+        <div class="schema-col"><span class="col-icon">📨</span><span class="col-name">message_id</span><span class="col-type">VARCHAR</span></div>
+        <div class="schema-col"><span class="col-icon">⚠️</span><span class="col-name">last_error</span><span class="col-type">VARCHAR</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:1.5rem">
+    <h3 style="font-family:var(--font-display);margin-bottom:1rem">reason_tag 類型速查</h3>
+    <table class="info-table">
+      <tr><th>reason_tag</th><th>含義</th><th>過期規則</th></tr>
+      <tr><td><code>daily_login</code></td><td>每日登入獎勵</td><td>24 小時（午夜重置）</td></tr>
+      <tr><td><code>register</code></td><td>註冊歡迎禮</td><td>1800 積分</td></tr>
+      <tr><td><code>topup</code></td><td>Power-up 加值包</td><td>30 天</td></tr>
+      <tr><td><code>subscription:{price_id}</code></td><td>月度訂閱積分</td><td>隨訂閱週期</td></tr>
+      <tr><td><code>award_by:{admin_id}:{reason}</code></td><td>管理員手動發放</td><td>自定義</td></tr>
+      <tr><td><code>tenant:{tid}:subscription:{pid}</code></td><td>團隊訂閱積分</td><td>隨訂閱週期</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== PYTHON vs GO ===== -->
+<section class="section" id="compare">
+  <h2 class="section-title reveal">Python vs Go 對比</h2>
+  <p class="section-sub reveal">同一個 wallet 系統，兩種角色</p>
+
+  <div class="card reveal">
+    <table class="info-table">
+      <tr>
+        <th style="width:20%">維度</th>
+        <th style="width:40%"><span class="pill pill-orange">Python BFF</span></th>
+        <th style="width:40%"><span class="pill pill-blue">Go Wallet</span></th>
+      </tr>
+      <tr>
+        <td><strong>框架</strong></td>
+        <td>FastAPI + Ormar ORM</td>
+        <td>Gin + 原生 database/sql</td>
+      </tr>
+      <tr>
+        <td><strong>角色</strong></td>
+        <td>面向前端的 BFF，負責認證和聚合</td>
+        <td>核心微服務，管理積分帳本</td>
+      </tr>
+      <tr>
+        <td><strong>認證</strong></td>
+        <td>JWT / Session Cookie 驗證</td>
+        <td>信任上游 Header（X-User-ID）</td>
+      </tr>
+      <tr>
+        <td><strong>DB 操作</strong></td>
+        <td>定義 ORM Model（Ormar），但 wallet 操作轉發</td>
+        <td>直接 SQL 操作 credits/consume_history</td>
+      </tr>
+      <tr>
+        <td><strong>特有功能</strong></td>
+        <td>Stripe 支付、禮品碼、每日獎勵 Pub/Sub</td>
+        <td>Token 計費、FIFO 扣款、Pub/Sub 消費者</td>
+      </tr>
+      <tr>
+        <td><strong>通訊方式</strong></td>
+        <td>HTTP 轉發到 wallet:8089</td>
+        <td>接收 HTTP + 訂閱 Pub/Sub</td>
+      </tr>
+      <tr>
+        <td><strong>並發控制</strong></td>
+        <td>async/await（單線程事件循環）</td>
+        <td>goroutine Worker Pool + user 分片</td>
+      </tr>
+      <tr>
+        <td><strong>額外功能</strong></td>
+        <td>Pro 用戶跳過積分追蹤</td>
+        <td>pprof 性能分析、DataDog 監控</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== BILLING LOGIC ===== -->
+<section class="section" id="billing">
+  <h2 class="section-title reveal">Token 計費邏輯</h2>
+  <p class="section-sub reveal">50+ 模型，一個公式</p>
+
+  <div class="card reveal">
+    <h3 style="font-family:var(--font-display);margin-bottom:1rem">計費公式</h3>
+    <div class="code-block">
+      <span class="lang-tag">FORMULA</span>
+<span class="type">Credits</span> = (<span class="func">input_tokens</span>  × input_price_per_M
+         + <span class="func">output_tokens</span> × output_price_per_M
+         + <span class="func">cache_read</span>    × cache_read_price_per_M
+         + <span class="func">cache_write</span>   × cache_write_price_per_M)
+         ÷ <span class="number">1,000,000</span>
+         × <span class="number">1.25</span>          <span class="comment">// 毛利率 (gross margin)</span>
+         × <span class="number">904.523</span>       <span class="comment">// 積分/美元 (18000 credits ÷ $19.9)</span>
+    </div>
+
+    <h3 style="font-family:var(--font-display);margin:1.5rem 0 1rem">FIFO 扣款策略</h3>
+    <div class="timeline">
+      <div class="timeline-item">
+        <h4>最快過期的先扣</h4>
+        <p>按 <code>expires_at ASC</code> 排序，先消耗即將過期的積分。</p>
+      </div>
+      <div class="timeline-item">
+        <h4>悲觀鎖保護</h4>
+        <p><code>SELECT ... FOR UPDATE</code> 鎖定用戶所有 active 積分記錄，防止並發扣款。</p>
+      </div>
+      <div class="timeline-item">
+        <h4>逐筆扣減</h4>
+        <p>遍歷積分記錄，每筆扣到 0 後移到下一筆，直到扣完所需金額。</p>
+      </div>
+      <div class="timeline-item">
+        <h4>部分扣款</h4>
+        <p>如果餘額不足，actual_amount 可能小於 requested amount，仍然記錄消費。</p>
+      </div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);margin:1.5rem 0 1rem">冪等性保障</h3>
+    <p style="font-size:.85rem;color:var(--ink-light);line-height:1.8">
+      <code>billing_adapter_requests</code> 表通過 <code>UNIQUE(scope, request_id)</code> 確保同一筆 token-usage 不會被重複扣款。流程：
+    </p>
+    <ol style="font-size:.85rem;color:var(--ink-light);padding-left:1.5rem;line-height:2">
+      <li>收到 token-usage 請求 → 嘗試插入 billing_adapter_requests</li>
+      <li>如果已存在（重複請求）→ 直接返回成功</li>
+      <li>如果是新請求 → 標記 pending → 發布 Pub/Sub → 標記 published</li>
+      <li>失敗 → 標記 failed + last_error</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ===== QUIZ ===== -->
+<section class="section" id="quiz">
+  <h2 class="section-title reveal">學習測驗</h2>
+  <p class="section-sub reveal">檢驗你的理解程度</p>
+
+  <div class="quiz-box reveal" id="q1">
+    <h3>Q1：Go Wallet Service 的 HTTP 入口在哪個文件？</h3>
+    <div class="quiz-option" onclick="checkAnswer(this,'q1',false)">A. internal/service/ksstream/ksstream.go</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q1',true)">B. cmd/server/main.go</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q1',false)">C. storage/wallet/wallet.go</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q1',false)">D. internal/config/config.go</div>
+    <div class="quiz-feedback correct-fb" id="q1-correct">正確！cmd/server/main.go 是程式入口，負責初始化 config、DB、HTTP server 和 Pub/Sub 消費者。</div>
+    <div class="quiz-feedback wrong-fb" id="q1-wrong">再想想！Go 程式的入口通常在 cmd/ 目錄下的 main.go 文件。</div>
+  </div>
+
+  <div class="quiz-box reveal" id="q2">
+    <h3>Q2：積分扣款時，先扣哪一筆？</h3>
+    <div class="quiz-option" onclick="checkAnswer(this,'q2',false)">A. 金額最大的先扣</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q2',false)">B. 最近新增的先扣</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q2',true)">C. 最快過期的先扣（expires_at ASC）</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q2',false)">D. 隨機扣除</div>
+    <div class="quiz-feedback correct-fb" id="q2-correct">正確！FIFO 策略按 expires_at 升序排列，先消耗即將過期的積分，避免浪費。</div>
+    <div class="quiz-feedback wrong-fb" id="q2-wrong">提示：想想什麼策略最能避免積分浪費？即將過期的應該優先使用。</div>
+  </div>
+
+  <div class="quiz-box reveal" id="q3">
+    <h3>Q3：Python BFF 和 Go Wallet Service 之間怎麼通訊？</h3>
+    <div class="quiz-option" onclick="checkAnswer(this,'q3',false)">A. gRPC</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q3',true)">B. HTTP（wallet:8089）</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q3',false)">C. 共享資料庫</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q3',false)">D. Message Queue</div>
+    <div class="quiz-feedback correct-fb" id="q3-correct">正確！Python 的 credits_sys 通過 HTTP 調用 wallet:8089，透過 Header 傳遞用戶上下文。</div>
+    <div class="quiz-feedback wrong-fb" id="q3-wrong">看看 credits_sys.py 裡的 WALLET_SERVICE_URL 是什麼？</div>
+  </div>
+
+  <div class="quiz-box reveal" id="q4">
+    <h3>Q4：billing_adapter_requests 表的主要用途是？</h3>
+    <div class="quiz-option" onclick="checkAnswer(this,'q4',false)">A. 儲存用戶的計費地址</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q4',false)">B. 記錄 Stripe 支付記錄</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q4',true)">C. 冪等性控制，防止重複扣款</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q4',false)">D. 儲存計費方案配置</div>
+    <div class="quiz-feedback correct-fb" id="q4-correct">正確！UNIQUE(scope, request_id) 確保同一筆 token-usage 請求不會被重複處理。</div>
+    <div class="quiz-feedback wrong-fb" id="q4-wrong">這張表名叫 billing_adapter_"requests"——它關注的是請求的去重和狀態追蹤。</div>
+  </div>
+
+  <div class="quiz-box reveal" id="q5">
+    <h3>Q5：OpenClaw 發起 AI 模型推理前，會先調用哪個端點？</h3>
+    <div class="quiz-option" onclick="checkAnswer(this,'q5',true)">A. POST /api/wallet/v1/precheck</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q5',false)">B. GET /api/wallet/v1/balance</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q5',false)">C. POST /api/wallet/v1/token-usage</div>
+    <div class="quiz-option" onclick="checkAnswer(this,'q5',false)">D. POST /api/wallet/v1/award</div>
+    <div class="quiz-feedback correct-fb" id="q5-correct">正確！precheck 在模型執行前驗證用戶積分是否充足，token-usage 則是執行後才上報的。</div>
+    <div class="quiz-feedback wrong-fb" id="q5-wrong">提示：先檢查（precheck），再執行，最後報告用量（token-usage）。</div>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>Kuse AI Wallet Service Architecture Learning Page</p>
+  <p style="margin-top:.3rem">Generated on 2026-03-22 | Based on kuse_ai (Python) + kuse-ai-go (Go)</p>
+</footer>
+
+<script>
+// Progress bar
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const pct=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;
+  document.getElementById('progressBar').style.width=pct+'%';
+});
+
+// Scroll reveal
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// Nav active state
+const sections=document.querySelectorAll('.section');
+const navLinks=document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-200)cur=s.id});
+  navLinks.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+cur)});
+});
+
+// Toggle architecture layers
+function toggleLayer(el){el.classList.toggle('expanded')}
+
+// Toggle endpoints
+function toggleEndpoint(el){
+  document.querySelectorAll('.endpoint.expanded').forEach(e=>{if(e!==el)e.classList.remove('expanded')});
+  el.classList.toggle('expanded');
+}
+
+// Tab switching
+function switchTab(e,id){
+  const group=e.target.closest('.tab-group');
+  group.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  group.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Quiz
+function checkAnswer(el,qid,correct){
+  const box=document.getElementById(qid);
+  if(box.dataset.answered)return;
+  box.dataset.answered='true';
+  if(correct){
+    el.classList.add('correct');
+    document.getElementById(qid+'-correct').classList.add('show');
+  }else{
+    el.classList.add('wrong');
+    document.getElementById(qid+'-wrong').classList.add('show');
+    // Highlight correct one
+    box.querySelectorAll('.quiz-option').forEach((o,i)=>{
+      if(qid==='q1'&&i===1)o.classList.add('correct');
+      if(qid==='q2'&&i===2)o.classList.add('correct');
+      if(qid==='q3'&&i===1)o.classList.add('correct');
+      if(qid==='q4'&&i===2)o.classList.add('correct');
+      if(qid==='q5'&&i===0)o.classList.add('correct');
+    });
+  }
+}
+</script>
+</body>
+</html>

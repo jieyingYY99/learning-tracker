@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kuse 雙後端探險記 — Go 和 Python 的分工</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --py:#306998;--py-light:#4b8bbe;--py-glow:#ffd43b;--py-bg:#fffcf0;
+  --go:#00add8;--go-light:#5dc9e2;--go-dark:#007d9c;--go-bg:#f0faff;
+  --bg:#faf8f5;--ink:#1a1a1a;--ink-mid:#555;--ink-light:#888;--ink-faint:#bbb;
+  --cream:#f5f0e8;--warm:#fff8f0;
+  --green:#22c55e;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
+  --radius:20px;--radius-sm:12px;--radius-xs:8px;
+  --shadow:0 4px 20px rgba(0,0,0,.06);--shadow-lg:0 12px 40px rgba(0,0,0,.1);
+  --font-hero:'Bagel Fat One',cursive;
+  --font-body:'Noto Sans TC','Nunito',sans-serif;
+  --font-heading:'Nunito','Noto Sans TC',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--ink);background:var(--bg);line-height:1.75;overflow-x:hidden}
+
+/* === GRAIN OVERLAY === */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* === STICKY NAV === */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(250,248,245,.9);backdrop-filter:blur(20px);
+  border-bottom:1.5px solid rgba(0,0,0,.05);
+  padding:0 2rem;height:56px;display:flex;align-items:center;gap:1rem;
+}
+nav .brand{font-family:var(--font-heading);font-weight:900;font-size:1.05rem;letter-spacing:-.03em}
+nav .brand .py-dot{color:var(--py)}
+nav .brand .go-dot{color:var(--go)}
+.nav-pills{display:flex;gap:.35rem;margin-left:auto;flex-wrap:wrap}
+.nav-pills a{
+  text-decoration:none;font-family:var(--font-heading);font-weight:700;font-size:.72rem;
+  padding:.3rem .7rem;border-radius:20px;color:var(--ink-mid);transition:all .2s;
+  letter-spacing:.02em;text-transform:uppercase;
+}
+.nav-pills a:hover{background:var(--ink);color:#fff}
+@media(max-width:700px){.nav-pills{display:none}}
+
+/* === HERO === */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5rem 1.5rem 3rem;position:relative;overflow:hidden;
+}
+.hero-bg-blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.12;pointer-events:none}
+.hero-bg-blob.a{width:400px;height:400px;background:var(--py-glow);top:5%;left:10%;animation:drift 12s ease-in-out infinite}
+.hero-bg-blob.b{width:350px;height:350px;background:var(--go);bottom:10%;right:5%;animation:drift 15s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-20px)}}
+
+.hero-chip{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:#fff;border:2px dashed var(--ink-faint);padding:.35rem 1rem;
+  border-radius:30px;font-size:.82rem;font-weight:600;color:var(--ink-mid);margin-bottom:1.5rem;
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes pop{from{opacity:0;transform:scale(.8) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.hero h1{
+  font-family:var(--font-hero);font-size:clamp(2.2rem,7vw,5rem);
+  line-height:1.2;margin-bottom:1rem;letter-spacing:-.02em;
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1) .1s both;
+}
+.hero h1 .python-text{
+  background:linear-gradient(135deg,var(--py),var(--py-glow));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero h1 .go-text{
+  background:linear-gradient(135deg,var(--go-dark),var(--go-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero .tagline{
+  font-size:clamp(.95rem,2.5vw,1.3rem);color:var(--ink-mid);max-width:620px;
+  font-weight:400;animation:pop .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+}
+
+.hero-duo{
+  display:flex;gap:2rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center;
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1) .35s both;
+}
+.duo-card{
+  width:260px;padding:1.8rem 1.5rem;border-radius:var(--radius);
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);cursor:pointer;
+  text-decoration:none;color:inherit;position:relative;overflow:hidden;
+}
+.duo-card::after{
+  content:'';position:absolute;inset:0;border-radius:var(--radius);
+  border:2.5px solid transparent;transition:border-color .3s;
+}
+.duo-card:hover{transform:translateY(-6px) rotate(-.5deg);box-shadow:var(--shadow-lg)}
+.duo-card:hover::after{border-color:currentColor}
+.duo-card.py-card{background:var(--py-bg);color:var(--py)}
+.duo-card.go-card{background:var(--go-bg);color:var(--go-dark)}
+.duo-card .card-emoji{font-size:2.8rem;margin-bottom:.6rem;display:block}
+.duo-card h3{font-family:var(--font-heading);font-weight:900;font-size:1.1rem;margin-bottom:.35rem}
+.duo-card p{font-size:.8rem;color:var(--ink-mid);line-height:1.5}
+.duo-card .tech-tag{
+  display:inline-block;margin-top:.6rem;padding:.2rem .6rem;
+  border-radius:12px;font-family:var(--font-mono);font-size:.65rem;font-weight:600;
+}
+.py-card .tech-tag{background:rgba(48,105,152,.1);color:var(--py)}
+.go-card .tech-tag{background:rgba(0,173,216,.1);color:var(--go-dark)}
+
+.scroll-cue{
+  margin-top:3rem;color:var(--ink-faint);font-size:.8rem;
+  animation:bob 2.5s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+
+/* === SECTION FRAME === */
+.section{padding:5rem 2rem;max-width:1050px;margin:0 auto}
+.section-tag{
+  display:inline-flex;align-items:center;gap:.4rem;
+  font-family:var(--font-heading);font-weight:800;font-size:.72rem;
+  text-transform:uppercase;letter-spacing:.1em;
+  padding:.3rem .9rem;border-radius:20px;margin-bottom:1rem;
+}
+.section-tag.py-tag{background:var(--py-bg);color:var(--py)}
+.section-tag.go-tag{background:var(--go-bg);color:var(--go-dark)}
+.section-tag.neutral{background:var(--cream);color:var(--ink-mid)}
+.section h2{
+  font-family:var(--font-heading);font-weight:900;font-size:clamp(1.7rem,4vw,2.6rem);
+  line-height:1.2;margin-bottom:.8rem;letter-spacing:-.03em;
+}
+.section .lead{font-size:1.05rem;color:var(--ink-mid);max-width:680px;margin-bottom:2.5rem}
+
+/* === METAPHOR STORY === */
+.metaphor-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2rem 0}
+@media(max-width:700px){.metaphor-grid{grid-template-columns:1fr}}
+.m-card{
+  background:#fff;border-radius:var(--radius);padding:2rem;
+  box-shadow:var(--shadow);transition:transform .3s,box-shadow .3s;
+}
+.m-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.m-card.py-border{border-top:4px solid var(--py-glow)}
+.m-card.go-border{border-top:4px solid var(--go)}
+.m-card .scene{font-size:2.2rem;margin-bottom:.8rem}
+.m-card h3{font-family:var(--font-heading);font-weight:800;font-size:1.15rem;margin-bottom:.5rem}
+.m-card p{color:var(--ink-mid);font-size:.9rem}
+
+.insight-box{
+  background:linear-gradient(135deg,var(--py-bg) 0%,var(--go-bg) 100%);
+  border-radius:var(--radius);padding:2rem 2.5rem;margin:2.5rem 0;
+  border:2px dashed rgba(0,0,0,.08);position:relative;
+}
+.insight-box::before{
+  content:'🧠';position:absolute;top:-14px;left:20px;font-size:1.3rem;
+  background:var(--bg);padding:0 .4rem;
+}
+.insight-box h4{font-family:var(--font-heading);font-weight:800;margin-bottom:.6rem}
+.insight-box p{color:var(--ink-mid);font-size:.92rem}
+
+/* === ACCORDION === */
+.acc-group{display:flex;flex-direction:column;gap:.6rem;margin:2rem 0}
+.acc{
+  background:#fff;border-radius:var(--radius-sm);overflow:hidden;
+  box-shadow:0 2px 10px rgba(0,0,0,.04);border:1.5px solid rgba(0,0,0,.05);
+  transition:box-shadow .3s;
+}
+.acc:hover{box-shadow:var(--shadow)}
+.acc-head{
+  padding:1.1rem 1.4rem;cursor:pointer;display:flex;align-items:center;gap:.8rem;
+  font-family:var(--font-heading);font-weight:700;font-size:.95rem;
+  user-select:none;transition:background .2s;
+}
+.acc-head:hover{background:rgba(0,0,0,.015)}
+.acc-head .ico{font-size:1.2rem;flex-shrink:0}
+.acc-head .arr{margin-left:auto;font-size:.7rem;color:var(--ink-faint);transition:transform .3s}
+.acc.open .acc-head .arr{transform:rotate(180deg)}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.acc.open .acc-body{max-height:1200px}
+.acc-inner{
+  padding:0 1.4rem 1.4rem;border-top:1px solid rgba(0,0,0,.05);
+  color:var(--ink-mid);font-size:.9rem;line-height:1.8;
+}
+.acc-inner ul{padding-left:1.2rem;margin:.5rem 0}
+.acc-inner li{margin:.25rem 0}
+.acc-inner code{
+  font-family:var(--font-mono);font-size:.78rem;
+  background:rgba(0,0,0,.05);padding:.15rem .4rem;border-radius:4px;
+}
+.acc-inner strong{color:var(--ink)}
+
+.code-block{
+  background:#1e1e2e;border-radius:var(--radius-xs);padding:1rem 1.3rem;
+  margin:.7rem 0;font-family:var(--font-mono);font-size:.78rem;color:#cdd6f4;
+  line-height:1.7;overflow-x:auto;border:1px solid rgba(255,255,255,.05);
+}
+.code-block .cm{color:#6c7086;font-style:italic}
+.code-block .kw{color:#cba6f7}
+.code-block .fn{color:#89b4fa}
+.code-block .st{color:#a6e3a1}
+.code-block .ty{color:#f9e2af}
+.code-block .num{color:#fab387}
+
+.tag-pill{
+  display:inline-block;padding:.12rem .5rem;border-radius:10px;
+  font-size:.68rem;font-weight:700;font-family:var(--font-heading);
+  letter-spacing:.02em;
+}
+.tag-python{background:rgba(48,105,152,.1);color:var(--py)}
+.tag-go{background:rgba(0,173,216,.1);color:var(--go-dark)}
+.tag-db{background:rgba(139,92,246,.1);color:var(--purple)}
+.tag-ai{background:rgba(34,197,94,.1);color:#16a34a}
+
+/* === INTERACTIVE DIAGRAM === */
+.diagram-wrap{
+  background:#fff;border-radius:var(--radius);padding:2.5rem;
+  box-shadow:var(--shadow);margin:2rem 0;
+}
+.diagram-wrap h3{font-family:var(--font-heading);font-weight:800;text-align:center;margin-bottom:.3rem}
+.diagram-wrap .hint{text-align:center;color:var(--ink-faint);font-size:.8rem;margin-bottom:2rem}
+
+.arch-flow{display:flex;flex-direction:column;gap:1.2rem;align-items:center}
+.arch-row{display:flex;gap:1.2rem;align-items:center;justify-content:center;flex-wrap:wrap}
+.arch-node{
+  padding:.9rem 1.3rem;border-radius:var(--radius-sm);
+  font-family:var(--font-heading);font-weight:700;font-size:.85rem;
+  cursor:pointer;transition:all .25s;position:relative;text-align:center;
+  min-width:130px;border:2px solid transparent;
+}
+.arch-node:hover{transform:scale(1.07);z-index:2}
+.arch-node.user{background:#fef3c7;color:#92400e;border-color:#fbbf24}
+.arch-node.fe{background:#fce7f3;color:#9d174d;border-color:#f9a8d4}
+.arch-node.py{background:var(--py-bg);color:var(--py);border-color:var(--py-glow)}
+.arch-node.go{background:var(--go-bg);color:var(--go-dark);border-color:var(--go-light)}
+.arch-node.db{background:#f5f3ff;color:#6d28d9;border-color:#c4b5fd}
+.arch-node.ext{background:#f0fdf4;color:#166534;border-color:#86efac}
+
+.arch-arrow{font-size:1.3rem;color:var(--ink-faint);line-height:1}
+.arch-arrow.down{display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.arch-arrow.down::after{content:'↓';font-size:1.1rem}
+.arch-label{font-size:.65rem;color:var(--ink-light);font-family:var(--font-mono)}
+
+.tooltip{
+  display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+  background:var(--ink);color:#fff;padding:.6rem .9rem;border-radius:var(--radius-xs);
+  font-size:.75rem;font-weight:400;white-space:nowrap;z-index:20;
+  font-family:var(--font-body);max-width:280px;white-space:normal;text-align:left;
+}
+.tooltip::after{
+  content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:var(--ink);
+}
+.arch-node:hover .tooltip{display:block}
+
+/* === COMPARISON TABLE === */
+.table-wrap{overflow-x:auto;margin:2rem 0;border-radius:var(--radius);box-shadow:var(--shadow)}
+table.compare{width:100%;border-collapse:collapse;background:#fff;font-size:.88rem}
+table.compare thead{background:var(--ink);color:#fff;font-family:var(--font-heading)}
+table.compare th{padding:.9rem 1.1rem;text-align:left;font-weight:800;font-size:.8rem;letter-spacing:.03em;text-transform:uppercase}
+table.compare td{padding:.75rem 1.1rem;border-bottom:1px solid rgba(0,0,0,.05)}
+table.compare tbody tr:hover{background:rgba(0,0,0,.015)}
+table.compare .label{font-weight:700;color:var(--ink);font-family:var(--font-heading)}
+.col-py{color:var(--py)}
+.col-go{color:var(--go-dark)}
+
+/* === ANIMATED FLOW === */
+.dark-flow{
+  background:linear-gradient(160deg,#0f172a 0%,#1e293b 100%);
+  border-radius:var(--radius);padding:2.5rem 2rem;margin:2rem 0;color:#fff;overflow:hidden;
+}
+.dark-flow h3{font-family:var(--font-heading);font-weight:800;font-size:1.2rem;text-align:center}
+.dark-flow .sub{text-align:center;opacity:.5;font-size:.82rem;margin-bottom:2rem}
+.timeline{display:flex;flex-direction:column;gap:.6rem;max-width:600px;margin:0 auto}
+.tl-item{
+  display:flex;align-items:flex-start;gap:1rem;padding:.8rem 1rem;
+  border-radius:var(--radius-xs);background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);transition:all .4s;
+  opacity:.3;transform:translateX(-20px);
+}
+.tl-item.active{opacity:1;transform:translateX(0);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}
+.tl-item .tl-num{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-heading);font-weight:900;font-size:.75rem;
+  background:rgba(255,255,255,.1);transition:background .3s,color .3s;
+}
+.tl-item.active .tl-num{background:var(--py-glow);color:var(--ink)}
+.tl-item.active.go-step .tl-num{background:var(--go)}
+.tl-item .tl-text{font-size:.82rem;line-height:1.5}
+.tl-item .tl-text strong{color:#fff}
+.tl-item .tl-who{
+  display:inline-block;padding:.1rem .4rem;border-radius:6px;
+  font-family:var(--font-mono);font-size:.65rem;font-weight:600;margin-left:.3rem;
+}
+.tl-who.py-who{background:rgba(255,212,59,.2);color:var(--py-glow)}
+.tl-who.go-who{background:rgba(0,173,216,.2);color:var(--go-light)}
+.tl-who.fe-who{background:rgba(249,168,212,.2);color:#f9a8d4}
+
+.play-btn{
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin:1.5rem auto 0;padding:.55rem 1.5rem;
+  background:#fff;color:var(--ink);border:none;border-radius:30px;
+  font-family:var(--font-heading);font-size:.85rem;font-weight:800;
+  cursor:pointer;transition:all .2s;
+}
+.play-btn:hover{background:var(--py-glow);transform:scale(1.05)}
+.play-btn:active{transform:scale(.97)}
+
+/* === TABS === */
+.tab-bar{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.tab-btn{
+  padding:.5rem 1.2rem;border:2px solid rgba(0,0,0,.08);border-radius:30px;
+  font-family:var(--font-heading);font-weight:700;font-size:.82rem;
+  cursor:pointer;background:#fff;color:var(--ink-mid);transition:all .2s;
+}
+.tab-btn:hover{border-color:var(--ink-faint)}
+.tab-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* === QUIZ === */
+.quiz-box{
+  background:#fff;border-radius:var(--radius);padding:2.5rem;
+  box-shadow:var(--shadow);margin:2rem 0;
+}
+.quiz-box h3{font-family:var(--font-heading);font-weight:900;font-size:1.3rem;margin-bottom:.3rem}
+.quiz-box .quiz-sub{color:var(--ink-mid);font-size:.88rem;margin-bottom:2rem}
+.q-progress{display:flex;gap:.35rem;margin-bottom:1.8rem}
+.q-dot{width:36px;height:5px;border-radius:3px;background:rgba(0,0,0,.08);transition:background .3s}
+.q-dot.done{background:var(--green)}
+.q-dot.now{background:var(--py)}
+.q-card{display:none}
+.q-card.active{display:block;animation:fadeIn .35s ease}
+.q-card .question{font-family:var(--font-heading);font-weight:800;font-size:1.05rem;margin-bottom:1.3rem;line-height:1.4}
+.q-opts{display:flex;flex-direction:column;gap:.5rem}
+.q-opt{
+  padding:.9rem 1.1rem;border-radius:var(--radius-xs);border:2px solid rgba(0,0,0,.07);
+  cursor:pointer;font-size:.9rem;transition:all .2s;display:flex;align-items:center;gap:.7rem;
+}
+.q-opt:hover{border-color:var(--py-light);background:var(--py-bg)}
+.q-opt .letter{
+  width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.05);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-heading);font-weight:900;font-size:.75rem;flex-shrink:0;
+}
+.q-opt.correct{border-color:var(--green);background:#f0fdf4}
+.q-opt.correct .letter{background:var(--green);color:#fff}
+.q-opt.wrong{border-color:var(--red);background:#fef2f2}
+.q-opt.wrong .letter{background:var(--red);color:#fff}
+.q-opt.locked{pointer-events:none;opacity:.6}
+.q-fb{margin-top:1rem;padding:.9rem;border-radius:var(--radius-xs);font-size:.88rem;display:none}
+.q-fb.show{display:block;animation:fadeIn .3s ease}
+.q-fb.ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.q-fb.no{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+.q-next{
+  display:none;margin-top:1.2rem;float:right;
+  padding:.45rem 1.1rem;background:var(--ink);color:#fff;border:none;
+  border-radius:20px;font-family:var(--font-heading);font-size:.82rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.q-next.show{display:inline-block}
+.q-next:hover{background:var(--py)}
+.q-result{display:none;text-align:center;padding:2rem}
+.q-result.show{display:block;animation:fadeIn .5s ease}
+.q-result .circle{
+  width:110px;height:110px;border-radius:50%;margin:0 auto 1.2rem;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--font-heading);border:4px solid;
+}
+.q-result .big{font-size:2rem;font-weight:900;line-height:1}
+.q-result .sm{font-size:.7rem;font-weight:600;opacity:.6}
+.q-result .msg{font-family:var(--font-heading);font-weight:800;font-size:1.05rem}
+
+/* === SCROLL REVEAL === */
+.reveal{opacity:0;transform:translateY(28px);transition:all .65s cubic-bezier(.16,1,.3,1)}
+.reveal.vis{opacity:1;transform:translateY(0)}
+
+/* === FOOTER === */
+footer{
+  text-align:center;padding:3.5rem 2rem;color:var(--ink-faint);font-size:.82rem;
+  border-top:1px solid rgba(0,0,0,.05);
+}
+
+@media(max-width:640px){
+  .section{padding:3rem 1.2rem}
+  .hero{padding:4rem 1.2rem 2rem}
+  .hero-duo{gap:1rem}
+  .duo-card{width:100%;max-width:280px}
+  .arch-node{min-width:100px;padding:.7rem .9rem;font-size:.78rem}
+  table.compare{font-size:.78rem}
+  table.compare th,table.compare td{padding:.55rem .7rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span class="py-dot">kuse_ai</span> × <span class="go-dot">kuse-ai-go</span></div>
+  <div class="nav-pills">
+    <a href="#why">為什麼分開</a>
+    <a href="#python">Python 後端</a>
+    <a href="#golang">Go 後端</a>
+    <a href="#arch">架構圖</a>
+    <a href="#compare">比較表</a>
+    <a href="#flow">資料流</a>
+    <a href="#quiz">測驗</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-blob a"></div>
+  <div class="hero-bg-blob b"></div>
+  <div class="hero-chip">🐍🐹 用小朋友聽得懂的方式</div>
+  <h1><span class="python-text">Python</span> 和 <span class="go-text">Go</span><br>為什麼要分家？</h1>
+  <p class="tagline">Kuse 的後端有兩個 Repo，一個用 Python 寫，一個用 Go 寫。<br>它們各自負責完全不同的事情！讓我們來看看為什麼。</p>
+  <div class="hero-duo">
+    <a href="#python" class="duo-card py-card">
+      <span class="card-emoji">🐍</span>
+      <h3>kuse_ai (Python)</h3>
+      <p>「全能大腦」— AI 智慧、畫布、檔案處理、圖片生成、付款</p>
+      <span class="tech-tag">FastAPI + MySQL + Redis</span>
+    </a>
+    <a href="#golang" class="duo-card go-card">
+      <span class="card-emoji">🐹</span>
+      <h3>kuse-ai-go (Go)</h3>
+      <p>「超級快遞員」— 檔案系統、聊天路由、Bot API、即時通訊</p>
+      <span class="tech-tag">Gin + MySQL + Redis + K8s</span>
+    </a>
+  </div>
+  <div class="scroll-cue">↓ 往下滑探索 ↓</div>
+</section>
+
+<!-- WHY -->
+<section class="section reveal" id="why">
+  <span class="section-tag neutral">📖 第一章</span>
+  <h2>為什麼要分成兩個 Repo？</h2>
+  <p class="lead">想像你經營一間超棒的餐廳。你需要一位「主廚」負責研發料理，還需要一位「外場經理」負責快速上菜和服務。這兩個角色需要的技能完全不同！</p>
+
+  <div class="metaphor-grid">
+    <div class="m-card py-border reveal">
+      <div class="scene">🧑‍🍳 🧪 🎨</div>
+      <h3>kuse_ai = 主廚（Python）</h3>
+      <p>
+        主廚負責所有需要「思考」和「創造」的事情：
+        <strong>研發新菜色</strong>（AI 對話、圖片生成）、
+        <strong>處理食材</strong>（文件解析、PDF 提取）、
+        <strong>管理菜單和收銀</strong>（帳戶系統、Stripe 付款）。
+        Python 很擅長這些「動腦筋」的工作！
+      </p>
+    </div>
+    <div class="m-card go-border reveal">
+      <div class="scene">🏃‍♂️ 📁 💬</div>
+      <h3>kuse-ai-go = 外場經理（Go）</h3>
+      <p>
+        外場經理負責所有需要「快速」和「大量處理」的事情：
+        <strong>快速送餐</strong>（檔案讀寫、FUSE 檔案系統）、
+        <strong>同時服務很多客人</strong>（Bot API、WebSocket）、
+        <strong>管理機器人員工</strong>（OpenClaw Pod）。
+        Go 語言超級快，最適合這種工作！
+      </p>
+    </div>
+  </div>
+
+  <div class="insight-box reveal">
+    <h4>為什麼不用一種語言就好？</h4>
+    <p>
+      🐍 <strong>Python</strong> 的強項是 <strong>AI/ML 生態系</strong> — LangChain、OpenAI SDK、Anthropic SDK、圖片處理（Pillow）、文件解析（PyPDF）全都有現成的 Python 套件。要做 AI 功能，Python 是最方便的選擇。<br><br>
+      🐹 <strong>Go</strong> 的強項是 <strong>高併發 + 系統級操作</strong> — 一個 Go 程式可以同時處理數萬個連線，而且直接操作 Kubernetes API、建立 FUSE 檔案系統這類底層工作，Go 比 Python 快 10-50 倍。<br><br>
+      💡 結論：讓 Python 專注做 AI 的事，讓 Go 專注做快速和底層的事，這就是「分工合作」的智慧！
+    </p>
+  </div>
+</section>
+
+<!-- PYTHON BACKEND -->
+<section class="section reveal" id="python">
+  <span class="section-tag py-tag">🐍 第二章</span>
+  <h2>kuse_ai：全能大腦（Python）</h2>
+  <p class="lead">這是 Kuse 的「大腦」— 所有需要智慧和創造力的工作都在這裡完成。它用 FastAPI 框架打造，連接了超過 10 種外部 AI 服務。</p>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab(event,'py','ai')">🤖 AI 功能</button>
+    <button class="tab-btn" onclick="switchTab(event,'py','files')">📄 檔案處理</button>
+    <button class="tab-btn" onclick="switchTab(event,'py','billing')">💳 付款計費</button>
+    <button class="tab-btn" onclick="switchTab(event,'py','board')">🎨 畫布白板</button>
+    <button class="tab-btn" onclick="switchTab(event,'py','auth')">🔐 帳戶認證</button>
+  </div>
+
+  <div class="tab-panel active" data-group="py" data-tab="ai">
+    <div class="acc-group">
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">💬</span>Magic Block 系統 — AI 魔法方塊
+          <span class="tag-pill tag-ai">AI</span><span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          這是 Kuse 最核心的功能！使用者在畫布上選一個東西，點「Magic」，AI 就會幫你做事：
+          <ul>
+            <li><strong>文字生成</strong> — 寫文案、摘要、翻譯</li>
+            <li><strong>圖片生成</strong> — 從文字描述變出圖片（DALL-E、Flux、Stable Diffusion）</li>
+            <li><strong>圖片編輯</strong> — 去背、移除物件、替換元素</li>
+            <li><strong>資料分析</strong> — 從數據生成圖表</li>
+            <li><strong>網路搜尋</strong> — 即時搜尋網路資訊</li>
+          </ul>
+          <div class="code-block">
+<span class="cm"># Python 處理 Magic Block 請求</span>
+<span class="kw">async def</span> <span class="fn">execute_magic_block</span>(request):
+    <span class="cm"># 1. 判斷要用哪種 AI</span>
+    <span class="kw">if</span> request.type == <span class="st">"text_gen"</span>:
+        result = <span class="kw">await</span> <span class="fn">gpt4.chat</span>(prompt, stream=<span class="kw">True</span>)
+    <span class="kw">elif</span> request.type == <span class="st">"image_gen"</span>:
+        result = <span class="kw">await</span> <span class="fn">flux.generate</span>(prompt, style)
+    <span class="cm"># 2. 扣除 credits</span>
+    <span class="kw">await</span> <span class="fn">deduct_credits</span>(user, cost)
+    <span class="cm"># 3. 串流回傳結果</span>
+    <span class="kw">return</span> StreamingResponse(result)
+          </div>
+        </div></div>
+      </div>
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">🧠</span>多 LLM 整合 — 語言模型軍團
+          <span class="tag-pill tag-python">Python</span><span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          Python 後端連接了所有主流的 AI 模型：
+          <ul>
+            <li><strong>GPT-4 / GPT-4o</strong>（via Azure OpenAI）— 主力文字模型</li>
+            <li><strong>Claude</strong>（Anthropic）— 進階推理</li>
+            <li><strong>Gemini</strong>（Google）— 多模態</li>
+            <li><strong>Deepseek</strong> — 開源替代方案</li>
+            <li><strong>Flux / DALL-E / Stable Diffusion</strong> — 圖片生成</li>
+            <li><strong>Azure Embedding</strong> — 語義搜尋向量化</li>
+          </ul>
+          為什麼 Python？因為 <strong>LangChain、OpenAI SDK、Anthropic SDK</strong> 這些 AI 套件在 Python 上最成熟！
+        </div></div>
+      </div>
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">🔍</span>向量搜尋 — Pinecone 語義檢索
+          <span class="tag-pill tag-ai">AI</span><span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          <ul>
+            <li>把文件和圖片描述轉成「向量」（一串數字）</li>
+            <li>存進 <strong>Pinecone</strong> 向量資料庫</li>
+            <li>搜尋時用「語義相似度」而非關鍵字比對</li>
+            <li>可以問「跟這張圖片類似的有哪些？」</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-group="py" data-tab="files">
+    <div class="acc-group">
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">📑</span>文件提取 Pipeline — 從 PDF 到純文字
+          <span class="tag-pill tag-python">Python</span><span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          Python 的文件解析能力是 Go 做不到的：
+          <ul>
+            <li><code>doc_extraction_task</code> — 通用文件提取（Unstructured API + LangChain）</li>
+            <li><code>pdf_extraction_task</code> — PDF 文字/表格提取</li>
+            <li><code>pdf_to_image_task</code> — PDF 轉圖片預覽</li>
+            <li><code>img_describing_task</code> — 用 Vision API 描述圖片內容</li>
+            <li>支援：PDF、Word、Excel、Markdown、CSV、HTML</li>
+          </ul>
+          這些都是用 ARQ 背景任務佇列非同步處理的！
+        </div></div>
+      </div>
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">🖼️</span>圖片處理 — 去背、修圖、搜圖
+          <span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          <ul>
+            <li><strong>去背</strong>（rmbg_task）— 移除圖片背景</li>
+            <li><strong>移除元素</strong>（rm_elem_task）— 用 AI 修掉不要的東西</li>
+            <li><strong>替換元素</strong>（ch_elem_task）— 把圖片裡的東西換掉</li>
+            <li><strong>圖片搜尋</strong>（image_search_task）— 搜尋網路上相似的圖片</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-group="py" data-tab="billing">
+    <div class="acc-group">
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">💰</span>Credits 系統 + Stripe 計費
+          <span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          <ul>
+            <li><strong>Credit 餘額</strong> — 免費用戶 100 credits，每天 +10</li>
+            <li><strong>Pro 訂閱</strong> — 透過 Stripe 月/年付</li>
+            <li><strong>Student 方案</strong> — 學生特惠價格</li>
+            <li><strong>Team 方案</strong> — 團隊批量訂閱</li>
+            <li><strong>禮品碼</strong> — 兌換額外 credits</li>
+            <li><strong>Webhook 處理</strong> — 自動處理 Stripe 付款事件</li>
+          </ul>
+          每次使用 AI 功能都會扣除對應的 credits，不同模型價格不同。
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-group="py" data-tab="board">
+    <div class="acc-group">
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">🎨</span>Board 白板系統
+          <span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          <ul>
+            <li><strong>Board CRUD</strong> — 建立、編輯、刪除白板</li>
+            <li><strong>權限管理</strong> — 私人 / 公開閱讀 / 公開編輯</li>
+            <li><strong>即時協作</strong> — WebSocket 同步編輯</li>
+            <li><strong>快照版本</strong> — 自動儲存歷史版本</li>
+            <li><strong>分享連結</strong> — 靜態分享 URL</li>
+            <li>Board 資料以 JSON 格式存在 MySQL 和 Redis 裡</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-group="py" data-tab="auth">
+    <div class="acc-group">
+      <div class="acc">
+        <div class="acc-head" onclick="tog(this)">
+          <span class="ico">🔐</span>帳戶與認證系統
+          <span class="arr">▼</span>
+        </div>
+        <div class="acc-body"><div class="acc-inner">
+          <ul>
+            <li><strong>Google OAuth</strong> — 一鍵登入</li>
+            <li><strong>帳密註冊</strong> — Email + 密碼</li>
+            <li><strong>JWT Token</strong> — 自訂 JWT 認證</li>
+            <li><strong>多租戶</strong> — 每個使用者可以有多個工作空間</li>
+            <li><strong>角色管理</strong> — admin / editor / viewer</li>
+            <li><strong>JWKS 端點</strong> — <code>/.well-known/jwks.json</code> 供其他服務驗證</li>
+          </ul>
+          Python 後端是「身份的唯一來源」，Go 後端信任 Python 發出的 Token。
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GO BACKEND -->
+<section class="section reveal" id="golang">
+  <span class="section-tag go-tag">🐹 第三章</span>
+  <h2>kuse-ai-go：超級快遞員（Go）</h2>
+  <p class="lead">這是 Kuse 的「行動派」— 所有需要高速處理、大量連線、底層系統操作的工作都在這裡。它是一個包含多個微服務的 Monorepo。</p>
+
+  <div class="acc-group">
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">📁</span>Folder Service — 檔案帝國的管理者
+        <span class="tag-pill tag-go">Go 主服務</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        這是 Go Repo 裡最大的服務，負責所有檔案相關的操作：
+        <ul>
+          <li><strong>檔案 CRUD</strong> — 上傳、下載、移動、複製、刪除</li>
+          <li><strong>版本管理</strong> — 每個檔案自動保留歷史版本</li>
+          <li><strong>資源回收桶</strong> — 刪除的檔案可以恢復</li>
+          <li><strong>檔案分享</strong> — 權限管理（私人/公開）</li>
+          <li><strong>Metadata 管理</strong> — 批量更新檔案屬性</li>
+          <li><strong>使用量統計</strong> — 追蹤儲存空間用量</li>
+        </ul>
+        <div class="code-block">
+<span class="cm">// Go 處理檔案上傳 — 比 Python 快很多！</span>
+<span class="kw">func</span> <span class="fn">UploadFile</span>(c *gin.Context) {
+    file, _ := c.FormFile(<span class="st">"file"</span>)
+    <span class="cm">// 1. 計算 SHA256（避免重複上傳）</span>
+    hash := <span class="fn">sha256Sum</span>(file)
+    <span class="cm">// 2. 上傳到 Google Cloud Storage</span>
+    gcsPath := <span class="fn">uploadToGCS</span>(file, hash)
+    <span class="cm">// 3. 儲存 metadata 到 MySQL</span>
+    <span class="fn">db.Create</span>(&FileModel{Path: path, GCSPath: gcsPath})
+}
+        </div>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">💬</span>Conversation Service — 對話大管家
+        <span class="tag-pill tag-go">Go</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        管理所有 AI 對話：
+        <ul>
+          <li><strong>對話 CRUD</strong> — 建立、更新、刪除對話</li>
+          <li><strong>訊息儲存</strong> — 完整保留聊天記錄</li>
+          <li><strong>三層壓縮架構</strong> — Go 的獨特設計！
+            <ul>
+              <li>🟢 <strong>Recent</strong> — 最近的訊息，原文保留</li>
+              <li>🟡 <strong>Summary</strong> — 較舊的訊息，壓縮成摘要</li>
+              <li>🔴 <strong>Archive</strong> — 最老的訊息，高度壓縮</li>
+            </ul>
+          </li>
+          <li><strong>子對話</strong> — 支援分支對話（Sub-conversation）</li>
+          <li><strong>SSE 串流</strong> — AI 回覆即時串流到前端</li>
+        </ul>
+        為什麼用 Go？因為即時串流需要處理大量並發連線，Go 的 goroutine 最適合！
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">🤖</span>Bot API — 機器人大使館
+        <span class="tag-pill tag-go">Go</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        讓外部機器人能跟 Kuse 互動，API 格式相容 Telegram：
+        <ul>
+          <li><code>getMe</code> — 取得機器人資訊</li>
+          <li><code>getUpdates</code> — Long-polling 拿新訊息</li>
+          <li><code>sendMessage</code> — 發送訊息</li>
+          <li><code>setWebhook</code> — 設定 Webhook 回調</li>
+          <li><code>checkCredits</code> — 檢查餘額</li>
+          <li><code>executeConnector</code> — 執行連接器（整合外部服務）</li>
+        </ul>
+        還支援 <strong>WebSocket Hub</strong>，可以同時維持數千個即時連線！
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">💾</span>FUSE 檔案系統 — 把雲端變成硬碟
+        <span class="tag-pill tag-go">Go 獨有</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        這是 Go 後端最酷的功能！讓 AI 機器人可以像操作本地硬碟一樣操作雲端檔案：
+        <ul>
+          <li><strong>POSIX 相容</strong> — 支援 chmod、chown、symlink</li>
+          <li><strong>即時讀寫</strong> — 直接 read/write 檔案內容</li>
+          <li><strong>目錄操作</strong> — mkdir、ls、rename</li>
+          <li><strong>JWT 認證</strong> — 每個 FUSE mount 用獨立 Token</li>
+        </ul>
+        Python 做不了這個！因為 FUSE 需要極低延遲的系統級操作。
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">🎯</span>Skill System — 技能倉庫
+        <span class="tag-pill tag-go">Go</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        管理 AI 可以使用的各種「技能」：
+        <ul>
+          <li><strong>V1 Skills</strong> — 基於檔案的技能定義</li>
+          <li><strong>V2 Skills</strong> — 資料庫驅動，支援熱更新</li>
+          <li>技能啟用/停用（per user）</li>
+          <li>技能上傳（zip 格式）</li>
+          <li><strong>MCP 整合</strong> — Model Context Protocol 工具執行</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">☸️</span>Claw / OpenClaw 管理
+        <span class="tag-pill tag-go">Go</span><span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        管理 OpenClaw AI Agent Pod 的生命週期：
+        <ul>
+          <li><code>allocate</code> — 分配新的 Pod</li>
+          <li><code>status</code> — 檢查 Pod 狀態</li>
+          <li><code>redeploy</code> — 重新部署</li>
+          <li><code>delete</code> — 刪除 Pod</li>
+          <li><code>set-env</code> — 更新環境變數</li>
+          <li>Admin API — 批量更新映像、批量重部署</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <div class="acc-head" onclick="tog(this)">
+        <span class="ico">📦</span>Go Monorepo 裡的其他服務
+        <span class="arr">▼</span>
+      </div>
+      <div class="acc-body"><div class="acc-inner">
+        <ul>
+          <li><strong>gateway/</strong> — API 閘道，統一入口</li>
+          <li><strong>corg/</strong> — 租戶/組織配置管理</li>
+          <li><strong>wallet/</strong> — Credits 錢包服務</li>
+          <li><strong>library/</strong> — 檔案儲存庫服務</li>
+          <li><strong>insight/</strong> — 分析洞察服務</li>
+          <li><strong>llm_proxy/</strong> — LLM API 代理</li>
+          <li><strong>kuse-openclaw-orchestrator/</strong> — OpenClaw 編排</li>
+          <li><strong>kuse-fuse-client/</strong> — FUSE 掛載客戶端</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<section class="section reveal" id="arch">
+  <span class="section-tag neutral">🗺️ 第四章</span>
+  <h2>互動架構圖</h2>
+  <p class="lead">把滑鼠移到每個方塊上，看看它的職責。</p>
+
+  <div class="diagram-wrap reveal">
+    <h3>Kuse 雙後端架構</h3>
+    <p class="hint">hover 節點查看詳情</p>
+    <div class="arch-flow">
+      <div class="arch-row">
+        <div class="arch-node user">
+          👤 使用者 / 前端
+          <div class="tooltip">kuse-app-v2（Next.js）— 使用者看到的畫面，所有請求從這裡開始</div>
+        </div>
+      </div>
+      <div class="arch-arrow down"><span class="arch-label">HTTP / WS</span></div>
+      <div class="arch-row">
+        <div class="arch-node go" style="min-width:200px">
+          🐹 API Gateway (Go)
+          <div class="tooltip">Go 的 Gateway 服務 — 統一入口，路由到不同後端服務，處理認證和限流</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:3rem;margin-top:.5rem;flex-wrap:wrap;justify-content:center">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem">
+          <div class="arch-arrow down"><span class="arch-label">AI 請求</span></div>
+          <div class="arch-node py">
+            🐍 kuse_ai<br><small style="font-weight:400;font-size:.72rem">FastAPI 主服務</small>
+            <div class="tooltip">處理 AI 對話、Magic Block、圖片生成、文件解析、付款計費、帳戶認證 — 需要 AI SDK 的都在這裡</div>
+          </div>
+          <div class="arch-arrow down"><span class="arch-label">背景任務</span></div>
+          <div class="arch-node ext">
+            ⚡ ARQ Worker
+            <div class="tooltip">Python 背景任務佇列 — 處理文件提取、圖片生成、網頁爬蟲等耗時工作</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:.8rem">
+          <div class="arch-arrow down"><span class="arch-label">檔案 / 聊天 / Bot</span></div>
+          <div class="arch-node go">
+            🐹 Folder Service<br><small style="font-weight:400;font-size:.72rem">Go 主服務</small>
+            <div class="tooltip">處理檔案 CRUD、對話管理、Bot API、FUSE 檔案系統、技能管理、OpenClaw 管理 — 需要高速和高併發的都在這裡</div>
+          </div>
+          <div class="arch-arrow down"><span class="arch-label">微服務</span></div>
+          <div class="arch-row" style="gap:.5rem">
+            <div class="arch-node go" style="min-width:80px;padding:.6rem .8rem;font-size:.72rem">
+              Wallet
+              <div class="tooltip">Credits 錢包服務 — 管理餘額和消費記錄</div>
+            </div>
+            <div class="arch-node go" style="min-width:80px;padding:.6rem .8rem;font-size:.72rem">
+              Corg
+              <div class="tooltip">租戶配置服務 — 管理組織和租戶設定</div>
+            </div>
+            <div class="arch-node go" style="min-width:80px;padding:.6rem .8rem;font-size:.72rem">
+              Library
+              <div class="tooltip">檔案庫服務 — 檔案儲存 metadata 管理</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="arch-arrow down" style="margin-top:1rem"><span class="arch-label">共用</span></div>
+      <div class="arch-row">
+        <div class="arch-node db">
+          🗄️ MySQL
+          <div class="tooltip">主資料庫 — 兩個後端共用同一個 MySQL，但操作不同的表</div>
+        </div>
+        <div class="arch-node db" style="background:#fff0f0;color:#dc2626;border-color:#fca5a5">
+          🔴 Redis
+          <div class="tooltip">快取 + 訊息佇列 — 共用 Redis，Python 用它做任務佇列（ARQ），Go 用它做串流狀態管理</div>
+        </div>
+        <div class="arch-node ext">
+          ☁️ GCS / R2
+          <div class="tooltip">雲端儲存 — Google Cloud Storage 和 Cloudflare R2，存放使用者檔案和圖片</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="section reveal" id="compare">
+  <span class="section-tag neutral">📊 第五章</span>
+  <h2>Python vs Go 比較表</h2>
+  <p class="lead">一張表看清楚兩兄弟的差異。</p>
+
+  <div class="table-wrap reveal">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th>特性</th>
+          <th class="col-py">🐍 kuse_ai (Python)</th>
+          <th class="col-go">🐹 kuse-ai-go (Go)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="label">比喻角色</td><td>主廚 🧑‍🍳（動腦筋）</td><td>外場經理 🏃‍♂️（跑很快）</td></tr>
+        <tr><td class="label">框架</td><td>FastAPI</td><td>Gin</td></tr>
+        <tr><td class="label">資料庫</td><td>MySQL (Ormar ORM)</td><td>MySQL (GORM)</td></tr>
+        <tr><td class="label">快取</td><td>Redis + ARQ 任務佇列</td><td>Redis 串流狀態</td></tr>
+        <tr><td class="label">API 數量</td><td>37+ 模組</td><td>60+ 端點（Folder 主服務）</td></tr>
+        <tr><td class="label">核心職責</td><td>AI 對話、圖片生成/編輯、<br>文件解析、付款、帳戶認證</td><td>檔案 CRUD、對話管理、<br>Bot API、FUSE、技能、OpenClaw</td></tr>
+        <tr><td class="label">AI 整合</td><td>✅ GPT-4、Claude、Gemini、<br>Flux、DALL-E、Stable Diffusion、<br>Pinecone、LangChain</td><td>⚠️ 有限（Azure Embedding、<br>OpenAI 簡單呼叫）</td></tr>
+        <tr><td class="label">檔案系統</td><td>上傳/下載（基本）</td><td>✅ 完整 FUSE + SharedFS<br>（POSIX 相容）</td></tr>
+        <tr><td class="label">Bot 系統</td><td>❌</td><td>✅ 完整 Bot API<br>（Telegram 相容）</td></tr>
+        <tr><td class="label">即時通訊</td><td>WebSocket（畫布協作）</td><td>WebSocket Hub + Pub/Sub<br>（Bot 訊息推送）</td></tr>
+        <tr><td class="label">背景任務</td><td>ARQ（圖片生成、文件解析、<br>網頁爬蟲等 10+ 種）</td><td>Scheduler（排程工作）</td></tr>
+        <tr><td class="label">計費系統</td><td>✅ Stripe 完整整合</td><td>Wallet 微服務（credits 扣除）</td></tr>
+        <tr><td class="label">認證</td><td>✅ 認證中心（JWT、OAuth、JWKS）</td><td>信任 Python 的 Token<br>+ 自己的 Bot Token</td></tr>
+        <tr><td class="label">監控</td><td>Datadog APM + Mixpanel</td><td>Datadog StatsD + Mixpanel</td></tr>
+        <tr><td class="label">架構模式</td><td>單體 FastAPI + ARQ Worker</td><td>Monorepo 多微服務</td></tr>
+        <tr><td class="label">為什麼選這語言</td><td>AI/ML 生態系最豐富</td><td>高併發、低延遲、系統級操作</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DATA FLOW -->
+<section class="section reveal" id="flow">
+  <span class="section-tag neutral">🔄 第六章</span>
+  <h2>資料怎麼流動？</h2>
+  <p class="lead">看看兩個後端在不同場景下怎麼合作。</p>
+
+  <div class="dark-flow reveal">
+    <h3>🎬 場景：使用者上傳圖片並用 AI 修圖</h3>
+    <div class="sub">點擊播放，看完整流程</div>
+    <div class="timeline" id="timeline1">
+      <div class="tl-item" data-s="0">
+        <div class="tl-num">1</div>
+        <div class="tl-text"><strong>使用者拖曳一張圖片到畫布</strong><span class="tl-who fe-who">前端</span></div>
+      </div>
+      <div class="tl-item go-step" data-s="1">
+        <div class="tl-num">2</div>
+        <div class="tl-text"><strong>圖片上傳到 Go Folder Service</strong> → 計算 SHA256 → 存到 GCS → MySQL 記錄 metadata<span class="tl-who go-who">Go</span></div>
+      </div>
+      <div class="tl-item" data-s="2">
+        <div class="tl-num">3</div>
+        <div class="tl-text"><strong>使用者點擊「AI 去背」Magic Block</strong><span class="tl-who fe-who">前端</span></div>
+      </div>
+      <div class="tl-item" data-s="3">
+        <div class="tl-num">4</div>
+        <div class="tl-text"><strong>請求送到 Python kuse_ai</strong> → 建立 ARQ 背景任務<span class="tl-who py-who">Python</span></div>
+      </div>
+      <div class="tl-item" data-s="4">
+        <div class="tl-num">5</div>
+        <div class="tl-text"><strong>ARQ Worker 呼叫 rmbg_task</strong> → 用 AI 模型移除背景 → 結果存回 GCS<span class="tl-who py-who">Python</span></div>
+      </div>
+      <div class="tl-item" data-s="5">
+        <div class="tl-num">6</div>
+        <div class="tl-text"><strong>Python 扣除 credits</strong> → 通知 Go Wallet 服務更新餘額<span class="tl-who py-who">Python</span></div>
+      </div>
+      <div class="tl-item" data-s="6">
+        <div class="tl-num">7</div>
+        <div class="tl-text"><strong>結果串流回前端</strong> → 去背後的圖片顯示在畫布上 🎉<span class="tl-who fe-who">前端</span></div>
+      </div>
+    </div>
+    <button class="play-btn" onclick="playTimeline('timeline1')">▶ 播放流程</button>
+  </div>
+
+  <div class="dark-flow reveal" style="background:linear-gradient(160deg,#1a0f2e 0%,#2d1b69 100%)">
+    <h3>🎬 場景：Bot 收到訊息並回覆</h3>
+    <div class="sub">點擊播放，看 Bot API 流程</div>
+    <div class="timeline" id="timeline2">
+      <div class="tl-item" data-s="0">
+        <div class="tl-num">1</div>
+        <div class="tl-text"><strong>外部 Bot 呼叫 getUpdates</strong> — Long-polling 等待新訊息<span class="tl-who go-who">Go Bot API</span></div>
+      </div>
+      <div class="tl-item go-step" data-s="1">
+        <div class="tl-num">2</div>
+        <div class="tl-text"><strong>Go 驗證 Bot Token</strong> → 查詢 Redis 訊息佇列 → 返回新訊息<span class="tl-who go-who">Go</span></div>
+      </div>
+      <div class="tl-item go-step" data-s="2">
+        <div class="tl-num">3</div>
+        <div class="tl-text"><strong>Bot 呼叫 sendMessage</strong> → Go 記錄訊息 → 推送到 WebSocket Hub<span class="tl-who go-who">Go</span></div>
+      </div>
+      <div class="tl-item go-step" data-s="3">
+        <div class="tl-num">4</div>
+        <div class="tl-text"><strong>Go Conversation Service 儲存訊息</strong> → 如果對話太長，觸發三層壓縮<span class="tl-who go-who">Go</span></div>
+      </div>
+      <div class="tl-item go-step" data-s="4">
+        <div class="tl-num">5</div>
+        <div class="tl-text"><strong>Bot 呼叫 checkCredits</strong> → Go 查詢 Wallet 服務餘額<span class="tl-who go-who">Go</span></div>
+      </div>
+    </div>
+    <button class="play-btn" onclick="playTimeline('timeline2')">▶ 播放流程</button>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section class="section reveal" id="quiz">
+  <span class="section-tag neutral">🧠 第七章</span>
+  <h2>來測測你學到了多少！</h2>
+
+  <div class="quiz-box reveal">
+    <h3>🎯 雙後端理解測驗</h3>
+    <p class="quiz-sub">6 道題目，看你能得幾分！</p>
+    <div class="q-progress" id="qProg"></div>
+    <div id="qCards"></div>
+    <div class="q-result" id="qResult">
+      <div class="circle" id="qCircle"><span class="big" id="qScore">0</span><span class="sm">/ 6</span></div>
+      <p class="msg" id="qMsg"></p>
+      <button class="play-btn" onclick="resetQ()" style="margin-top:1rem;background:var(--ink);color:#fff">🔄 再來一次</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p style="font-size:1.3rem;margin-bottom:.5rem">🐍 × 🐹</p>
+  <p>Kuse 雙後端探險記 — Python 和 Go 的完美分工</p>
+  <p style="margin-top:.3rem;font-size:.72rem;opacity:.6">Self-learning · 2026-03-15</p>
+</footer>
+
+<script>
+// === Accordion ===
+function tog(h){const a=h.parentElement,o=a.classList.contains('open');a.parentElement.querySelectorAll('.acc.open').forEach(x=>x.classList.remove('open'));if(!o)a.classList.add('open')}
+
+// === Tabs ===
+function switchTab(e,group,tab){
+  e.target.closest('.tab-bar').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelectorAll(`.tab-panel[data-group="${group}"]`).forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.tab-panel[data-group="${group}"][data-tab="${tab}"]`).classList.add('active');
+}
+
+// === Timeline animation ===
+function playTimeline(id){
+  const items=document.querySelectorAll(`#${id} .tl-item`);
+  items.forEach(i=>i.classList.remove('active'));
+  let idx=0;
+  function step(){
+    if(idx>=items.length)return;
+    items[idx].classList.add('active');
+    idx++;
+    setTimeout(step,1200);
+  }
+  step();
+}
+
+// === Quiz ===
+const qs=[
+  {q:'為什麼 Kuse 要用 Python 來做 AI 功能，而不是用 Go？',
+   o:['Go 不支援 HTTP','Python 有最豐富的 AI/ML 套件生態系（LangChain、OpenAI SDK 等）','Python 比 Go 快','老闆喜歡 Python'],
+   c:1,e:'正確！Python 的 AI 生態系（LangChain、OpenAI SDK、Anthropic SDK、Pillow 等）遠比 Go 成熟，做 AI 功能最方便。'},
+  {q:'FUSE 檔案系統為什麼放在 Go 後端而不是 Python？',
+   o:['Python 不支援檔案操作','FUSE 需要極低延遲的系統級操作，Go 在這方面比 Python 快 10-50 倍','因為 FUSE 是 Google 做的','隨機決定的'],
+   c:1,e:'對！FUSE 是一個系統級的檔案系統介面，需要極低延遲和高效能的記憶體管理，Go 的性能遠勝 Python。'},
+  {q:'Python 後端的背景任務佇列叫什麼？',
+   o:['Celery','Sidekiq','ARQ','Bull'],
+   c:2,e:'沒錯！ARQ 是一個基於 Redis 的 Python 非同步任務佇列，用來處理圖片生成、文件解析等耗時工作。'},
+  {q:'Go 後端的對話系統有什麼獨特的設計？',
+   o:['每條訊息都加密','三層壓縮架構（Recent / Summary / Archive）','只存最近 10 條','用 NoSQL 儲存'],
+   c:1,e:'正確！Go 的對話服務用三層壓縮：最近的原文保留、較舊的壓縮成摘要、最老的高度壓縮，節省儲存又保留上下文。'},
+  {q:'兩個後端共用什麼基礎設施？',
+   o:['只共用 Redis','只共用 MySQL','MySQL + Redis + GCS（雲端儲存）','什麼都不共用'],
+   c:2,e:'對！兩個後端共用同一個 MySQL 資料庫（但操作不同的表）、Redis（Python 做任務佇列、Go 做串流狀態）、GCS/R2 雲端儲存。'},
+  {q:'「認證的唯一來源」是哪個後端？',
+   o:['Go 後端','兩個都是','Python 後端（kuse_ai）','前端自己處理'],
+   c:2,e:'正確！Python 後端是認證中心，負責 JWT 簽發、Google OAuth、JWKS 端點。Go 後端信任 Python 發出的 Token。'}
+];
+let ci=0,sc=0,ans=[];
+
+function initQ(){
+  const prog=document.getElementById('qProg');
+  const cards=document.getElementById('qCards');
+  prog.innerHTML=qs.map((_,i)=>`<div class="q-dot" data-i="${i}"></div>`).join('');
+  cards.innerHTML=qs.map((q,i)=>`
+    <div class="q-card${i===0?' active':''}" data-i="${i}">
+      <div class="question">${i+1}. ${q.q}</div>
+      <div class="q-opts">${q.o.map((o,j)=>`
+        <div class="q-opt" data-q="${i}" data-o="${j}" onclick="pickA(${i},${j})">
+          <span class="letter">${'ABCD'[j]}</span><span>${o}</span>
+        </div>`).join('')}</div>
+      <div class="q-fb" id="fb${i}"></div>
+      <button class="q-next" id="nx${i}" onclick="nextQ(${i})">${i<qs.length-1?'下一題 →':'看結果 🎉'}</button>
+    </div>`).join('');
+  upProg();
+}
+
+function pickA(qi,oi){
+  if(ans[qi]!==undefined)return;
+  ans[qi]=oi;const ok=oi===qs[qi].c;if(ok)sc++;
+  const opts=document.querySelectorAll(`.q-opt[data-q="${qi}"]`);
+  opts.forEach((o,j)=>{o.classList.add('locked');if(j===qs[qi].c)o.classList.add('correct');if(j===oi&&!ok)o.classList.add('wrong')});
+  const fb=document.getElementById(`fb${qi}`);
+  fb.textContent=(ok?'✅ ':'❌ 答錯了！')+qs[qi].e;
+  fb.className=`q-fb show ${ok?'ok':'no'}`;
+  document.getElementById(`nx${qi}`).classList.add('show');
+  upProg();
+}
+
+function nextQ(qi){
+  document.querySelectorAll('.q-card').forEach(c=>c.classList.remove('active'));
+  if(qi<qs.length-1){ci=qi+1;document.querySelector(`.q-card[data-i="${ci}"]`).classList.add('active');upProg()}
+  else showRes();
+}
+
+function upProg(){document.querySelectorAll('.q-dot').forEach((d,i)=>{d.className='q-dot';if(ans[i]!==undefined)d.classList.add('done');else if(i===ci)d.classList.add('now')})}
+
+function showRes(){
+  document.querySelectorAll('.q-card').forEach(c=>c.classList.remove('active'));
+  const r=document.getElementById('qResult');r.classList.add('show');
+  document.getElementById('qScore').textContent=sc;
+  const cir=document.getElementById('qCircle'),msg=document.getElementById('qMsg');
+  if(sc>=5){cir.style.borderColor='var(--green)';cir.style.color='var(--green)';msg.textContent='🎉 太強了！你完全理解了 Python 和 Go 的分工！'}
+  else if(sc>=3){cir.style.borderColor='var(--amber)';cir.style.color='var(--amber)';msg.textContent='👍 不錯喔！再複習一下就完美了'}
+  else{cir.style.borderColor='var(--red)';cir.style.color='var(--red)';msg.textContent='💪 沒關係，回去看看故事再來挑戰！'}
+}
+
+function resetQ(){ci=0;sc=0;ans=[];document.getElementById('qResult').classList.remove('show');initQ()}
+
+// === Scroll reveal ===
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+initQ();
+</script>
+</body>
+</html>

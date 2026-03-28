@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet 微服务时序图 - 交互式学习</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0a0a0f;--bg-card:#12121a;--bg-elevated:#1a1a26;--bg-hover:#22223a;
+  --border:#2a2a3e;--border-active:#3a3a5e;
+  --text:#e8e8f0;--text-dim:#8888a8;--text-faint:#55556a;
+  --green:#10b981;--green-dim:#065f46;--green-glow:rgba(16,185,129,.15);
+  --blue:#3b82f6;--blue-dim:#1e3a5f;--blue-glow:rgba(59,130,246,.15);
+  --purple:#8b5cf6;--purple-dim:#3b1f7a;--purple-glow:rgba(139,92,246,.15);
+  --orange:#f59e0b;--orange-dim:#78350f;--orange-glow:rgba(245,158,11,.15);
+  --red:#ef4444;--red-dim:#7f1d1d;--red-glow:rgba(239,68,68,.15);
+  --cyan:#06b6d4;--cyan-dim:#164e63;--cyan-glow:rgba(6,182,212,.15);
+  --pink:#ec4899;--pink-dim:#831843;--pink-glow:rgba(236,72,153,.15);
+  --yellow:#eab308;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+  --radius:12px;--radius-sm:8px;
+}
+
+html{scroll-behavior:smooth;font-size:15px}
+body{font-family:var(--sans);color:var(--text);background:var(--bg);line-height:1.6;overflow-x:hidden}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-active)}
+
+.site-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,15,.85);backdrop-filter:blur(20px) saturate(1.8);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;height:56px;display:flex;align-items:center;gap:1.5rem;
+}
+.site-header .logo{
+  font-family:var(--mono);font-weight:700;font-size:1rem;
+  background:linear-gradient(135deg,var(--green),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-.02em;
+}
+.site-header .logo span{opacity:.5}
+.header-nav{display:flex;gap:.25rem;margin-left:auto;flex-wrap:wrap}
+.header-nav a{
+  text-decoration:none;color:var(--text-dim);font-size:.78rem;font-weight:500;
+  padding:.3rem .7rem;border-radius:20px;transition:all .2s;white-space:nowrap;
+}
+.header-nav a:hover,.header-nav a.active{color:var(--text);background:var(--bg-elevated)}
+
+.hero{
+  text-align:center;padding:4rem 2rem 3rem;
+  background:
+    radial-gradient(ellipse at 30% 0%,var(--green-glow) 0%,transparent 50%),
+    radial-gradient(ellipse at 70% 0%,var(--blue-glow) 0%,transparent 50%);
+}
+.hero h1{
+  font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.03em;
+  background:linear-gradient(135deg,var(--green) 0%,var(--blue) 50%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:.75rem;
+}
+.hero p{color:var(--text-dim);font-size:1.05rem;max-width:640px;margin:0 auto}
+.hero .stats{display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap}
+.hero .stat{text-align:center}
+.hero .stat .num{font-size:1.8rem;font-weight:800;font-family:var(--mono)}
+.hero .stat .label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em}
+.stat.green .num{color:var(--green)}.stat.blue .num{color:var(--blue)}
+.stat.purple .num{color:var(--purple)}.stat.orange .num{color:var(--orange)}
+
+.container{max-width:1200px;margin:0 auto;padding:0 1.5rem 4rem}
+
+.section{margin-top:3rem}
+.section-header{
+  display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;
+  padding-bottom:.75rem;border-bottom:1px solid var(--border);
+}
+.section-num{
+  font-family:var(--mono);font-weight:700;font-size:.85rem;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;flex-shrink:0;
+}
+.section-header h2{font-size:1.4rem;font-weight:700;letter-spacing:-.02em}
+.section-desc{color:var(--text-dim);font-size:.88rem;margin-bottom:1.5rem}
+
+.badge{font-family:var(--mono);font-size:.68rem;padding:.2rem .5rem;border-radius:4px;font-weight:600}
+.badge-sync{background:var(--green-dim);color:var(--green)}
+.badge-async{background:var(--purple-dim);color:var(--purple)}
+.badge-critical{background:var(--red-dim);color:var(--red)}
+
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+.concept-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.25rem;transition:all .3s;cursor:pointer;
+}
+.concept-card:hover{border-color:var(--border-active);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.concept-card h3{font-size:.95rem;font-weight:600;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.concept-card p{font-size:.82rem;color:var(--text-dim);line-height:1.5}
+.concept-card .icon{font-size:1.2rem}
+.concept-card .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;margin-top:.75rem;align-items:center}
+.concept-card .vs-item{background:var(--bg);padding:.5rem;border-radius:6px;text-align:center;font-size:.72rem;font-family:var(--mono)}
+.concept-card .vs-divider{color:var(--text-faint);font-weight:700;font-size:.8rem}
+
+.toc{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:2rem}
+.toc h3{font-size:1rem;font-weight:700;margin-bottom:.75rem}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.5rem}
+.toc-item{
+  display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;
+  border-radius:6px;text-decoration:none;color:var(--text);transition:all .2s;font-size:.82rem;
+}
+.toc-item:hover{background:var(--bg-elevated)}
+.toc-item .num{
+  font-family:var(--mono);font-weight:700;font-size:.7rem;
+  width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+.anim-flow{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.anim-header{
+  padding:.8rem 1.2rem;background:var(--bg-elevated);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+}
+.anim-header h3{font-size:.95rem;font-weight:600}
+.anim-controls{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.anim-controls button{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:1rem;transition:all .2s;
+}
+.anim-controls button:hover{border-color:var(--green);color:var(--green)}
+.speed-label{font-family:var(--mono);font-size:.68rem;color:var(--text-dim)}
+
+.anim-body{padding:1.5rem;position:relative}
+.anim-participants{display:grid;gap:0;margin-bottom:1rem}
+.anim-participant{
+  text-align:center;font-family:var(--mono);font-size:.7rem;font-weight:600;
+  padding:.35rem .5rem;border-radius:6px;border:2px solid;
+}
+.anim-timeline{position:relative;min-height:300px}
+.anim-step{
+  display:grid;gap:0;align-items:center;min-height:50px;padding:.3rem 0;
+  opacity:.15;transition:all .4s ease;position:relative;
+}
+.anim-step.past{opacity:.5}
+.anim-step.current{opacity:1}
+.anim-step.current .anim-arrow-line{animation:arrowPulse 1s ease infinite}
+.anim-cell{position:relative;display:flex;align-items:center;justify-content:center;min-height:44px}
+.anim-cell .lifeline{
+  position:absolute;left:50%;top:0;bottom:0;width:2px;
+  background:var(--border);transform:translateX(-50%);opacity:.3;
+}
+.anim-msg-box{
+  position:absolute;font-family:var(--mono);font-size:.66rem;
+  padding:.25rem .5rem;border-radius:4px;white-space:nowrap;z-index:5;
+  max-width:180px;overflow:hidden;text-overflow:ellipsis;
+}
+@keyframes arrowPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+.anim-info{
+  margin-top:1rem;padding:1rem;background:var(--bg-elevated);border-radius:var(--radius-sm);
+  border:1px solid var(--border);min-height:80px;transition:all .3s;
+}
+.anim-info h4{font-size:.85rem;font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem}
+.anim-info p{font-size:.8rem;color:var(--text-dim);line-height:1.5}
+.anim-info .code-line{
+  font-family:var(--mono);font-size:.72rem;background:var(--bg);
+  padding:.5rem .75rem;border-radius:4px;margin-top:.5rem;color:var(--cyan);overflow-x:auto;white-space:pre;
+}
+
+.arch-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem}
+.arch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.arch-node{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem;text-align:center;transition:all .3s}
+.arch-node:hover{border-color:var(--border-active);transform:translateY(-2px)}
+.arch-node .node-icon{font-size:1.5rem;margin-bottom:.5rem}
+.arch-node h4{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
+.arch-node p{font-size:.72rem;color:var(--text-dim)}
+.arch-node .port{font-family:var(--mono);font-size:.65rem;color:var(--green);margin-top:.25rem}
+.arch-connections{display:flex;justify-content:center;gap:2rem;padding:.75rem 0;flex-wrap:wrap}
+.arch-conn{font-family:var(--mono);font-size:.68rem;color:var(--text-dim);display:flex;align-items:center;gap:.5rem}
+.arch-conn .arrow-r{color:var(--green)}
+
+.quiz-container{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:1.5rem}
+.quiz-header{padding:.8rem 1.2rem;background:var(--bg-elevated);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem}
+.quiz-header h3{font-size:.95rem;font-weight:600}
+.quiz-progress{margin-left:auto;font-family:var(--mono);font-size:.72rem;color:var(--text-dim)}
+.quiz-body{padding:1.5rem}
+.quiz-question{font-size:.95rem;font-weight:600;margin-bottom:1rem}
+.quiz-options{display:flex;flex-direction:column;gap:.5rem}
+.quiz-option{
+  padding:.75rem 1rem;border:1px solid var(--border);border-radius:var(--radius-sm);
+  cursor:pointer;transition:all .2s;font-size:.85rem;display:flex;align-items:center;gap:.75rem;
+}
+.quiz-option:hover{border-color:var(--border-active);background:var(--bg-elevated)}
+.quiz-option .letter{
+  font-family:var(--mono);font-weight:700;font-size:.75rem;
+  width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg-elevated);flex-shrink:0;
+}
+.quiz-option.correct{border-color:var(--green);background:var(--green-glow)}
+.quiz-option.correct .letter{background:var(--green-dim);color:var(--green)}
+.quiz-option.wrong{border-color:var(--red);background:var(--red-glow)}
+.quiz-option.wrong .letter{background:var(--red-dim);color:var(--red)}
+.quiz-option.disabled{pointer-events:none;opacity:.6}
+.quiz-explanation{margin-top:1rem;padding:1rem;border-radius:var(--radius-sm);font-size:.82rem;line-height:1.6;display:none}
+.quiz-explanation.show{display:block}
+.quiz-explanation.correct-exp{background:var(--green-glow);border:1px solid var(--green-dim);color:var(--green)}
+.quiz-explanation.wrong-exp{background:var(--red-glow);border:1px solid var(--red-dim);color:var(--red)}
+.quiz-nav{display:flex;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+.quiz-nav button{
+  font-family:var(--mono);font-size:.78rem;font-weight:600;
+  padding:.4rem 1rem;border-radius:6px;cursor:pointer;transition:all .2s;
+  border:1px solid var(--border);background:var(--bg);color:var(--text);
+}
+.quiz-nav button:hover{border-color:var(--green);color:var(--green)}
+.quiz-nav button:disabled{opacity:.3;cursor:not-allowed}
+
+@media(max-width:768px){
+  .hero{padding:2.5rem 1rem 2rem}
+  .hero h1{font-size:1.8rem}
+  .container{padding:0 1rem 3rem}
+  .anim-body{padding:1rem;overflow-x:auto}
+  .concept-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">wallet<span>::</span>sequence</div>
+  <nav class="header-nav">
+    <a href="#overview" class="active">总览</a>
+    <a href="#scene-balance">查余额</a>
+    <a href="#scene-consume">消费</a>
+    <a href="#scene-award">发放</a>
+    <a href="#scene-register">注册</a>
+    <a href="#scene-refund">退款</a>
+    <a href="#concepts">核心概念</a>
+    <a href="#quiz">知识测验</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Wallet 微服务<br>全链路时序图</h1>
+  <p>交互式深度解析每一条请求链路 -- 从前端点击到数据库提交</p>
+  <div class="stats">
+    <div class="stat green"><div class="num">6</div><div class="label">核心场景</div></div>
+    <div class="stat blue"><div class="num">11</div><div class="label">API 端点</div></div>
+    <div class="stat purple"><div class="num">7</div><div class="label">消息类型</div></div>
+    <div class="stat orange"><div class="num">4</div><div class="label">数据库表</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="toc">
+  <h3>场景导航</h3>
+  <div class="toc-grid">
+    <a href="#scene-balance" class="toc-item"><span class="num" style="background:var(--green-dim);color:var(--green)">01</span> 查询余额（同步读取）</a>
+    <a href="#scene-consume" class="toc-item"><span class="num" style="background:var(--blue-dim);color:var(--blue)">02</span> AI 对话消费（核心链路）</a>
+    <a href="#scene-register" class="toc-item"><span class="num" style="background:var(--purple-dim);color:var(--purple)">03</span> 注册 / 每日登录</a>
+    <a href="#scene-subscription" class="toc-item"><span class="num" style="background:var(--orange-dim);color:var(--orange)">04</span> 订阅续费</a>
+    <a href="#scene-refund" class="toc-item"><span class="num" style="background:var(--red-dim);color:var(--red)">05</span> Agent 失败退款</a>
+    <a href="#scene-award" class="toc-item"><span class="num" style="background:var(--cyan-dim);color:var(--cyan)">06</span> 管理员发放 / 撤销</a>
+  </div>
+</div>
+
+<!-- 总览 -->
+<section class="section" id="overview">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--bg-elevated);color:var(--text)">0</div>
+    <h2>系统架构总览</h2>
+  </div>
+  <p class="section-desc">Wallet 微服务中所有参与者及它们之间的连接关系。</p>
+  <div class="arch-box">
+    <div class="arch-grid">
+      <div class="arch-node" style="border-color:var(--green-dim)">
+        <div class="node-icon">&#x1F310;</div>
+        <h4 style="color:var(--green)">前端</h4>
+        <p>Web 应用 / 管理后台</p>
+      </div>
+      <div class="arch-node" style="border-color:var(--blue-dim)">
+        <div class="node-icon">&#x1F6AA;</div>
+        <h4 style="color:var(--blue)">API 网关</h4>
+        <p>请求头注入<br>X-User-ID, X-Tenant-Id</p>
+      </div>
+      <div class="arch-node" style="border-color:var(--cyan-dim)">
+        <div class="node-icon">&#x1F4B0;</div>
+        <h4 style="color:var(--cyan)">Wallet 服务</h4>
+        <p>HTTP API + 中间件</p>
+        <div class="port">:8089</div>
+      </div>
+      <div class="arch-node" style="border-color:var(--purple-dim)">
+        <div class="node-icon">&#x1F4E8;</div>
+        <h4 style="color:var(--purple)">Pub/Sub</h4>
+        <p>Google Cloud<br>异步消息队列</p>
+      </div>
+      <div class="arch-node" style="border-color:var(--orange-dim)">
+        <div class="node-icon">&#x2699;&#xFE0F;</div>
+        <h4 style="color:var(--orange)">KSStream 工作者池</h4>
+        <p>GOMAXPROCS x 2<br>按用户分片</p>
+      </div>
+      <div class="arch-node" style="border-color:var(--pink-dim)">
+        <div class="node-icon">&#x1F5C4;&#xFE0F;</div>
+        <h4 style="color:var(--pink)">MySQL</h4>
+        <p>credits, consume_history<br>token_details, billing_req</p>
+      </div>
+    </div>
+    <div class="arch-connections">
+      <div class="arch-conn">前端 <span class="arrow-r">--></span> 网关 <span class="arrow-r">--></span> Wallet</div>
+      <div class="arch-conn">后端 <span class="arrow-r">--></span> Pub/Sub <span class="arrow-r">--></span> 工作者 <span class="arrow-r">--></span> MySQL</div>
+      <div class="arch-conn">OpenClaw <span class="arrow-r">--></span> /precheck + /token-usage</div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景1: 查询余额 -->
+<section class="section" id="scene-balance">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--green-dim);color:var(--green)">01</div>
+    <h2>查询余额</h2>
+  </div>
+  <p class="section-desc">同步读取链路。前端发起请求："这个用户还有多少积分？"</p>
+  <div class="anim-flow" id="balance-flow">
+    <div class="anim-header">
+      <span style="color:var(--green)">&#x25CF;</span>
+      <h3>GET /api/wallet/v1/balance</h3>
+      <span class="badge badge-sync" style="margin-left:.5rem">同步</span>
+      <div class="anim-controls">
+        <div class="speed-label">步骤：</div>
+        <button onclick="flowPrev('balance')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('balance')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('balance')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('balance')" title="自动播放" id="balance-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(4,1fr)" id="balance-participants">
+        <div class="anim-participant" style="border-color:var(--green);color:var(--green)">前端</div>
+        <div class="anim-participant" style="border-color:var(--blue);color:var(--blue)">API 网关</div>
+        <div class="anim-participant" style="border-color:var(--cyan);color:var(--cyan)">Wallet 服务</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="balance-timeline"></div>
+      <div class="anim-info" id="balance-info">
+        <h4>点击 &#x25B6; 开始逐步演示</h4>
+        <p>逐步跟踪余额查询的每个阶段，了解每一层发生了什么。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景2: AI 消费 -->
+<section class="section" id="scene-consume">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--blue-dim);color:var(--blue)">02</div>
+    <h2>AI 对话消费积分</h2>
+  </div>
+  <p class="section-desc">核心计费链路。这是最复杂的场景，涉及预检查、异步发布、Worker 处理、FIFO 消费和乐观锁。</p>
+  <div class="anim-flow" id="consume-flow">
+    <div class="anim-header">
+      <span style="color:var(--blue)">&#x25CF;</span>
+      <h3>预检查 -> AI 推理 -> Token 用量上报 -> 异步扣费</h3>
+      <span class="badge badge-async" style="margin-left:.5rem">异步</span>
+      <span class="badge badge-critical" style="margin-left:.25rem">核心</span>
+      <div class="anim-controls">
+        <div class="speed-label">步骤：</div>
+        <button onclick="flowPrev('consume')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('consume')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('consume')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('consume')" title="自动播放" id="consume-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(6,1fr)" id="consume-participants">
+        <div class="anim-participant" style="border-color:var(--green);color:var(--green)">前端</div>
+        <div class="anim-participant" style="border-color:var(--blue);color:var(--blue)">后端</div>
+        <div class="anim-participant" style="border-color:var(--cyan);color:var(--cyan)">Wallet API</div>
+        <div class="anim-participant" style="border-color:var(--purple);color:var(--purple)">Pub/Sub</div>
+        <div class="anim-participant" style="border-color:var(--orange);color:var(--orange)">Worker</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="consume-timeline"></div>
+      <div class="anim-info" id="consume-info">
+        <h4>点击 &#x25B6; 开始逐步演示</h4>
+        <p>这是最关键的链路。跟随每一步了解预检查、幂等性、Token 定价、FIFO 消费和乐观锁的工作原理。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景3: 注册/每日登录 -->
+<section class="section" id="scene-register">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--purple-dim);color:var(--purple)">03</div>
+    <h2>注册 / 每日登录积分发放</h2>
+  </div>
+  <p class="section-desc">用户注册时获得 1800 积分，每日登录获得 200 积分，通过 Pub/Sub 异步发放。</p>
+  <div class="anim-flow" id="register-flow">
+    <div class="anim-header">
+      <span style="color:var(--purple)">&#x25CF;</span>
+      <h3>REGISTER / DAILY_LOGIN 事件</h3>
+      <span class="badge badge-async" style="margin-left:.5rem">异步</span>
+      <div class="anim-controls">
+        <button onclick="flowPrev('register')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('register')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('register')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('register')" title="自动播放" id="register-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(4,1fr)" id="register-participants">
+        <div class="anim-participant" style="border-color:var(--green);color:var(--green)">用户操作</div>
+        <div class="anim-participant" style="border-color:var(--purple);color:var(--purple)">Pub/Sub</div>
+        <div class="anim-participant" style="border-color:var(--orange);color:var(--orange)">Worker</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="register-timeline"></div>
+      <div class="anim-info" id="register-info">
+        <h4>点击 &#x25B6; 开始</h4>
+        <p>了解注册和每日登录事件如何触发积分发放。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景4: 订阅续费 -->
+<section class="section" id="scene-subscription">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--orange-dim);color:var(--orange)">04</div>
+    <h2>订阅续费</h2>
+  </div>
+  <p class="section-desc">当 Stripe 处理订阅付款后，根据 price_id 映射关系发放对应积分。</p>
+  <div class="anim-flow" id="sub-flow">
+    <div class="anim-header">
+      <span style="color:var(--orange)">&#x25CF;</span>
+      <h3>Stripe Webhook -> SUBSCRIPTION_UPDATED</h3>
+      <span class="badge badge-async" style="margin-left:.5rem">异步</span>
+      <div class="anim-controls">
+        <button onclick="flowPrev('sub')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('sub')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('sub')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('sub')" title="自动播放" id="sub-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(5,1fr)" id="sub-participants">
+        <div class="anim-participant" style="border-color:var(--yellow);color:var(--yellow)">Stripe</div>
+        <div class="anim-participant" style="border-color:var(--blue);color:var(--blue)">后端</div>
+        <div class="anim-participant" style="border-color:var(--purple);color:var(--purple)">Pub/Sub</div>
+        <div class="anim-participant" style="border-color:var(--orange);color:var(--orange)">Worker</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="sub-timeline"></div>
+      <div class="anim-info" id="sub-info">
+        <h4>点击 &#x25B6; 开始</h4>
+        <p>跟踪订阅续费流程：从 Stripe Webhook 到积分发放。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景5: 退款 -->
+<section class="section" id="scene-refund">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--red-dim);color:var(--red)">05</div>
+    <h2>Agent 执行失败退款</h2>
+  </div>
+  <p class="section-desc">当 AI Agent 执行失败时，系统会自动退还已扣除的积分。</p>
+  <div class="anim-flow" id="refund-flow">
+    <div class="anim-header">
+      <span style="color:var(--red)">&#x25CF;</span>
+      <h3>REFUND_FAILED_AGENT</h3>
+      <span class="badge badge-async" style="margin-left:.5rem">异步</span>
+      <div class="anim-controls">
+        <button onclick="flowPrev('refund')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('refund')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('refund')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('refund')" title="自动播放" id="refund-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(4,1fr)" id="refund-participants">
+        <div class="anim-participant" style="border-color:var(--red);color:var(--red)">OpenClaw</div>
+        <div class="anim-participant" style="border-color:var(--purple);color:var(--purple)">Pub/Sub</div>
+        <div class="anim-participant" style="border-color:var(--orange);color:var(--orange)">Worker</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="refund-timeline"></div>
+      <div class="anim-info" id="refund-info">
+        <h4>点击 &#x25B6; 开始</h4>
+        <p>了解系统如何处理 Agent 失败并退还积分。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 场景6: 管理员发放 -->
+<section class="section" id="scene-award">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--cyan-dim);color:var(--cyan)">06</div>
+    <h2>管理员发放 / 撤销积分</h2>
+  </div>
+  <p class="section-desc">管理员通过 REST API 手动发放或撤销用户积分。</p>
+  <div class="anim-flow" id="award-flow">
+    <div class="anim-header">
+      <span style="color:var(--cyan)">&#x25CF;</span>
+      <h3>POST /award & POST /revoke</h3>
+      <span class="badge badge-sync" style="margin-left:.5rem">同步</span>
+      <div class="anim-controls">
+        <button onclick="flowPrev('award')" title="上一步">&#x25C0;</button>
+        <button onclick="flowNext('award')" title="下一步">&#x25B6;</button>
+        <button onclick="flowReset('award')" title="重置">&#x21BB;</button>
+        <button onclick="flowAutoPlay('award')" title="自动播放" id="award-play-btn">&#x23EF;</button>
+      </div>
+    </div>
+    <div class="anim-body">
+      <div class="anim-participants" style="grid-template-columns:repeat(3,1fr)" id="award-participants">
+        <div class="anim-participant" style="border-color:var(--cyan);color:var(--cyan)">管理员</div>
+        <div class="anim-participant" style="border-color:var(--cyan);color:var(--cyan)">Wallet 服务</div>
+        <div class="anim-participant" style="border-color:var(--pink);color:var(--pink)">MySQL</div>
+      </div>
+      <div class="anim-timeline" id="award-timeline"></div>
+      <div class="anim-info" id="award-info">
+        <h4>点击 &#x25B6; 开始</h4>
+        <p>简单的同步操作链路。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 核心概念 -->
+<section class="section" id="concepts">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--bg-elevated);color:var(--text)">&#x1F4A1;</div>
+    <h2>核心设计概念</h2>
+  </div>
+  <div class="concept-grid">
+    <div class="concept-card">
+      <h3><span class="icon">&#x1F512;</span> 乐观锁 vs 悲观锁</h3>
+      <p>系统主要使用<strong>乐观锁</strong>：UPDATE 时附带 WHERE remaining=旧值。若 RowsAffected=0，说明被其他事务修改了，需要退避重试。</p>
+      <div class="vs">
+        <div class="vs-item" style="border:1px solid var(--green-dim)">
+          <div style="color:var(--green);font-weight:600">乐观锁</div>
+          <div style="color:var(--text-dim);margin-top:.25rem">不加锁，事后检查<br>吞吐量更高<br>可能需要重试</div>
+        </div>
+        <div class="vs-divider">vs</div>
+        <div class="vs-item" style="border:1px solid var(--orange-dim)">
+          <div style="color:var(--orange);font-weight:600">悲观锁</div>
+          <div style="color:var(--text-dim);margin-top:.25rem">SELECT FOR UPDATE<br>保证一次成功<br>延迟更高</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <h3><span class="icon">&#x1F4C8;</span> FIFO 积分消费</h3>
+      <p>积分按 <code style="font-family:var(--mono);color:var(--cyan);background:var(--bg);padding:.1rem .3rem;border-radius:3px">expires_at ASC</code> 排序消费。最快过期的积分优先使用，减少过期浪费。</p>
+      <div style="margin-top:.75rem;font-family:var(--mono);font-size:.7rem;background:var(--bg);padding:.75rem;border-radius:6px;color:var(--text-dim);line-height:1.6">
+        积分 A: 100个, 3月30日到期 <span style="color:var(--red)">&larr; 优先使用</span><br>
+        积分 B: 500个, 4月30日到期<br>
+        积分 C: 200个, 5月30日到期 <span style="color:var(--green)">&larr; 最后使用</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <h3><span class="icon">&#x1F500;</span> 基于用户的消息分片</h3>
+      <p>消息通过 <code style="font-family:var(--mono);color:var(--cyan);background:var(--bg);padding:.1rem .3rem;border-radius:3px">FNV1a(userId) % workerCount</code> 路由。同一用户的消息始终路由到同一个 Worker，消除并发修改冲突。</p>
+      <div style="margin-top:.75rem;font-family:var(--mono);font-size:.7rem;background:var(--bg);padding:.75rem;border-radius:6px;color:var(--text-dim);line-height:1.6">
+        用户 123 &rarr; hash % 8 = <span style="color:var(--orange)">Worker 3</span><br>
+        用户 456 &rarr; hash % 8 = <span style="color:var(--blue)">Worker 7</span><br>
+        用户 789 &rarr; hash % 8 = <span style="color:var(--orange)">Worker 3</span>（串行处理）
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <h3><span class="icon">&#x1F6E1;&#xFE0F;</span> 幂等性保证</h3>
+      <p>Pub/Sub 保证至少一次投递。三重去重机制防止重复处理：</p>
+      <div style="margin-top:.5rem;font-size:.78rem;color:var(--text-dim);line-height:1.7">
+        <strong style="color:var(--green)">1.</strong> consume_history.request_id（UNIQUE 约束）<br>
+        <strong style="color:var(--blue)">2.</strong> billing_adapter_requests（scope+request_id）<br>
+        <strong style="color:var(--purple)">3.</strong> refund_status: none &rarr; refunded（单向转换）
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <h3><span class="icon">&#x1F4B2;</span> Token 动态定价引擎</h3>
+      <p>基于实际 LLM Token 用量的动态定价，附加毛利率乘数。</p>
+      <div style="margin-top:.75rem;font-family:var(--mono);font-size:.68rem;background:var(--bg);padding:.75rem;border-radius:6px;color:var(--cyan);line-height:1.8">
+        积分 = (tokens x 模型单价 / 1M)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x <span style="color:var(--orange)">1.25</span>（毛利率）<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x <span style="color:var(--green)">904.52</span>（积分/美元）
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <h3><span class="icon">&#x26A1;</span> 异步 vs 同步设计</h3>
+      <p>余额查询是同步的（即时读取）。积分消费是异步的（通过 Pub/Sub），这样前端在 AI 推理期间不需要等待计费完成。</p>
+      <div class="vs">
+        <div class="vs-item" style="border:1px solid var(--green-dim)">
+          <div style="color:var(--green);font-weight:600">同步（HTTP）</div>
+          <div style="color:var(--text-dim);margin-top:.25rem">/balance<br>/precheck<br>/award</div>
+        </div>
+        <div class="vs-divider">vs</div>
+        <div class="vs-item" style="border:1px solid var(--purple-dim)">
+          <div style="color:var(--purple);font-weight:600">异步（Pub/Sub）</div>
+          <div style="color:var(--text-dim);margin-top:.25rem">MAGIC_CAST<br>DAILY_LOGIN<br>REFUND</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 知识测验 -->
+<section class="section" id="quiz">
+  <div class="section-header">
+    <div class="section-num" style="background:var(--bg-elevated);color:var(--text)">&#x2753;</div>
+    <h2>知识测验</h2>
+  </div>
+  <div class="quiz-container">
+    <div class="quiz-header">
+      <h3>检验你的理解</h3>
+      <div class="quiz-progress" id="quiz-progress">1 / 6</div>
+    </div>
+    <div class="quiz-body" id="quiz-body"></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+const flows = {};
+
+function defineFlow(id, steps) {
+  flows[id] = { steps, current: -1, playing: false, timer: null };
+  renderTimeline(id);
+}
+
+function renderTimeline(id) {
+  const flow = flows[id];
+  const timeline = document.getElementById(id + '-timeline');
+  if (!timeline) return;
+  timeline.innerHTML = '';
+  flow.steps.forEach((step, i) => {
+    const row = document.createElement('div');
+    row.className = 'anim-step';
+    row.style.gridTemplateColumns = document.getElementById(id + '-participants').style.gridTemplateColumns;
+    row.dataset.index = i;
+    row.id = id + '-step-' + i;
+    const cols = parseInt(row.style.gridTemplateColumns.split('repeat(')[1]) || step.cols || 4;
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'anim-cell';
+      cell.innerHTML = '<div class="lifeline"></div>';
+      row.appendChild(cell);
+    }
+    if (step.label) {
+      const srcCell = row.children[step.from];
+      const box = document.createElement('div');
+      box.className = 'anim-msg-box';
+      box.textContent = step.label;
+      box.style.color = step.color || 'var(--text-dim)';
+      box.style.background = step.bgColor || 'var(--bg-elevated)';
+      box.style.border = '1px solid ' + (step.borderColor || 'var(--border)');
+      if (step.from <= step.to) { box.style.left = '50%'; box.style.top = '-14px'; box.style.transform = 'translateX(4px)'; }
+      else { box.style.right = '50%'; box.style.top = '-14px'; box.style.transform = 'translateX(-4px)'; }
+      srcCell.appendChild(box);
+    }
+    row.onclick = () => { flow.current = i; updateFlow(id); };
+    timeline.appendChild(row);
+  });
+}
+
+function updateFlow(id) {
+  const flow = flows[id];
+  const info = document.getElementById(id + '-info');
+  flow.steps.forEach((step, i) => {
+    const el = document.getElementById(id + '-step-' + i);
+    if (!el) return;
+    el.classList.remove('past', 'current');
+    if (i < flow.current) el.classList.add('past');
+    if (i === flow.current) el.classList.add('current');
+  });
+  if (flow.current >= 0 && flow.current < flow.steps.length) {
+    const step = flow.steps[flow.current];
+    info.innerHTML = `
+      <h4><span style="color:${step.color || 'var(--green)'}">[步骤 ${flow.current + 1}/${flow.steps.length}]</span> ${step.title}</h4>
+      <p>${step.detail}</p>
+      ${step.code ? `<div class="code-line">${step.code}</div>` : ''}
+    `;
+  }
+}
+
+function flowNext(id) { const f = flows[id]; if (f.current < f.steps.length - 1) { f.current++; updateFlow(id); } }
+function flowPrev(id) { const f = flows[id]; if (f.current > 0) { f.current--; updateFlow(id); } }
+
+function flowReset(id) {
+  const f = flows[id]; f.current = -1; f.playing = false; clearInterval(f.timer);
+  const btn = document.getElementById(id + '-play-btn'); if (btn) btn.style.color = '';
+  f.steps.forEach((_, i) => { const el = document.getElementById(id + '-step-' + i); if (el) el.classList.remove('past', 'current'); });
+  document.getElementById(id + '-info').innerHTML = '<h4>点击 &#x25B6; 开始逐步演示</h4><p>逐步了解每个阶段的具体操作。</p>';
+}
+
+function flowAutoPlay(id) {
+  const f = flows[id];
+  if (f.playing) { f.playing = false; clearInterval(f.timer); const btn = document.getElementById(id + '-play-btn'); if (btn) btn.style.color = ''; return; }
+  f.playing = true; const btn = document.getElementById(id + '-play-btn'); if (btn) btn.style.color = 'var(--green)';
+  if (f.current >= f.steps.length - 1) f.current = -1;
+  f.timer = setInterval(() => { if (f.current >= f.steps.length - 1) { f.playing = false; clearInterval(f.timer); if (btn) btn.style.color = ''; return; } flowNext(id); }, 2000);
+  flowNext(id);
+}
+
+// ===== 场景1：查询余额 =====
+defineFlow('balance', [
+  { from: 0, to: 1, cols: 4, label: 'GET /balance',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '前端发送余额查询请求',
+    detail: '用户点击查看积分余额。Web 应用发送 <code>GET /api/wallet/v1/balance</code> 到 API 网关。',
+    code: 'GET /api/wallet/v1/balance' },
+  { from: 1, to: 2, cols: 4, label: '注入请求头',
+    color: 'var(--blue)', bgColor: 'var(--blue-glow)', borderColor: 'var(--blue-dim)',
+    title: 'API 网关注入用户上下文请求头',
+    detail: '网关在转发请求前添加 <code>X-User-ID</code>、<code>X-Tenant-Id</code>、<code>X-Request-ID</code> 等上下文请求头。',
+    code: 'X-User-ID: 123 | X-Tenant-Id: 456 | X-Request-ID: uuid-xxx' },
+  { from: 2, to: 2, cols: 4, label: '中间件处理',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: '中间件管道处理请求',
+    detail: '<strong>GinRequestLogger</strong>：提取请求 ID，开始计时，记录到 DataDog。<br><strong>GinRequestResponseLogger</strong>：捕获响应体用于日志记录。' },
+  { from: 2, to: 3, cols: 4, label: 'SELECT credits',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '从 MySQL 查询有效积分',
+    detail: '查询满足以下条件的所有积分：<code>status=\'active\'</code>、<code>expires_at > NOW()</code> 且 <code>remaining_amount > 0</code>。',
+    code: "SELECT * FROM credits WHERE user_id=123 AND status='active' AND expires_at > NOW() AND remaining_amount > 0" },
+  { from: 3, to: 2, cols: 4, label: '积分记录',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: 'MySQL 返回积分记录',
+    detail: '返回包含不同 <code>reason_tag</code> 的行：subscription（订阅）、daily_login（每日登录）、register（注册）、reward（奖励）等。' },
+  { from: 2, to: 2, cols: 4, label: '聚合统计',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: '按 reason_tag 分组聚合积分',
+    detail: '积分按 <code>reason_tag</code> 分组求和，然后按优先级排序：<strong>月度订阅 > 奖励 > 每日登录 > 注册礼包 > 充值包</strong>。' },
+  { from: 2, to: 0, cols: 4, label: '200 OK',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '返回结构化余额响应',
+    detail: '响应包含 <code>total_remaining</code>（总剩余）、<code>total_initial</code>（总初始量），以及各类积分桶的详细信息。',
+    code: '{ "total_remaining": 5000, "total_initial": 18000, "credits": [...] }' },
+]);
+
+// ===== 场景2：AI 消费 =====
+defineFlow('consume', [
+  { from: 0, to: 1, cols: 6, label: '发送 AI 提示词',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '用户发送 AI 对话',
+    detail: '用户在聊天界面输入消息。前端将其发送到主后端进行 AI 推理。' },
+  { from: 1, to: 2, cols: 6, label: 'POST /precheck',
+    color: 'var(--blue)', bgColor: 'var(--blue-glow)', borderColor: 'var(--blue-dim)',
+    title: '后端调用预检查端点',
+    detail: '在调用 LLM 之前，后端先检查用户是否有足够的积分。需要 <code>Authorization: Bearer &lt;bot_token&gt;</code> 认证。',
+    code: 'POST /api/wallet/v1/precheck { user_id: 123, tenant_id: 456, request_id: "uuid" }' },
+  { from: 2, to: 2, cols: 6, label: '认证检查',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: 'RequireBillingAdapterAuth 中间件',
+    detail: '验证 Bearer Token 是否与 <code>KUSE_BILLING_BOT_TOKEN</code> 匹配。此端点仅限计费适配器访问，普通用户无法调用。' },
+  { from: 2, to: 5, cols: 6, label: 'SUM(remaining)',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '查询总剩余积分',
+    detail: '汇总该用户/租户所有有效、未过期的积分余额。',
+    code: "SELECT SUM(remaining_amount) FROM credits WHERE user_id=123 AND status='active' AND expires_at > NOW()" },
+  { from: 2, to: 1, cols: 6, label: 'allowed: true',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '预检查通过 - 用户有积分',
+    detail: '返回 <code>allowed: true</code> 和 <code>total_remaining: 5000</code>。如果余额为 0，则返回 <code>allowed: false</code> 并阻止 AI 调用。',
+    code: '{ "ok": true, "allowed": true, "total_remaining": 5000 }' },
+  { from: 1, to: 1, cols: 6, label: '调用 LLM API',
+    color: 'var(--blue)', bgColor: 'var(--blue-glow)', borderColor: 'var(--blue-dim)',
+    title: '后端调用 LLM（GPT-4o、Claude 等）',
+    detail: '实际的 AI 推理在这里发生。复杂查询可能需要几秒到几分钟。前端同时接收流式响应。' },
+  { from: 1, to: 0, cols: 6, label: '流式响应',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '向前端流式返回 AI 响应',
+    detail: 'LLM 生成 Token 的同时，实时流式返回给用户。计费操作在完成后异步进行。' },
+  { from: 1, to: 2, cols: 6, label: 'POST /token-usage',
+    color: 'var(--blue)', bgColor: 'var(--blue-glow)', borderColor: 'var(--blue-dim)',
+    title: '后端上报 Token 使用量',
+    detail: 'LLM 调用完成后，后端将实际的 Token 数量（输入、输出、缓存）和模型信息发送给 Wallet 进行计费。',
+    code: '{ request_id: "uuid", token_usage: { input: 1000, output: 500 }, metadata: { model: "gpt-4o" } }' },
+  { from: 2, to: 5, cols: 6, label: '幂等性锁',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: '在 billing_adapter_requests 中获取幂等性锁',
+    detail: '向 <code>billing_adapter_requests</code> 插入 (scope, request_id)。如果是重复请求，返回已有状态。防止重试导致的重复计费。',
+    code: "INSERT INTO billing_adapter_requests (scope, request_id, status) VALUES ('user:123:tenant:456', 'uuid', 'processing')" },
+  { from: 2, to: 2, cols: 6, label: 'Token 定价',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '通过 Token 定价计算积分消耗',
+    detail: '公式：<code>(tokens x 模型单价 / 1M) x 毛利率(1.25) x 积分/美元(904.52)</code>。如果模型价格未配置，降级为 Legacy 固定定价。',
+    code: 'credits = (1000*2.5 + 500*10.0) / 1M * 1.25 * 904.52 = ~8 积分' },
+  { from: 2, to: 3, cols: 6, label: '发布消息',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: '将 UserActionMessage 发布到 Pub/Sub',
+    detail: '计算出的积分数量和所有元数据被打包成 protobuf 消息，发布到 <code>streams-ks-user-actions</code> 主题。',
+    code: 'ActionType: MAGIC_CAST, UserId: 123, Credits: 8, Model: "gpt-4o"' },
+  { from: 2, to: 1, cols: 6, label: 'published: true',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: 'Token 用量成功发布',
+    detail: '返回 Pub/Sub 的 message_id。实际的积分扣除将在 Worker 中异步完成。',
+    code: '{ "ok": true, "published": true, "message_id": "msg-123" }' },
+  { from: 3, to: 4, cols: 6, label: '拉取消息',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: 'KSStream Worker 从 Pub/Sub 拉取消息',
+    detail: '拉取处理器接收 protobuf 消息，通过 <code>FNV1a(userId) % workerCount</code> 路由到正确的 Worker，确保同一用户的消息串行处理。' },
+  { from: 4, to: 4, cols: 6, label: 'onConsumption',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: 'Worker 分发到消费处理器',
+    detail: '消息类型 MAGIC_CAST 路由到 <code>onConsumptionAction()</code>。处理器调用 <code>ConsumeCredits()</code> 执行实际扣费。' },
+  { from: 4, to: 5, cols: 6, label: 'BEGIN TX',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '开启数据库事务（READ_COMMITTED）',
+    detail: '以 READ_COMMITTED 隔离级别开启新事务。相比 REPEATABLE_READ，能减少锁争用。',
+    code: 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED; BEGIN;' },
+  { from: 4, to: 5, cols: 6, label: 'SELECT FIFO',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '按过期时间排序查询积分（FIFO）',
+    detail: '查询有效积分并按 <code>expires_at ASC</code> 排序。最快过期的积分优先消费，减少浪费。',
+    code: "SELECT id, remaining_amount FROM credits WHERE user_id=123 AND status='active' AND expires_at > NOW() AND remaining_amount > 0 ORDER BY expires_at ASC LIMIT 50" },
+  { from: 4, to: 4, cols: 6, label: 'FIFO 分配',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '计算每笔积分的扣除量（FIFO）',
+    detail: '需要扣除 45 积分。积分 A（剩余=30，3月到期）扣 30；积分 B（剩余=100，4月到期）扣 15。总计：45。' },
+  { from: 4, to: 5, cols: 6, label: 'UPDATE 乐观锁',
+    color: 'var(--red)', bgColor: 'var(--red-glow)', borderColor: 'var(--red-dim)',
+    title: '对每笔积分执行乐观锁 UPDATE',
+    detail: 'UPDATE 时附带 <code>WHERE id=A AND remaining_amount=30</code>。如果 RowsAffected=0，说明被其他事务修改了 - ROLLBACK 并重试（最多 5 次）。',
+    code: 'UPDATE credits SET remaining_amount=0 WHERE id=A AND remaining_amount=30  -- RowsAffected 必须为 1' },
+  { from: 4, to: 5, cols: 6, label: 'INSERT 消费记录',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '写入 consume_history（幂等）',
+    detail: '检查 <code>request_id</code> 是否已存在（SELECT FOR UPDATE）。如果是新的，INSERT；如果已存在，UPDATE 累加。确保幂等处理。',
+    code: "INSERT INTO consume_history (user_id, amount, actual_amount, request_id, reason_tag) VALUES (123, 45, 45, 'uuid', 'magic_cast:gpt-4o')" },
+  { from: 4, to: 5, cols: 6, label: 'COMMIT',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '事务提交成功',
+    detail: '所有积分扣减和历史记录被原子性提交。如果任何步骤失败，整个事务会回滚。',
+    code: 'COMMIT; -- 全有或全无：积分扣减 + 历史记录' },
+  { from: 4, to: 4, cols: 6, label: 'Ack + 埋点',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '确认消息并发送分析事件',
+    detail: '向 Pub/Sub 确认消息（不会被重新投递）。同时发送 Mixpanel 事件用于业务分析。' },
+]);
+
+// ===== 场景3：注册/每日登录 =====
+defineFlow('register', [
+  { from: 0, to: 1, cols: 4, label: 'REGISTER 事件',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: '用户注册触发事件',
+    detail: '新用户注册时，主后端发布 <code>REGISTER</code> 动作到 Pub/Sub。',
+    code: 'ActionType: REGISTER, UserId: 456' },
+  { from: 1, to: 2, cols: 4, label: '拉取',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: 'Worker 接收注册消息',
+    detail: '消息通过用户分片路由到对应的 Worker。' },
+  { from: 2, to: 2, cols: 4, label: 'onRegister()',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '处理器：发放 1800 注册积分',
+    detail: '新用户获得 <strong>1800 积分</strong>，有效期 <strong>30 天</strong>，标记为 <code>register</code>。' },
+  { from: 2, to: 3, cols: 4, label: 'INSERT credits',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '创建新的积分记录',
+    detail: '在 <code>credits</code> 表中插入新行：initial_amount=1800, remaining_amount=1800, status=active。',
+    code: "INSERT INTO credits (user_id, initial_amount, remaining_amount, status, expires_at, reason_tag) VALUES (456, 1800, 1800, 'active', NOW()+30d, 'register')" },
+  { from: 2, to: 2, cols: 4, label: 'Ack',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '消息已确认',
+    detail: '注册积分发放完成。用户现在可以在余额中看到 1800 积分。' },
+]);
+
+// ===== 场景4：订阅续费 =====
+defineFlow('sub', [
+  { from: 0, to: 1, cols: 5, label: 'invoice.paid',
+    color: 'var(--yellow)', bgColor: 'rgba(234,179,8,.15)', borderColor: 'rgba(234,179,8,.3)',
+    title: 'Stripe Webhook：invoice.paid',
+    detail: 'Stripe 在订阅付款成功时发送 Webhook。包含 <code>price_id</code> 和套餐详情。' },
+  { from: 1, to: 2, cols: 5, label: 'SUB_UPDATED',
+    color: 'var(--blue)', bgColor: 'var(--blue-glow)', borderColor: 'var(--blue-dim)',
+    title: '后端发布 SUBSCRIPTION_UPDATED',
+    detail: '后端处理 Webhook 并发布 <code>SUBSCRIPTION_UPDATED</code> 事件，附带 Stripe price_id。',
+    code: 'ActionType: SUBSCRIPTION_UPDATED, StripeMetadata: { price_id: "price_1ABC" }' },
+  { from: 2, to: 3, cols: 5, label: '拉取',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: 'Worker 接收订阅事件',
+    detail: 'KSStream Worker 拉取并路由消息。' },
+  { from: 3, to: 4, cols: 5, label: '检查已有记录',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '检查本周期是否已发放积分',
+    detail: '查询 credits 表中是否存在匹配的 <code>reason_tag=\'subscription:price_1ABC\'</code> 且在当前计费周期创建的记录。防止重复发放。',
+    code: "SELECT COUNT(*) FROM credits WHERE user_id=123 AND reason_tag='subscription:price_1ABC' AND created_at >= ?" },
+  { from: 3, to: 3, cols: 5, label: 'price->积分映射',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '从配置中查找积分数量',
+    detail: '环境变量 <code>WALLET_SUBSCRIPTION_PRICE_CREDITS_MAPPING</code> 将 price_id 映射到积分数量。例如：<code>price_1ABC -> 18000</code>。' },
+  { from: 3, to: 4, cols: 5, label: 'INSERT 18000',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '发放订阅积分',
+    detail: '插入新的积分记录：18000 积分，30 天有效期，标记为 <code>subscription:price_1ABC</code>。',
+    code: "INSERT INTO credits (user_id, initial_amount, remaining_amount, status, expires_at, reason_tag) VALUES (123, 18000, 18000, 'active', NOW()+30d, 'subscription:price_1ABC')" },
+  { from: 3, to: 3, cols: 5, label: 'Ack',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '订阅续费完成',
+    detail: '用户现在拥有 18000 个新积分，可用于新的计费周期。' },
+]);
+
+// ===== 场景5：退款 =====
+defineFlow('refund', [
+  { from: 0, to: 1, cols: 4, label: 'Agent 失败',
+    color: 'var(--red)', bgColor: 'var(--red-glow)', borderColor: 'var(--red-dim)',
+    title: 'Agent 执行失败',
+    detail: 'OpenClaw Agent 在执行过程中遇到错误。运行时发布 <code>REFUND_FAILED_AGENT</code> 事件，附带原始 <code>request_id</code>。',
+    code: 'ActionType: REFUND_FAILED_AGENT, RequestId: "original-uuid"' },
+  { from: 1, to: 2, cols: 4, label: '拉取',
+    color: 'var(--purple)', bgColor: 'var(--purple-glow)', borderColor: 'var(--purple-dim)',
+    title: 'Worker 接收退款消息',
+    detail: '消息通过用户分片路由到正确的 Worker。' },
+  { from: 2, to: 3, cols: 4, label: 'SELECT FOR UPDATE',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '锁定原始消费记录',
+    detail: '对 <code>consume_history</code> 使用 <code>SELECT FOR UPDATE</code> 加行锁，读取 <code>actual_amount</code> 和 <code>refund_status</code>。',
+    code: "SELECT * FROM consume_history WHERE request_id='original-uuid' FOR UPDATE" },
+  { from: 2, to: 2, cols: 4, label: '状态检查',
+    color: 'var(--orange)', bgColor: 'var(--orange-glow)', borderColor: 'var(--orange-dim)',
+    title: '幂等性检查：是否已退款？',
+    detail: '如果 <code>refund_status=\'refunded\'</code>，跳过（已处理过）。如果 <code>refund_status=\'none\'</code>，继续退款。防止重复退款。' },
+  { from: 2, to: 3, cols: 4, label: 'INSERT 积分',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '创建退款积分记录',
+    detail: '创建一条新的积分记录，金额为退款金额，30 天有效期，标记为 <code>refund:agent_failed</code>。',
+    code: "INSERT INTO credits (user_id, initial_amount, remaining_amount, reason_tag) VALUES (123, 45, 45, 'refund:agent_failed')" },
+  { from: 2, to: 3, cols: 4, label: 'UPDATE 状态',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '标记消费记录为已退款',
+    detail: '将原始 consume_history 记录的 <code>refund_status</code> 设为 <code>\'refunded\'</code>。这是单向转换，阻止未来的退款尝试。',
+    code: "UPDATE consume_history SET refund_status='refunded' WHERE request_id='original-uuid'" },
+  { from: 2, to: 2, cols: 4, label: 'COMMIT + Ack',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '退款提交并确认消息',
+    detail: '事务原子性提交。用户积分已恢复。消息已确认，不会被重新投递。' },
+]);
+
+// ===== 场景6：管理员发放 =====
+defineFlow('award', [
+  { from: 0, to: 1, cols: 3, label: 'POST /award',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: '管理员发送发放请求',
+    detail: '管理后台调用 <code>POST /api/wallet/v1/award</code>，附带目标 user_id、数量、原因和过期时间。',
+    code: '{ "user_id": 456, "amount": 5000, "reason": "promotion", "expires_at": "2026-04-22" }' },
+  { from: 1, to: 1, cols: 3, label: 'HandleAward()',
+    color: 'var(--cyan)', bgColor: 'var(--cyan-glow)', borderColor: 'var(--cyan-dim)',
+    title: '处理器解析并验证请求',
+    detail: '从 <code>X-User-ID</code> 请求头提取管理员 ID。解析 JSON 请求体。验证必填字段。' },
+  { from: 1, to: 2, cols: 3, label: 'INSERT credits',
+    color: 'var(--pink)', bgColor: 'var(--pink-glow)', borderColor: 'var(--pink-dim)',
+    title: '在数据库中创建积分记录',
+    detail: '插入指定数量、原因和过期时间的新积分。状态设为 <code>active</code>。',
+    code: "INSERT INTO credits (user_id, initial_amount, remaining_amount, status, reason_tag, expires_at) VALUES (456, 5000, 5000, 'active', 'promotion', '2026-04-22')" },
+  { from: 1, to: 0, cols: 3, label: '200 OK',
+    color: 'var(--green)', bgColor: 'var(--green-glow)', borderColor: 'var(--green-dim)',
+    title: '发放成功',
+    detail: '返回成功响应。目标用户在下次查询余额时将看到新积分。' },
+]);
+
+// ===== 知识测验 =====
+const quizData = [
+  {
+    q: '为什么 Wallet 服务使用 Pub/Sub 而不是同步扣费？',
+    options: [
+      'MySQL 写入太慢，无法直接写入',
+      '为了避免在计费完成前阻塞 AI 推理的响应',
+      'Google Cloud 要求所有服务必须使用 Pub/Sub',
+      '为了节省数据库连接成本'
+    ],
+    correct: 1,
+    explain: 'AI 推理可能需要 30 秒以上。如果计费是同步的，用户需要同时等待 AI 响应和计费完成。Pub/Sub 将两者解耦，用户可以立即获得 AI 响应，积分在后台异步扣除。'
+  },
+  {
+    q: '在 FIFO 积分消费中，什么决定了积分的使用顺序？',
+    options: [
+      '积分数量（最少的优先）',
+      '积分创建日期（最早创建的优先）',
+      '积分过期日期（最快过期的优先）',
+      '积分类型优先级（订阅 > 每日登录）'
+    ],
+    correct: 2,
+    explain: '积分按 ORDER BY expires_at ASC 消费。最快过期的积分优先使用，最大程度减少因过期造成的浪费。3月30日到期的积分会在4月30日到期的之前被使用。'
+  },
+  {
+    q: '当乐观锁 UPDATE 返回 RowsAffected=0 时会发生什么？',
+    options: [
+      '积分被删除并创建新的',
+      '事务以部分扣除提交',
+      '事务回滚并重试（最多 5 次）',
+      '立即向调用者返回错误'
+    ],
+    correct: 2,
+    explain: 'RowsAffected=0 说明在我们的 SELECT 和 UPDATE 之间，其他事务修改了 remaining_amount。事务会回滚并以指数/随机退避策略重试，最多 5 次。用户分片使这种冲突很少发生。'
+  },
+  {
+    q: '基于用户的消息分片如何防止并发问题？',
+    options: [
+      '它为每个用户锁定整个 credits 表',
+      '它将同一用户的消息路由到同一个 Worker，确保串行处理',
+      '它在所有 Worker 之间使用分布式锁',
+      '它阻止多个用户同时使用系统'
+    ],
+    correct: 1,
+    explain: 'FNV1a(userId) % workerCount 将同一用户的所有消息路由到同一个 Worker 协程。由于每个 Worker 按顺序处理消息，同一用户的积分永远不会被并发修改，几乎消除了乐观锁冲突。'
+  },
+  {
+    q: '当 Pub/Sub 重试时，什么机制防止 /token-usage 端点重复计费？',
+    options: [
+      'Go 语言的端点天生就是幂等的',
+      'billing_adapter_requests 表通过 UNIQUE(scope, request_id) 充当幂等性锁',
+      'Pub/Sub 保证精确一次投递',
+      '前端阻止重复请求'
+    ],
+    correct: 1,
+    explain: '首先尝试向 billing_adapter_requests 插入 (scope, request_id)。如果该组合已存在（重复），则返回已有的状态和 message_id，不会重新发布。Pub/Sub 实际保证的是至少一次（不是精确一次）投递，所以这个幂等性锁至关重要。'
+  },
+  {
+    q: '在退款流程中，什么机制防止一条 consume_history 记录被退款两次？',
+    options: [
+      '第一次退款后 request_id 被删除',
+      '互斥锁防止并发访问',
+      'refund_status 从 "none" 转换为 "refunded"（单向转换，退款前检查）',
+      'Pub/Sub 自动去重退款消息'
+    ],
+    correct: 2,
+    explain: '处理器首先检查 refund_status：如果已经是 "refunded"，则返回 0（无操作）。如果是 "none"，则继续处理并在同一事务中原子性地将 refund_status 设为 "refunded"。这种单向状态转换就是退款的幂等性保障。'
+  },
+];
+
+let currentQuiz = 0;
+let quizAnswered = new Array(quizData.length).fill(false);
+
+function renderQuiz(idx) {
+  const q = quizData[idx];
+  const body = document.getElementById('quiz-body');
+  document.getElementById('quiz-progress').textContent = `${idx + 1} / ${quizData.length}`;
+  let optionsHTML = q.options.map((opt, i) => {
+    const letter = String.fromCharCode(65 + i);
+    const cls = quizAnswered[idx] ? (i === q.correct ? 'correct' : (quizAnswered[idx] === i + 1 && i !== q.correct ? 'wrong' : 'disabled')) : '';
+    return `<div class="quiz-option ${cls}" onclick="answerQuiz(${idx},${i})" ${quizAnswered[idx] ? 'style="pointer-events:none"' : ''}>
+      <span class="letter">${letter}</span><span>${opt}</span></div>`;
+  }).join('');
+  let explainHTML = '';
+  if (quizAnswered[idx]) {
+    const isCorrect = quizAnswered[idx] - 1 === q.correct;
+    explainHTML = `<div class="quiz-explanation show ${isCorrect ? 'correct-exp' : 'wrong-exp'}">${isCorrect ? '回答正确！' : '不太对。'}${q.explain}</div>`;
+  }
+  body.innerHTML = `
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-options">${optionsHTML}</div>
+    ${explainHTML}
+    <div class="quiz-nav">
+      <button onclick="navQuiz(-1)" ${idx === 0 ? 'disabled' : ''}>上一题</button>
+      <button onclick="navQuiz(1)" ${idx === quizData.length - 1 ? 'disabled' : ''}>下一题</button>
+    </div>
+  `;
+}
+
+function answerQuiz(qIdx, aIdx) { if (quizAnswered[qIdx]) return; quizAnswered[qIdx] = aIdx + 1; renderQuiz(qIdx); }
+function navQuiz(dir) { currentQuiz += dir; if (currentQuiz < 0) currentQuiz = 0; if (currentQuiz >= quizData.length) currentQuiz = quizData.length - 1; renderQuiz(currentQuiz); }
+renderQuiz(0);
+
+document.querySelectorAll('.header-nav a, .toc-item').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) { target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
+        document.querySelector(`.header-nav a[href="${href}"]`)?.classList.add('active');
+      }
+    }
+  });
+});
+
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.header-nav a');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) { navLinks.forEach(link => { link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id); }); } });
+}, { rootMargin: '-100px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

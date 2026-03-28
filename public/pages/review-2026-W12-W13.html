@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Hub: W12-W13 | 复习中心：第12-13周</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a25;
+    --border: #2a2a3a;
+    --text: #e8e8ef;
+    --text-dim: #8888a0;
+    --accent: #6c63ff;
+    --accent-glow: rgba(108,99,255,0.15);
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Navigation */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  nav ul {
+    display: flex; list-style: none; gap: 0;
+    max-width: 1100px; margin: 0 auto;
+  }
+  nav li a {
+    display: block; padding: 1rem 1.5rem;
+    color: var(--text-dim); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav li a:hover, nav li a.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Main */
+  main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 2rem;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  h1 {
+    font-size: 2rem; font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  h1 small { font-size: 1rem; color: var(--text-dim); font-weight: 400; }
+  .subtitle { color: var(--text-dim); margin-bottom: 2rem; }
+
+  h2 {
+    font-size: 1.3rem; font-weight: 600;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+  .card-title {
+    font-size: 1.1rem; font-weight: 600;
+  }
+  .badge {
+    font-size: 0.7rem; padding: 0.2rem 0.6rem;
+    border-radius: 20px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .badge-frontend { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-backend { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-general { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .badge-w12 { background: rgba(6,182,212,0.15); color: var(--cyan); font-size: 0.65rem; margin-left: 0.4rem; }
+  .badge-w13 { background: rgba(236,72,153,0.15); color: var(--pink); font-size: 0.65rem; margin-left: 0.4rem; }
+
+  .card p { color: var(--text-dim); font-size: 0.9rem; }
+  .card .commits {
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem; color: var(--text-dim);
+  }
+  .card .commits code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: var(--surface2); padding: 0.1rem 0.4rem;
+    border-radius: 4px; font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  /* Key Points */
+  .key-points {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface2);
+    border-radius: 8px;
+    display: none;
+  }
+  .key-points.open { display: block; }
+  .key-points h4 {
+    font-size: 0.85rem; color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .key-points ul {
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .key-points li { margin-bottom: 0.3rem; }
+  .toggle-btn {
+    margin-top: 0.75rem;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 0.4rem 0.8rem;
+    border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .toggle-btn:hover {
+    border-color: var(--accent); color: var(--accent);
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0.75rem 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* Quiz */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .quiz-q {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--accent); }
+  .quiz-opt.correct {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.1);
+  }
+  .quiz-opt.wrong {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.1);
+  }
+  .quiz-opt.disabled { pointer-events: none; }
+  .quiz-explain {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .quiz-score {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-top: 2rem;
+  }
+  .quiz-score .num {
+    font-size: 3rem; font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Flashcards */
+  .flashcard-container {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1rem;
+  }
+  .flashcard {
+    width: 100%; max-width: 600px;
+    min-height: 280px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .flashcard-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    min-height: 280px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%; min-height: 280px;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border);
+  }
+  .flashcard-front h3 {
+    font-size: 1.3rem; margin-bottom: 0.5rem;
+  }
+  .flashcard-front .hint {
+    font-size: 0.8rem; color: var(--text-dim);
+    margin-top: 1rem;
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, #1a1030, #12121a);
+    border: 1px solid var(--accent);
+    transform: rotateY(180deg);
+    text-align: left;
+    align-items: flex-start;
+  }
+  .flashcard-back h4 {
+    color: var(--accent); margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+  .flashcard-back p {
+    font-size: 0.9rem; color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+  .flashcard-back ul {
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .flashcard-back li { margin-bottom: 0.3rem; }
+  .flashcard-nav {
+    display: flex; gap: 1rem; align-items: center;
+  }
+  .flashcard-nav button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .flashcard-nav button:hover {
+    border-color: var(--accent);
+  }
+  .flashcard-counter {
+    color: var(--text-dim); font-size: 0.9rem;
+  }
+
+  /* Stats */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 2rem; font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-card .label {
+    font-size: 0.8rem; color: var(--text-dim);
+    margin-top: 0.25rem;
+  }
+  .stat-card.urgent { border-color: var(--red); }
+  .stat-card.urgent .num { color: var(--red); }
+
+  /* Review Schedule */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .schedule-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .schedule-day .date {
+    font-weight: 600; font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+  .schedule-day .items {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .schedule-day .items li {
+    list-style: none;
+    padding: 0.2rem 0;
+  }
+  .schedule-day.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  /* Confidence tracker */
+  .confidence-bar {
+    display: flex; gap: 0.5rem; margin-top: 0.5rem;
+  }
+  .conf-btn {
+    flex: 1;
+    padding: 0.4rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .conf-btn:hover { border-color: var(--accent); }
+  .conf-btn.selected-red { border-color: var(--red); background: rgba(239,68,68,0.15); color: var(--red); }
+  .conf-btn.selected-orange { border-color: var(--orange); background: rgba(245,158,11,0.15); color: var(--orange); }
+  .conf-btn.selected-green { border-color: var(--green); background: rgba(34,197,94,0.15); color: var(--green); }
+
+  /* Progress */
+  .progress-bar {
+    width: 100%; height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  @media (max-width: 768px) {
+    nav ul { overflow-x: auto; }
+    nav li a { padding: 0.75rem 1rem; font-size: 0.8rem; white-space: nowrap; }
+    main { padding: 1rem; }
+    h1 { font-size: 1.5rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#home" class="active" onclick="showPage('home',this)">Home 首页</a></li>
+    <li><a href="#concepts" onclick="showPage('concepts',this)">Concepts 概念</a></li>
+    <li><a href="#quiz" onclick="showPage('quiz',this)">Quiz 测验</a></li>
+    <li><a href="#flashcards" onclick="showPage('flashcards',this)">Flashcards 闪卡</a></li>
+    <li><a href="#review" onclick="showPage('review',this)">Schedule 复习计划</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- ==================== HOME ==================== -->
+<div id="home" class="page active">
+  <h1>Review Hub <small>复习中心 — W12 & W13 All Concepts</small></h1>
+  <p class="subtitle">KUSE App V2 — All 10 overdue concepts from Mar 16-28, 2026 | 全部10个逾期未复习概念</p>
+
+  <div class="stats">
+    <div class="stat-card urgent">
+      <div class="num">10</div>
+      <div class="label">Overdue 逾期未复习</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5</div>
+      <div class="label">W12 Concepts 第12周</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5</div>
+      <div class="label">W13 Concepts 第13周</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">0</div>
+      <div class="label">Reviewed 已复习</div>
+    </div>
+  </div>
+
+  <h2>Review Progress 复习进度</h2>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <p class="subtitle" id="progressText">0 / 10 concepts reviewed — complete the quiz and flashcards to track progress<br>0 / 10 个概念已复习 — 完成测验和闪卡来追踪进度</p>
+
+  <h2>All Concepts Overview 全部概念一览</h2>
+  <div class="card">
+    <p><strong>Week 12 第12周 (Mar 16-22):</strong> Virtual Scroll + Tree Flattening, @dnd-kit Advanced Patterns, Move Conflict Resolution & Rollback, Web Page Publish Workflow, WebSocket Reconnect Safety</p>
+    <p style="margin-top:0.5rem"><strong>Week 13 第13周 (Mar 22-28):</strong> UIBlock Interactive Cards, Pipedream Connect OAuth, Customize View Architecture, Download/Export Refactoring, Credit Dispute System</p>
+  </div>
+</div>
+
+<!-- ==================== CONCEPTS ==================== -->
+<div id="concepts" class="page">
+  <h1>Concepts 概念</h1>
+  <p class="subtitle">10 concepts to review — click "Key Points" to expand details<br>10 个概念待复习 — 点击「要点」展开详情</p>
+
+  <h2>Week 12 — Frontend Infrastructure 前端基础设施</h2>
+
+  <!-- C1: Virtual Scroll -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Virtual Scroll + Tree Flattening<br><span style="color:var(--text-dim);font-size:0.9rem">虚拟滚动 + 树形扁平化</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w12">W12</span></div>
+    </div>
+    <p>Migrate recursive DOM tree to flattened array + react-window virtual scrolling: useFlattenedTree hook recursively expands nested folder tree into FlatTreeItem[], paired with useIndexTree for O(1) lookup, solving DOM performance issues with large folder nodes.</p>
+    <p style="margin-top:0.5rem">将递归 DOM 树迁移为扁平化数组 + react-window 虚拟滚动：用 useFlattenedTree hook 将嵌套的文件夹树递归展开为 FlatTreeItem[]，配合 useIndexTree 实现 O(1) 查找，解决大量文件夹节点导致的 DOM 性能问题。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Why flatten 为什么扁平化:</strong> Virtual scrolling libraries (react-window) need a flat list with fixed row heights. Recursive DOM trees can't be virtualized.<br>虚拟滚动库（react-window）需要固定行高的扁平列表。递归 DOM 树无法被虚拟化。</li>
+        <li><strong>FlatTreeItem structure 结构:</strong> Each item stores: id, depth, hasChildren, isExpanded, parentPath — all info needed to render one row without tree traversal.<br>每个条目存储：id、depth、hasChildren、isExpanded、parentPath — 渲染一行所需的全部信息，无需遍历树。</li>
+        <li><strong>IndexTree for O(1) lookup:</strong> pathToIndex Map enables instant scroll-to and selection by path, instead of scanning the entire list.<br>pathToIndex Map 实现按路径即时滚动和选择，无需扫描整个列表。</li>
+        <li><strong>Incremental updates 增量更新:</strong> When expanding/collapsing, splice affected rows instead of rebuilding the entire flattened list — O(subtree) not O(n).<br>展开/折叠时，splice 受影响的行而非重建整个扁平列表 — O(子树) 而非 O(n)。</li>
+      </ul>
+<pre><code>// Conceptual: tree → flat
+function flatten(node, depth, expanded) {
+  const items = [{ id: node.id, depth, isExpanded: expanded.has(node.id) }];
+  if (expanded.has(node.id) && node.children) {
+    for (const child of node.children) {
+      items.push(...flatten(child, depth + 1, expanded));
+    }
+  }
+  return items;
+}
+// IndexTree: O(1) lookup
+const pathToIndex = new Map(flatItems.map((item, i) => [item.id, i]));</code></pre>
+    </div>
+    <div class="commits">Related: <code>d33ac480</code> <code>ffdca971</code></div>
+  </div>
+
+  <!-- C2: dnd-kit -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">@dnd-kit Advanced Patterns<br><span style="color:var(--text-dim);font-size:0.9rem">拖拽系统高级模式</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w12">W12</span></div>
+    </div>
+    <p>Build complex interactions on @dnd-kit: folder highlight on drag-over, 500ms hover auto-expand, auto-scroll, drag selection offset correction, precise drop target detection, and undo support for drag operations.</p>
+    <p style="margin-top:0.5rem">在 @dnd-kit 框架上实现复杂交互：drag-over 时文件夹高亮、500ms 悬停自动展开、自动滚动、拖拽选区偏移修正、drop target 精确判定、以及拖拽操作的 undo 支持。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Hover auto-expand 悬停自动展开:</strong> Use setTimeout(500ms) on dragOver — if cursor stays over a collapsed folder for 500ms, emit a custom 'folder-auto-expand' event to expand it.<br>在 dragOver 上用 setTimeout(500ms) — 如果光标在折叠文件夹上停留 500ms，触发 'folder-auto-expand' 自定义事件展开它。</li>
+        <li><strong>Drop target detection 拖放目标检测:</strong> Use collision detection algorithms (closestCenter vs rectIntersection) — closestCenter for file drops, rectIntersection for folder grouping.<br>使用碰撞检测算法 — closestCenter 用于文件放置，rectIntersection 用于文件夹分组。</li>
+        <li><strong>Offset correction 偏移修正:</strong> When dragging multi-selected items, the drag overlay must offset from the first selected item, not the cursor position.<br>拖拽多选项时，拖拽覆层必须从第一个选中项偏移，而非光标位置。</li>
+        <li><strong>Undo integration 撤销集成:</strong> Before executing a drop, snapshot the current state to the undo history stack so users can Ctrl+Z to revert moves.<br>执行放置前，将当前状态快照到撤销历史栈，用户可 Ctrl+Z 恢复。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>856d2018</code> <code>e8d4b107</code></div>
+  </div>
+
+  <!-- C3: Move Conflict -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Move Conflict Resolution & Rollback<br><span style="color:var(--text-dim);font-size:0.9rem">文件移动的冲突解决与失败回滚</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w12">W12</span></div>
+    </div>
+    <p>Fault-tolerant file move design: MoveConflictModal lets users choose overwrite/skip/rename on conflict, auto-restore replaced and deleted files on partial failure, and correct handling of stop behavior.</p>
+    <p style="margin-top:0.5rem">文件移动操作的容错设计：冲突时弹出 MoveConflictModal 让用户选择覆盖/跳过/重命名，部分失败时自动恢复被替换和被删除的文件到原位，以及 stop 行为的正确处理。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Three strategies 三种策略:</strong> Overwrite (replace target), Skip (keep target, don't move), Rename (add suffix like " (1)"). User chooses per-conflict or "apply to all".<br>覆盖（替换目标）、跳过（保留目标不移动）、重命名（添加后缀如 " (1)"）。用户可逐个选择或"全部应用"。</li>
+        <li><strong>Rollback on failure 失败回滚:</strong> Track all mutations in a rollback queue. If any move fails mid-batch, reverse completed moves by restoring files from the queue.<br>在回滚队列中跟踪所有变更。如果批量移动中任一操作失败，从队列恢复已完成的移动。</li>
+        <li><strong>Stop behavior 停止行为:</strong> "Stop" means cancel remaining moves but keep already-completed ones — different from rollback which undoes everything.<br>"停止"意味着取消剩余移动但保留已完成的 — 不同于回滚（撤销所有操作）。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>3fc278cc</code></div>
+  </div>
+
+  <!-- C4: HTML Publish -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Web Page Publish Workflow<br><span style="color:var(--text-dim);font-size:0.9rem">网页发布流程设计</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w12">W12</span></div>
+    </div>
+    <p>Complete HTML file publish-to-web workflow: CustomPathDialog for user-defined URL path prefix, path validation, PublishButton state management, auto-check during SSE whether publish needs updating, and free-user upgrade guidance.</p>
+    <p style="margin-top:0.5rem">完整的 HTML 文件发布到公网的流程：CustomPathDialog 支持用户自定义 URL 路径前缀、path validation、PublishButton 状态管理、SSE 过程中自动检查是否需要更新 publish、以及免费用户升级引导。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Custom path dialog 自定义路径:</strong> Users define a readable URL slug. Validation ensures: no special chars, no duplicates, length limits, and reserved word blocking.<br>用户定义可读的 URL slug。验证确保：无特殊字符、无重复、长度限制、保留词屏蔽。</li>
+        <li><strong>State machine 状态机:</strong> PublishButton cycles through: unpublished → publishing → published → updating. Each state shows different UI and available actions.<br>PublishButton 在以下状态间循环：unpublished → publishing → published → updating。每个状态显示不同的 UI 和可用操作。</li>
+        <li><strong>SSE auto-update SSE 自动更新:</strong> During AI chat streaming, if the file content changes, automatically trigger a re-publish if the file is currently published.<br>在 AI 聊天流式传输期间，如果文件内容发生变化，自动触发已发布文件的重新发布。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>b0d5cc50</code> <code>dfa34ba6</code></div>
+  </div>
+
+  <!-- C5: WebSocket -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">WebSocket Reconnect Safety<br><span style="color:var(--text-dim);font-size:0.9rem">WebSocket 重连安全机制</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w12">W12</span></div>
+    </div>
+    <p>Robust WebSocket connection design: offline detection (navigator.onLine + online/offline events), reconnect race condition prevention, exponential backoff retry, and retry status UI feedback.</p>
+    <p style="margin-top:0.5rem">WebSocket 连接的健壮性设计：离线检测（navigator.onLine + online/offline 事件）、重连时的竞态防护（防止多个重连同时进行）、指数退避重试、以及重试状态的 UI 反馈。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Race condition guard 竞态防护:</strong> Use a reconnecting flag + connection ID. If a new reconnect starts before the old one finishes, abort the old attempt.<br>使用 reconnecting 标志 + 连接 ID。如果新的重连在旧的完成之前开始，中止旧的尝试。</li>
+        <li><strong>Exponential backoff 指数退避:</strong> Retry delays: 1s → 2s → 4s → 8s → 16s → max 30s. Prevents server overload from aggressive reconnects.<br>重试延迟：1s → 2s → 4s → 8s → 16s → 最大 30s。防止激进重连导致服务器过载。</li>
+        <li><strong>Offline detection 离线检测:</strong> Listen to window 'online'/'offline' events. When offline, don't attempt reconnect — wait for 'online' event, then reconnect immediately.<br>监听 window 的 'online'/'offline' 事件。离线时不尝试重连 — 等待 'online' 事件后立即重连。</li>
+        <li><strong>UI feedback UI 反馈:</strong> Show reconnection status: "Connecting..." with attempt count, "Offline" badge, "Connected" success state.<br>显示重连状态："连接中..." 含尝试次数、"离线"标记、"已连接"成功状态。</li>
+      </ul>
+<pre><code>// Exponential backoff pattern
+const getDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 30000);
+
+// Race condition guard
+let connectionId = 0;
+function reconnect() {
+  const myId = ++connectionId;
+  // ... connect ...
+  if (myId !== connectionId) return; // Aborted by newer attempt
+}</code></pre>
+    </div>
+    <div class="commits">Related: <code>a7882c84</code></div>
+  </div>
+
+  <h2>Week 13 — Feature Systems 功能系统</h2>
+
+  <!-- C6: UIBlock -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">UIBlock Interactive Cards Pattern<br><span style="color:var(--text-dim);font-size:0.9rem">UIBlock 交互卡片模式</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w13">W13</span></div>
+    </div>
+    <p>Parse structured UI directives (ask_user, suggest_connectors) from SSE streams and render as interactive card components. User actions call ask_user/respond API to return results to backend agent, enabling AI-driven multi-step interaction flows.</p>
+    <p style="margin-top:0.5rem">在 AI Chat 的 SSE 流中解析结构化 UI 指令，渲染为交互卡片组件，用户操作后回传结果给后端 agent，实现 AI 驱动的多步交互流程。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Stream parsing 流解析:</strong> streamProcessor detects UIBlock types in SSE chunks and routes to the appropriate card component.<br>streamProcessor 在 SSE 数据块中检测 UIBlock 类型并路由到对应的卡片组件。</li>
+        <li><strong>Response pattern 响应模式:</strong> Each card submits via response_key to ask_user/respond API endpoint.<br>每个卡片通过 response_key 向 ask_user/respond API 端点提交。</li>
+        <li><strong>Component types 组件类型:</strong> AskUserCard (selection + custom input + skip) and SuggestConnectorCard are independent UIBlock renderers.<br>AskUserCard（选择 + 自定义输入 + 跳过）和 SuggestConnectorCard 是独立的 UIBlock 渲染器。</li>
+      </ul>
+<pre><code>// Type-driven rendering
+if (block.type === 'ask_user') {
+  return &lt;AskUserCard options={block.options} responseKey={block.response_key} /&gt;
+}
+// Response submission
+await api.post('/ask_user/respond', { response_key, value });</code></pre>
+    </div>
+    <div class="commits">Related: <code>d8a095db</code> <code>d5bc5767</code> <code>0bb593b4</code> <code>8a657b9c</code></div>
+  </div>
+
+  <!-- C7: Pipedream OAuth -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Pipedream Connect OAuth Integration<br><span style="color:var(--text-dim);font-size:0.9rem">第三方 OAuth 集成</span></div>
+      <div><span class="badge badge-backend">Backend</span><span class="badge badge-w13">W13</span></div>
+    </div>
+    <p>Implement third-party OAuth via Pipedream Connect SDK: backend generates connect_token bound to user ID, frontend PipedreamProvider wraps createFrontendClient, ConnectModal triggers OAuth popup, with full account lifecycle management.</p>
+    <p style="margin-top:0.5rem">通过 Pipedream Connect SDK 实现第三方服务 OAuth 授权：后端生成 connect_token（绑定用户 ID）、前端 PipedreamProvider 包裹 createFrontendClient、ConnectModal 触发 OAuth 弹窗。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Security 安全性:</strong> connect_token MUST be bound to authenticated user ID — cookie key mismatch caused cross-user account leaks.<br>connect_token 必须绑定已认证的用户 ID — cookie key 不匹配导致了跨用户账户泄漏。</li>
+        <li><strong>Token flow 令牌流程:</strong> Server reads user ID from session cookie → generates short-lived connect_token → frontend SDK opens OAuth popup.<br>服务端从 session cookie 读取用户 ID → 生成短时效 connect_token → 前端 SDK 打开 OAuth 弹窗。</li>
+        <li><strong>Account lifecycle 账户生命周期:</strong> Connect → list accounts → disconnect → reconnect, with auto-close modal on success.<br>连接 → 列出账户 → 断开 → 重新连接，成功后自动关闭弹窗。</li>
+      </ul>
+<pre><code>// Backend: token generation (MUST bind to real user ID)
+const token = await pipedream.createConnectToken({
+  external_user_id: userId  // From authenticated session, NOT from request body
+});
+
+// Frontend: Provider pattern
+&lt;PipedreamProvider client={createFrontendClient()}&gt;
+  &lt;ConnectModal app={selectedApp} onSuccess={refetchAccounts} /&gt;
+&lt;/PipedreamProvider&gt;</code></pre>
+    </div>
+    <div class="commits">Related: <code>a7f50f29</code> <code>f97628c9</code> <code>e2ab4e63</code> <code>6adb5844</code></div>
+  </div>
+
+  <!-- C8: Customize View -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Customize View Tab Architecture<br><span style="color:var(--text-dim);font-size:0.9rem">可定制化视图架构</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w13">W13</span></div>
+    </div>
+    <p>Build Skills + Connectors dual-tab management UI: SkillsTab with Official/Custom category filtering, skill detail dialog with file tree browser, skill CRUD & toggle; ConnectorsTab integrating Pipedream curated apps with search, skeleton loading, and lazy-mount tab optimization.</p>
+    <p style="margin-top:0.5rem">构建 Skills + Connectors 双标签页管理界面：SkillsTab 支持分类过滤、技能详情弹窗含文件树浏览器、技能 CRUD 与开关；ConnectorsTab 集成搜索过滤、骨架屏、懒加载标签优化。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Lazy-mount tabs 懒加载标签:</strong> ConnectorsTab only mounts when first selected, avoiding API calls and heavy rendering on page load. Use a mountedTabs Set to track.<br>ConnectorsTab 仅在首次选中时挂载，避免页面加载时的 API 调用和重渲染。用 mountedTabs Set 跟踪。</li>
+        <li><strong>File tree in dialog 弹窗中的文件树:</strong> Simple 2-level tree: flat-to-tree conversion via dirMap, expansion via Set&lt;string&gt;. Appropriate for small file lists (&lt;50 files).<br>简单两级树：通过 dirMap 扁平转树，展开通过 Set&lt;string&gt;。适用于小文件列表（&lt;50 文件）。</li>
+        <li><strong>Skeleton loading 骨架屏:</strong> Show card-shaped skeletons during API loading, matching final layout to prevent layout shift.<br>API 加载期间显示卡片形状骨架屏，匹配最终布局防止布局跳动。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>3fc4e56c</code> <code>ddfe9f5a</code> <code>6de56090</code> <code>f59d9542</code> <code>b71c80e9</code></div>
+  </div>
+
+  <!-- C9: Download/Export -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Download/Export System Refactoring<br><span style="color:var(--text-dim);font-size:0.9rem">下载导出系统重构</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-w13">W13</span></div>
+    </div>
+    <p>Unify scattered download logic into FolderWidgets/Download module: split handlers by file type (fromMarkdown, fromHtml, fromPptx), unified PDF export pipeline (Tiptap → HTML → PDF with TOC, ref-link, heading handling), URL-based download option abstraction.</p>
+    <p style="margin-top:0.5rem">将分散的下载逻辑统一到 FolderWidgets/Download 模块：按文件类型拆分 handler、统一 PDF 导出管线（Tiptap → HTML → PDF，含目录、引用链接、标题处理）。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Handler separation 处理器分离:</strong> Each file type has its own handler function (fromMarkdown, fromHtml, fromPptx). Shared logic (filename sanitization, download trigger) stays in a common utility.<br>每种文件类型有自己的处理器函数。共享逻辑（文件名清理、下载触发）保留在通用工具中。</li>
+        <li><strong>PDF pipeline PDF管线:</strong> Tiptap editor content → serialized HTML → jsPDF with custom heading/TOC/ref-link handlers → blob download.<br>Tiptap 编辑器内容 → 序列化 HTML → jsPDF（自定义标题/目录/引用链接处理器） → blob 下载。</li>
+        <li><strong>URL-based options URL 选项:</strong> Download options can come from URL parameters (format, filename), enabling deep-linking to specific export formats.<br>下载选项可来自 URL 参数（format、filename），支持深度链接到特定导出格式。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>dbeba01f</code> <code>66b5711d</code> <code>7a1ac35e</code> <code>96411fd3</code></div>
+  </div>
+
+  <!-- C10: Credit Dispute -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Credit Dispute System<br><span style="color:var(--text-dim);font-size:0.9rem">积分争议系统</span></div>
+      <div><span class="badge badge-general">General</span><span class="badge badge-w13">W13</span></div>
+    </div>
+    <p>Complete user credit dispute flow: DisputeDialog for submitting dispute reasons, API layer for dispute creation and status queries (pending/approved/rejected), Usage panel integration with status icons, and GA4 event tracking.</p>
+    <p style="margin-top:0.5rem">完整的用户积分争议处理流程：DisputeDialog 弹窗提交争议原因、API 支持创建和状态查询、Usage 面板集成状态图标、GA4 埋点追踪。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>State machine 状态机:</strong> pending → approved/rejected. Each state shows different icon and available actions in the Usage panel.<br>pending → approved/rejected。每个状态在 Usage 面板显示不同图标和可用操作。</li>
+        <li><strong>API path migration API 路径迁移:</strong> Migrated from /credits/dispute to /dispute — shows importance of versioning API routes cleanly.<br>从 /credits/dispute 迁移到 /dispute — 体现了干净地版本化 API 路由的重要性。</li>
+        <li><strong>Analytics integration 分析集成:</strong> GA4 tracks: dispute_opened, dispute_submitted, dispute_status_checked — for product team to monitor dispute volume.<br>GA4 追踪：dispute_opened、dispute_submitted、dispute_status_checked — 供产品团队监控争议量。</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>0862515d</code> <code>9625b35f</code> <code>66ebf6a5</code></div>
+  </div>
+</div>
+
+<!-- ==================== QUIZ ==================== -->
+<div id="quiz" class="page">
+  <h1>Quiz 测验</h1>
+  <p class="subtitle">20 questions across all 10 concepts — test your memory<br>覆盖全部 10 个概念的 20 道题 — 测试你的记忆</p>
+
+  <!-- Q1 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">1. Why must a tree be flattened before using react-window for virtual scrolling?<br><span style="color:var(--text-dim)">为什么在使用 react-window 虚拟滚动前必须将树扁平化？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) react-window doesn't support any nesting 不支持任何嵌套</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Trees use too much memory 树占用太多内存</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Virtual scrolling needs a flat list with fixed row heights to calculate which items are visible 虚拟滚动需要固定行高的扁平列表来计算哪些项可见</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) It's a React limitation React 的限制</div>
+    </div>
+    <div class="quiz-explain">Virtual scrolling works by calculating which rows are visible based on scroll position and fixed row height. A recursive DOM tree has dynamic heights and nested structures that prevent this calculation. Flattening converts the tree into a simple array where each item's position can be computed as index × rowHeight.<br>虚拟滚动通过滚动位置和固定行高计算可见行。递归 DOM 树有动态高度和嵌套结构，阻止了这种计算。扁平化将树转为简单数组，每项位置可通过 index × rowHeight 计算。</div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">2. What does IndexTree's pathToIndex Map provide?<br><span style="color:var(--text-dim)">IndexTree 的 pathToIndex Map 提供了什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) O(n) search through all nodes 遍历所有节点的 O(n) 搜索</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) O(1) lookup to find any node's index by its path 通过路径 O(1) 查找任何节点的索引</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Automatic sorting of tree nodes 自动排序树节点</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) CSS styling data for each row 每行的 CSS 样式数据</div>
+    </div>
+    <div class="quiz-explain">The pathToIndex Map is built during flattening: each node's path is mapped to its index in the flat array. This enables O(1) operations like "scroll to this file" or "select this folder" without scanning the entire list.<br>pathToIndex Map 在扁平化时构建：每个节点的路径映射到其在扁平数组中的索引。这使"滚动到此文件"或"选择此文件夹"等操作为 O(1)，无需扫描整个列表。</div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">3. In @dnd-kit, how is the "hover auto-expand" for folders implemented?<br><span style="color:var(--text-dim)">在 @dnd-kit 中，文件夹的"悬停自动展开"是如何实现的？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) setTimeout(500ms) on dragOver, then emit a custom 'folder-auto-expand' event 在 dragOver 上 setTimeout(500ms)，然后触发自定义事件</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) CSS :hover pseudo-class with transition delay CSS :hover 伪类加过渡延迟</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Built-in @dnd-kit autoExpand option @dnd-kit 内置的 autoExpand 选项</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) onMouseEnter event listener onMouseEnter 事件监听</div>
+    </div>
+    <div class="quiz-explain">During a drag operation, when the cursor hovers over a collapsed folder, a 500ms setTimeout is set. If the cursor is still over the folder after 500ms, a custom DOM event 'folder-auto-expand' is dispatched, which the FolderTreePanel listens to and expands the folder. This prevents accidental expansion from quick drag passes.<br>拖拽操作期间，光标悬停在折叠文件夹上时设置 500ms 的 setTimeout。如果 500ms 后光标仍在该文件夹上，触发自定义 DOM 事件 'folder-auto-expand'，FolderTreePanel 监听并展开文件夹。防止快速拖过时意外展开。</div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">4. What is the difference between "Stop" and "Rollback" in move conflict resolution?<br><span style="color:var(--text-dim)">文件移动冲突解决中，"停止"和"回滚"有什么区别？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) They are the same thing 它们是同一回事</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Stop undoes all moves, Rollback keeps completed ones 停止撤销所有，回滚保留已完成的</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Stop cancels remaining but keeps completed moves, Rollback undoes everything 停止取消剩余但保留已完成的，回滚撤销所有</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Stop closes the dialog, Rollback retries 停止关闭弹窗，回滚重试</div>
+    </div>
+    <div class="quiz-explain">"Stop" means: cancel all remaining pending moves, but don't undo the ones that already completed successfully. "Rollback" means: undo ALL changes, restoring every file to its original location. This distinction is important for user expectations — sometimes partial completion is acceptable.<br>"停止"意味着：取消所有剩余待处理的移动，但不撤销已成功完成的。"回滚"意味着：撤销所有变更，将每个文件恢复到原始位置。这种区分对用户预期很重要。</div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-card" data-answer="3">
+    <div class="quiz-q">5. What triggers an auto re-publish in the Web Page Publish workflow?<br><span style="color:var(--text-dim)">什么会触发网页发布流程中的自动重新发布？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) User manually clicks the publish button 用户手动点击发布按钮</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) A cron job checks for changes every 5 minutes 定时任务每5分钟检查变更</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) The page is refreshed 页面刷新时</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) File content changes during AI chat SSE streaming AI 聊天 SSE 流式传输期间文件内容变化</div>
+    </div>
+    <div class="quiz-explain">During AI chat, the SSE stream may update the file's content. The system detects these changes and automatically triggers a re-publish if the file is currently in "published" state, ensuring the live page stays in sync without manual intervention.<br>在 AI 聊天期间，SSE 流可能更新文件内容。系统检测到这些变化后，如果文件当前处于"已发布"状态，自动触发重新发布，确保线上页面保持同步。</div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">6. How does WebSocket reconnect prevent race conditions when multiple reconnects fire?<br><span style="color:var(--text-dim)">WebSocket 重连如何防止多个重连同时触发时的竞态条件？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Using a mutex lock 使用互斥锁</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Incrementing a connectionId — if the current id doesn't match, the older attempt aborts 递增 connectionId — 如果当前 id 不匹配，旧的尝试中止</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Queuing all reconnect requests 将所有重连请求排队</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Disabling reconnect after the first attempt 第一次尝试后禁用重连</div>
+    </div>
+    <div class="quiz-explain">A global connectionId counter is incremented each time reconnect() is called. The reconnect function captures its own ID at the start. After the async connection attempt, it checks if its ID still matches the global counter. If not, a newer reconnect has started, so this one aborts silently.<br>每次调用 reconnect() 时递增全局 connectionId 计数器。重连函数在开始时捕获自己的 ID。异步连接尝试后，检查其 ID 是否仍匹配全局计数器。如果不匹配，说明更新的重连已开始，当前静默中止。</div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">7. What is the correct exponential backoff sequence for WebSocket reconnect?<br><span style="color:var(--text-dim)">WebSocket 重连的正确指数退避序列是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) 1s → 2s → 4s → 8s → 16s → max 30s</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) 1s → 1s → 1s → 1s (constant) 固定间隔</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) 5s → 10s → 20s → 40s → max 60s</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) 100ms → 500ms → 1s → 5s → max 10s</div>
+    </div>
+    <div class="quiz-explain">The formula is: Math.min(1000 * Math.pow(2, attempt), 30000). Starting at 1 second, each retry doubles the delay, capping at 30 seconds. This prevents overwhelming the server while still attempting reconnection reasonably quickly.<br>公式为：Math.min(1000 * Math.pow(2, attempt), 30000)。从 1 秒开始，每次重试加倍延迟，上限 30 秒。防止服务器过载的同时保持合理的重连速度。</div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">8. In UIBlock Interactive Cards, how does a card submit the user's response back to the AI agent?<br><span style="color:var(--text-dim)">在 UIBlock 交互卡片中，卡片如何将用户的响应提交回 AI agent？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) WebSocket message WebSocket 消息</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Store the response in localStorage and let the agent poll 存入 localStorage 让 agent 轮询</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) POST to /ask_user/respond with the response_key and user's value 向 /ask_user/respond 发 POST 请求，包含 response_key 和用户的值</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Append to the SSE stream 追加到 SSE 流</div>
+    </div>
+    <div class="quiz-explain">Each UIBlock card receives a response_key from the SSE stream. When the user makes a selection or types a custom response, the card calls api.post('/ask_user/respond', { response_key, value }). The backend agent is waiting on this response_key and resumes execution when it receives the answer.<br>每个 UIBlock 卡片从 SSE 流接收 response_key。用户选择或输入自定义响应后，卡片调用 api.post('/ask_user/respond', { response_key, value })。后端 agent 在等待此 response_key，收到答案后恢复执行。</div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-card" data-answer="3">
+    <div class="quiz-q">9. Why did binding connect_token to user ID matter in the Pipedream OAuth integration?<br><span style="color:var(--text-dim)">为什么在 Pipedream OAuth 集成中将 connect_token 绑定到用户 ID 很重要？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) For analytics tracking purposes 用于分析跟踪</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Pipedream requires it for billing Pipedream 计费需要</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) It's required by OAuth 2.0 spec OAuth 2.0 规范要求</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Without it, a user could access another user's connected accounts — a cross-user data leak 没有它，一个用户可以访问另一个用户的已连接账户 — 跨用户数据泄漏</div>
+    </div>
+    <div class="quiz-explain">The connect_token is used to scope which accounts a user can see and manage. If the token's external_user_id doesn't match the authenticated user, User A could see User B's connected Google/Slack/etc. accounts. This was a real bug caused by reading the wrong cookie key for user identification.<br>connect_token 用于限定用户可以查看和管理哪些账户。如果 token 的 external_user_id 与已认证用户不匹配，用户 A 可以看到用户 B 的已连接账户。这是一个因读取错误的 cookie key 进行用户识别而导致的真实 bug。</div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">10. What is the purpose of "lazy-mount tabs" in the Customize View?<br><span style="color:var(--text-dim)">Customize View 中"懒加载标签"的目的是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) To reduce the JavaScript bundle size 减少 JavaScript 包大小</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) To avoid mounting tab content (and triggering API calls) until the tab is first selected 避免在标签首次选中前挂载内容（触发 API 调用）</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) To animate tab transitions 为标签切换添加动画</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) To pre-load all tabs in the background 在后台预加载所有标签</div>
+    </div>
+    <div class="quiz-explain">Lazy-mount means the ConnectorsTab component only mounts when the user first clicks on it. Before that, no API calls to fetch connector data are made, and no heavy component rendering occurs. A mountedTabs Set tracks which tabs have been mounted, so once mounted, the tab stays rendered even when switching away.<br>懒加载意味着 ConnectorsTab 组件仅在用户首次点击时挂载。在此之前，不会发起获取连接器数据的 API 调用，也不会进行重量级组件渲染。mountedTabs Set 跟踪已挂载的标签，一旦挂载，即使切换走也保持渲染。</div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">11. What is the correct approach for the SkillDetailDialog's file tree rendering?<br><span style="color:var(--text-dim)">SkillDetailDialog 的文件树渲染采用了什么方法？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Simple 2-level tree: flat-to-tree via dirMap, expansion via Set&lt;string&gt;, no virtual scrolling 简单两级树：dirMap 扁平转树，Set&lt;string&gt; 控制展开，无虚拟滚动</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Full recursive tree with react-window virtualization 完整递归树配 react-window 虚拟化</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) VSCode-style 4-layer architecture VSCode 风格的4层架构</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Third-party tree component like react-arborist 第三方树组件如 react-arborist</div>
+    </div>
+    <div class="quiz-explain">SkillDetailDialog uses a minimal implementation: useMemo builds a 2-level tree via dirMap, expansion is managed by a Set&lt;string&gt; in useState, and rendering is direct .map() without virtual scrolling. This is appropriate because skill files are typically &lt;50 items — the simplest solution for a small dataset.<br>SkillDetailDialog 使用最小化实现：useMemo 通过 dirMap 构建两级树，展开由 useState 中的 Set&lt;string&gt; 管理，直接 .map() 渲染无虚拟滚动。这对技能文件（通常&lt;50项）完全合适。</div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">12. In the Download/Export refactoring, what is the PDF export pipeline?<br><span style="color:var(--text-dim)">在下载导出重构中，PDF 导出管线是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Markdown → PDF (direct conversion) Markdown → PDF（直接转换）</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Tiptap → JSON → PDF Tiptap → JSON → PDF</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Tiptap → HTML → PDF (with TOC, ref-link, heading handlers) Tiptap → HTML → PDF（含目录、引用链接、标题处理器）</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Canvas screenshot → PDF 画布截图 → PDF</div>
+    </div>
+    <div class="quiz-explain">The PDF pipeline serializes Tiptap editor content to HTML first, then processes it through custom handlers for TOC generation, reference link resolution, heading formatting, and task list items before converting to PDF via jsPDF. The HTML intermediate step allows DOM-based manipulation before final rendering.<br>PDF 管线首先将 Tiptap 编辑器内容序列化为 HTML，然后通过自定义处理器处理目录生成、引用链接解析、标题格式化和任务列表项，最后通过 jsPDF 转换为 PDF。HTML 中间步骤允许在最终渲染前进行基于 DOM 的操作。</div>
+  </div>
+
+  <!-- Q13 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">13. What are the three possible states in the Credit Dispute system?<br><span style="color:var(--text-dim)">积分争议系统中的三种可能状态是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) open, in_review, closed 开放、审核中、关闭</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) pending, approved, rejected 待处理、已批准、已拒绝</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) submitted, processing, completed 已提交、处理中、已完成</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) draft, active, resolved 草稿、活跃、已解决</div>
+    </div>
+    <div class="quiz-explain">The dispute state machine has three states: pending (just submitted, awaiting review), approved (credits refunded), rejected (dispute denied). Each state maps to a different icon and available actions in the Usage panel UI.<br>争议状态机有三个状态：pending（刚提交，等待审核）、approved（积分已退还）、rejected（争议被拒绝）。每个状态在 Usage 面板 UI 中映射到不同的图标和可用操作。</div>
+  </div>
+
+  <!-- Q14 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">14. What happens when navigator.onLine is false during a WebSocket reconnect attempt?<br><span style="color:var(--text-dim)">当 navigator.onLine 为 false 时，WebSocket 重连尝试会怎样？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Don't attempt reconnect — wait for the 'online' event, then reconnect immediately 不尝试重连 — 等待 'online' 事件后立即重连</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Continue attempting with longer backoff intervals 继续尝试但使用更长的退避间隔</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Show an error modal and stop all retries 显示错误弹窗并停止所有重试</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Switch to polling mode instead 切换到轮询模式</div>
+    </div>
+    <div class="quiz-explain">When offline, there's no point in attempting WebSocket connections — they'll all fail. Instead, the system registers an event listener for the 'online' event. When the browser detects network recovery, the event fires and triggers an immediate reconnect attempt, providing the fastest possible recovery.<br>离线时尝试 WebSocket 连接毫无意义 — 都会失败。系统注册 'online' 事件监听器。当浏览器检测到网络恢复时，事件触发并立即尝试重连，提供最快的恢复速度。</div>
+  </div>
+
+  <!-- Q15 -->
+  <div class="quiz-card" data-answer="3">
+    <div class="quiz-q">15. In @dnd-kit, why is the drag overlay offset from the first selected item rather than the cursor?<br><span style="color:var(--text-dim)">在 @dnd-kit 中，为什么拖拽覆层从第一个选中项偏移而非光标位置？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Performance optimization 性能优化</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Browser limitation 浏览器限制</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) @dnd-kit requires it @dnd-kit 要求如此</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) When multi-selecting, users expect the dragged preview to represent the group starting from the first item, not jump to cursor position 多选时，用户期望拖拽预览从第一个选中项开始代表整个组，而非跳到光标位置</div>
+    </div>
+    <div class="quiz-explain">When dragging multiple selected items, the drag overlay shows a preview of the group. If the overlay positioned at the cursor, it would appear to "jump" from the clicked item, creating a jarring UX. By offsetting from the first selected item, the preview feels natural and predictable.<br>拖拽多个选中项时，拖拽覆层显示组的预览。如果覆层定位在光标处，会看起来从点击的项"跳跃"，造成不和谐的体验。从第一个选中项偏移使预览感觉自然和可预测。</div>
+  </div>
+
+  <!-- Q16 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">16. Where should the user ID for Pipedream connect_token come from?<br><span style="color:var(--text-dim)">Pipedream connect_token 的用户 ID 应该从哪里获取？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) From the request body (client sends it) 从请求体中（客户端发送）</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) From a URL parameter 从 URL 参数中</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) From the authenticated session cookie on the server 从服务端的已认证 session cookie 中</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) From localStorage on the client 从客户端的 localStorage 中</div>
+    </div>
+    <div class="quiz-explain">The user ID must come from the server-side authenticated session (cookie), never from client-supplied data. If taken from the request body or client storage, a malicious user could spoof another user's ID and gain access to their connected accounts. This was the root cause of the cross-user leak bug.<br>用户 ID 必须来自服务端已认证的 session（cookie），绝不能来自客户端提供的数据。如果从请求体或客户端存储获取，恶意用户可以伪造另一个用户的 ID 并获取其已连接账户的访问权限。这就是跨用户泄漏 bug 的根本原因。</div>
+  </div>
+
+  <!-- Q17 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">17. What is the incremental update strategy in IndexTree when expanding/collapsing?<br><span style="color:var(--text-dim)">IndexTree 在展开/折叠时的增量更新策略是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Always rebuild the entire flattened list 始终重建整个扁平列表</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) If change &lt; 20 items or &lt; 15% of total, splice affected rows; otherwise full rebuild 如果变更 &lt; 20 项或 &lt; 总数 15%，splice 受影响的行；否则完全重建</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Use React's virtual DOM diffing algorithm 使用 React 的虚拟 DOM diff 算法</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Cache every possible expansion state 缓存每种可能的展开状态</div>
+    </div>
+    <div class="quiz-explain">IndexTree uses a smart threshold: for small changes (under 20 items or 15% of the total), it surgically splices only the affected rows in the flat array — much faster than rebuilding. For large changes that affect many nodes, a full rebuild is more efficient than many individual splices.<br>IndexTree 使用智能阈值：对于小变更（低于 20 项或总数的 15%），精确地在扁平数组中 splice 受影响的行 — 比重建快得多。对于影响多个节点的大变更，完全重建比多次单独 splice 更高效。</div>
+  </div>
+
+  <!-- Q18 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">18. In the Download/Export system, why is handler separation by file type important?<br><span style="color:var(--text-dim)">在下载导出系统中，为什么按文件类型分离处理器很重要？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Each format has unique conversion logic — shared code in common utility, specific logic in dedicated handlers 每种格式有独特的转换逻辑 — 共享代码在通用工具中，特定逻辑在专用处理器中</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) To support tree shaking and reduce bundle size 支持 tree shaking 减少包大小</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) For testing purposes only 仅用于测试目的</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) To comply with coding standards 遵循编码标准</div>
+    </div>
+    <div class="quiz-explain">Before the refactor, download logic was scattered across many components, making it hard to maintain. By separating handlers (fromMarkdown, fromHtml, fromPptx), each format's unique conversion logic is isolated and independently testable, while shared concerns (filename sanitization, download trigger) live in a common utility. This is the Single Responsibility Principle in action.<br>重构前，下载逻辑分散在多个组件中，难以维护。通过分离处理器，每种格式的独特转换逻辑被隔离且可独立测试，共享关注点保留在通用工具中。这是单一职责原则的实践。</div>
+  </div>
+
+  <!-- Q19 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">19. What GA4 events does the Credit Dispute system track?<br><span style="color:var(--text-dim)">积分争议系统追踪哪些 GA4 事件？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) page_view, click, form_submit</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) dispute_created, dispute_resolved</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) dispute_opened, dispute_submitted, dispute_status_checked</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) credit_used, credit_refunded, credit_expired</div>
+    </div>
+    <div class="quiz-explain">Three specific events: dispute_opened (user opens the dialog), dispute_submitted (user submits a dispute with reason text), dispute_status_checked (user checks the status of an existing dispute). These help the product team understand: how many users consider disputing, how many follow through, and how engaged they are with checking outcomes.<br>三个特定事件：dispute_opened（用户打开弹窗）、dispute_submitted（用户提交争议原因）、dispute_status_checked（用户查看现有争议状态）。帮助产品团队了解用户参与度。</div>
+  </div>
+
+  <!-- Q20 -->
+  <div class="quiz-card" data-answer="3">
+    <div class="quiz-q">20. Why was the dispute API path migrated from /credits/dispute to /dispute?<br><span style="color:var(--text-dim)">为什么争议 API 路径从 /credits/dispute 迁移到 /dispute？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) The old path was too long 旧路径太长了</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) A backend framework migration required it 后端框架迁移需要</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Performance reasons 性能原因</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Disputes became their own domain entity, not a sub-resource of credits — cleaner API semantics 争议成为独立的领域实体，而非积分的子资源 — 更清晰的 API 语义</div>
+    </div>
+    <div class="quiz-explain">Initially disputes were modeled as a sub-resource under credits (/credits/dispute). But as the system evolved, disputes became a first-class entity with their own lifecycle, status tracking, and admin workflows. Moving to /dispute reflects this domain modeling change and follows RESTful resource naming conventions.<br>最初争议被建模为积分的子资源。但随着系统演进，争议成为具有自己生命周期、状态跟踪和管理工作流的一等实体。迁移到 /dispute 反映了这种领域建模变化，遵循 RESTful 资源命名规范。</div>
+  </div>
+
+  <div class="quiz-score" id="quizScore" style="display:none">
+    <div class="num" id="scoreNum">0</div>
+    <div class="label">out of 20 correct / 20 题中答对</div>
+    <p style="margin-top:1rem;color:var(--text-dim)" id="scoreMsg"></p>
+  </div>
+</div>
+
+<!-- ==================== FLASHCARDS ==================== -->
+<div id="flashcards" class="page">
+  <h1>Flashcards 闪卡</h1>
+  <p class="subtitle">Click to flip — rate your confidence after each card<br>点击翻转 — 每张卡后评估你的信心</p>
+
+  <div class="flashcard-container">
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-inner" id="flashcardInner">
+        <div class="flashcard-front" id="flashcardFront">
+          <h3 id="fcTerm"></h3>
+          <p style="color:var(--text-dim)" id="fcHint"></p>
+          <div class="hint">Click to reveal 点击揭示答案</div>
+        </div>
+        <div class="flashcard-back" id="flashcardBack">
+        </div>
+      </div>
+    </div>
+    <div class="confidence-bar" id="confBar" style="max-width:600px;width:100%;display:none">
+      <button class="conf-btn" onclick="rateCard('hard')">😰 Hard 困难</button>
+      <button class="conf-btn" onclick="rateCard('medium')">🤔 Medium 一般</button>
+      <button class="conf-btn" onclick="rateCard('easy')">😎 Easy 简单</button>
+    </div>
+    <div class="flashcard-nav">
+      <button onclick="prevCard()">← Prev 上一张</button>
+      <span class="flashcard-counter" id="fcCounter">1 / 10</span>
+      <button onclick="nextCard()">Next 下一张 →</button>
+    </div>
+    <div id="fcSummary" style="display:none;width:100%;max-width:600px">
+      <h2>Confidence Summary 信心总结</h2>
+      <div id="fcSummaryContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== REVIEW SCHEDULE ==================== -->
+<div id="review" class="page">
+  <h1>Review Schedule 复习计划</h1>
+  <p class="subtitle">Ebbinghaus spaced repetition — next review dates after today's session<br>艾宾浩斯间隔重复 — 今天复习后的下次复习日期</p>
+
+  <h2>After Today's Review 今天复习后的计划</h2>
+  <p style="color:var(--text-dim);margin-bottom:1rem">Today (Mar 28) you reviewed all 10 concepts → Stage 0 → Stage 1. Next reviews:<br>今天（3月28日）你复习了全部 10 个概念 → 阶段 0 → 阶段 1。下次复习：</p>
+
+  <div class="schedule-grid">
+    <div class="schedule-day today">
+      <div class="date">✅ Today 今天 — Mar 28</div>
+      <div class="items">
+        <ul>
+          <li>All 10 concepts reviewed</li>
+          <li>全部 10 个概念已复习</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Mar 31 (3 days later 3天后)</div>
+      <div class="items">
+        <ul>
+          <li>🔵 Virtual Scroll + Tree Flattening</li>
+          <li>🔵 @dnd-kit Advanced Patterns</li>
+          <li>🔵 Move Conflict Resolution</li>
+          <li>🔵 Web Page Publish Workflow</li>
+          <li>🔵 WebSocket Reconnect Safety</li>
+          <li>🔵 UIBlock Interactive Cards</li>
+          <li>🔵 Pipedream Connect OAuth</li>
+          <li>🔵 Customize View Architecture</li>
+          <li>🔵 Download/Export Refactoring</li>
+          <li>🔵 Credit Dispute System</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Apr 4 (7 days later 7天后)</div>
+      <div class="items">
+        <ul>
+          <li>Stage 2 → Stage 3 review</li>
+          <li>第2阶段 → 第3阶段复习</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Apr 11 (14 days later 14天后)</div>
+      <div class="items">
+        <ul>
+          <li>Stage 3 → Stage 4 review</li>
+          <li>第3阶段 → 第4阶段复习</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Apr 28 (30 days later 30天后)</div>
+      <div class="items">
+        <ul>
+          <li>Stage 4 → Stage 5 (mastered!)</li>
+          <li>第4阶段 → 第5阶段（已掌握！）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:2rem">Ebbinghaus Curve Stages 遗忘曲线阶段</h2>
+  <div class="card">
+    <table style="width:100%;font-size:0.9rem;color:var(--text-dim)">
+      <tr style="border-bottom:1px solid var(--border)">
+        <th style="padding:0.5rem;text-align:left;color:var(--text)">Stage 阶段</th>
+        <th style="padding:0.5rem;text-align:left;color:var(--text)">Interval 间隔</th>
+        <th style="padding:0.5rem;text-align:left;color:var(--text)">Memory Retention 记忆保持</th>
+      </tr>
+      <tr><td style="padding:0.5rem">Stage 1</td><td style="padding:0.5rem">1 day 1天</td><td style="padding:0.5rem">~40% → ~80%</td></tr>
+      <tr><td style="padding:0.5rem">Stage 2</td><td style="padding:0.5rem">3 days 3天</td><td style="padding:0.5rem">~60% → ~85%</td></tr>
+      <tr><td style="padding:0.5rem">Stage 3</td><td style="padding:0.5rem">7 days 7天</td><td style="padding:0.5rem">~70% → ~90%</td></tr>
+      <tr><td style="padding:0.5rem">Stage 4</td><td style="padding:0.5rem">14 days 14天</td><td style="padding:0.5rem">~75% → ~92%</td></tr>
+      <tr><td style="padding:0.5rem">Stage 5</td><td style="padding:0.5rem">30 days 30天</td><td style="padding:0.5rem">~80% → ~95% ✅ Mastered 已掌握</td></tr>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ==================== Navigation ====================
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+// ==================== Key Points Toggle ====================
+function toggleKeyPoints(btn) {
+  const kp = btn.nextElementSibling;
+  kp.classList.toggle('open');
+  btn.textContent = kp.classList.contains('open') ? 'Key Points 要点 ▴' : 'Key Points 要点 ▾';
+}
+
+// ==================== Quiz ====================
+let quizAnswered = 0;
+let quizCorrect = 0;
+const totalQuestions = 20;
+
+function checkAnswer(el, idx) {
+  const card = el.closest('.quiz-card');
+  if (card.classList.contains('answered')) return;
+  card.classList.add('answered');
+  const correct = parseInt(card.dataset.answer);
+  const opts = card.querySelectorAll('.quiz-opt');
+
+  opts.forEach((o, i) => {
+    o.classList.add('disabled');
+    if (i === correct) o.classList.add('correct');
+    else if (i === idx && idx !== correct) o.classList.add('wrong');
+  });
+
+  card.querySelector('.quiz-explain').style.display = 'block';
+
+  quizAnswered++;
+  if (idx === correct) quizCorrect++;
+
+  if (quizAnswered === totalQuestions) {
+    const sc = document.getElementById('quizScore');
+    sc.style.display = 'block';
+    document.getElementById('scoreNum').textContent = quizCorrect;
+    const pct = Math.round(quizCorrect / totalQuestions * 100);
+    let msg = '';
+    if (pct >= 90) msg = 'Excellent! You have a strong grasp of these concepts. 优秀！你对这些概念掌握得很好。';
+    else if (pct >= 70) msg = 'Good job! Review the concepts you missed. 做得好！复习一下答错的概念。';
+    else if (pct >= 50) msg = 'Keep studying! Several concepts need reinforcement. 继续学习！多个概念需要加强。';
+    else msg = 'These concepts need more review. Go through the Concepts tab again. 这些概念需要更多复习。重新看一遍概念标签页。';
+    document.getElementById('scoreMsg').textContent = msg;
+    updateProgress();
+  }
+}
+
+// ==================== Flashcards ====================
+const flashcards = [
+  {
+    term: "Virtual Scroll + Tree Flattening",
+    hint: "虚拟滚动 + 树形扁平化 — W12 Frontend",
+    back: "<h4>虚拟滚动 + 树形扁平化</h4><p>将递归 DOM 树转为扁平数组 + react-window 虚拟滚动</p><ul><li>useFlattenedTree hook: nested tree → FlatTreeItem[]</li><li>useIndexTree: pathToIndex Map for O(1) lookup</li><li>Incremental updates: splice for small changes, rebuild for large</li><li>Each FlatTreeItem stores: id, depth, hasChildren, isExpanded, parentPath</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Virtual scrolling needs flat data with predictable row positions.</p>"
+  },
+  {
+    term: "@dnd-kit Advanced Patterns",
+    hint: "拖拽系统高级模式 — W12 Frontend",
+    back: "<h4>@dnd-kit 高级模式</h4><p>复杂拖拽交互：高亮、自动展开、偏移修正</p><ul><li>Hover auto-expand: setTimeout(500ms) + custom event</li><li>Collision detection: closestCenter for files, rectIntersection for folders</li><li>Multi-select offset: from first selected item, not cursor</li><li>Undo: snapshot state before drop for Ctrl+Z support</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Good DnD UX requires timing control and visual feedback at every stage.</p>"
+  },
+  {
+    term: "Move Conflict Resolution & Rollback",
+    hint: "文件移动冲突解决与回滚 — W12 Frontend",
+    back: "<h4>文件移动冲突解决</h4><p>容错设计：冲突弹窗 + 部分失败回滚</p><ul><li>Three strategies: Overwrite / Skip / Rename</li><li>\"Apply to all\" option for batch operations</li><li>Rollback queue tracks all mutations for reversal</li><li>Stop ≠ Rollback: Stop keeps completed, Rollback undoes all</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Users need granular control over conflict resolution, and partial failure must be recoverable.</p>"
+  },
+  {
+    term: "Web Page Publish Workflow",
+    hint: "网页发布流程设计 — W12 Frontend",
+    back: "<h4>网页发布流程</h4><p>HTML 文件发布到公网的完整流程</p><ul><li>CustomPathDialog: user-defined URL slug with validation</li><li>State machine: unpublished → publishing → published → updating</li><li>SSE auto-update: re-publish when file changes during AI chat</li><li>Free user upgrade guidance for publish feature</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Publish is a state machine, not a one-time action — content changes must trigger re-publish.</p>"
+  },
+  {
+    term: "WebSocket Reconnect Safety",
+    hint: "WebSocket 重连安全机制 — W12 Frontend",
+    back: "<h4>WebSocket 重连安全</h4><p>健壮的 WebSocket 连接设计</p><ul><li>Race guard: connectionId counter, abort if id mismatch</li><li>Exponential backoff: 1s → 2s → 4s → ... → max 30s</li><li>Offline: listen 'online'/'offline' events, don't retry when offline</li><li>UI: show attempt count, offline badge, connected state</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Reconnect without race guards causes duplicate connections and state corruption.</p>"
+  },
+  {
+    term: "UIBlock Interactive Cards",
+    hint: "UIBlock 交互卡片模式 — W13 Frontend",
+    back: "<h4>UIBlock 交互卡片</h4><p>SSE 流中的结构化 UI 指令 → 交互卡片</p><ul><li>Stream parsing: detect UIBlock types, route to card components</li><li>Response: POST /ask_user/respond with response_key + value</li><li>Card types: AskUserCard (selection + input + skip), SuggestConnectorCard</li><li>Type-driven rendering: types.ts interfaces drive component selection</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: AI agents need structured UI primitives to collect user input mid-conversation.</p>"
+  },
+  {
+    term: "Pipedream Connect OAuth",
+    hint: "第三方 OAuth 集成 — W13 Backend",
+    back: "<h4>Pipedream OAuth 集成</h4><p>通过 Pipedream SDK 实现第三方 OAuth</p><ul><li>Security: connect_token MUST bind to real user ID from session cookie</li><li>Bug lesson: wrong cookie key → cross-user account leaks</li><li>Provider pattern: PipedreamProvider at app root, singleton client</li><li>Lifecycle: connect → list → disconnect → reconnect</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Never trust client-supplied user identity for token generation — always read from server session.</p>"
+  },
+  {
+    term: "Customize View Architecture",
+    hint: "可定制化视图架构 — W13 Frontend",
+    back: "<h4>Customize View 架构</h4><p>Skills + Connectors 双标签页管理</p><ul><li>Lazy-mount tabs: mountedTabs Set, only mount on first select</li><li>File tree dialog: 2-level, dirMap + Set&lt;string&gt; expansion</li><li>Skeleton loading: card-shaped, match final layout</li><li>Skills CRUD: create, toggle, detail view, remove</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Lazy-mount avoids unnecessary API calls — don't fetch what the user hasn't looked at.</p>"
+  },
+  {
+    term: "Download/Export Refactoring",
+    hint: "下载导出系统重构 — W13 Frontend",
+    back: "<h4>下载导出重构</h4><p>统一分散的下载逻辑到 Download 模块</p><ul><li>Handler separation: fromMarkdown, fromHtml, fromPptx</li><li>PDF pipeline: Tiptap → HTML → jsPDF (TOC, ref-links, headings)</li><li>Shared utility: filename sanitization, download trigger</li><li>URL-based options: deep-link to specific export formats</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: Single Responsibility — each format's unique logic isolated, shared concerns centralized.</p>"
+  },
+  {
+    term: "Credit Dispute System",
+    hint: "积分争议系统 — W13 General",
+    back: "<h4>积分争议系统</h4><p>完整的用户积分争议处理流程</p><ul><li>State machine: pending → approved / rejected</li><li>API migration: /credits/dispute → /dispute (domain entity)</li><li>GA4 events: dispute_opened, dispute_submitted, dispute_status_checked</li><li>Usage panel: status icons, contextual actions per state</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key insight 关键洞察: When a sub-resource grows its own lifecycle, promote it to a first-class entity.</p>"
+  }
+];
+
+let currentCard = 0;
+let cardRatings = {};
+
+function renderCard() {
+  const fc = flashcards[currentCard];
+  document.getElementById('fcTerm').textContent = fc.term;
+  document.getElementById('fcHint').textContent = fc.hint;
+  document.getElementById('flashcardBack').innerHTML = fc.back;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fcCounter').textContent = `${currentCard + 1} / ${flashcards.length}`;
+  document.getElementById('confBar').style.display = 'none';
+
+  // Reset confidence buttons
+  document.querySelectorAll('.conf-btn').forEach(b => {
+    b.classList.remove('selected-red', 'selected-orange', 'selected-green');
+  });
+
+  // Show previous rating if exists
+  if (cardRatings[currentCard]) {
+    document.getElementById('confBar').style.display = 'flex';
+    highlightRating(cardRatings[currentCard]);
+  }
+}
+
+function flipCard() {
+  document.getElementById('flashcard').classList.toggle('flipped');
+  if (document.getElementById('flashcard').classList.contains('flipped')) {
+    document.getElementById('confBar').style.display = 'flex';
+  }
+}
+
+function nextCard() {
+  currentCard = (currentCard + 1) % flashcards.length;
+  renderCard();
+  checkAllRated();
+}
+
+function prevCard() {
+  currentCard = (currentCard - 1 + flashcards.length) % flashcards.length;
+  renderCard();
+}
+
+function rateCard(rating) {
+  cardRatings[currentCard] = rating;
+  highlightRating(rating);
+  checkAllRated();
+  setTimeout(() => nextCard(), 400);
+}
+
+function highlightRating(rating) {
+  document.querySelectorAll('.conf-btn').forEach(b => {
+    b.classList.remove('selected-red', 'selected-orange', 'selected-green');
+  });
+  const btns = document.querySelectorAll('.conf-btn');
+  if (rating === 'hard') btns[0].classList.add('selected-red');
+  else if (rating === 'medium') btns[1].classList.add('selected-orange');
+  else if (rating === 'easy') btns[2].classList.add('selected-green');
+}
+
+function checkAllRated() {
+  if (Object.keys(cardRatings).length === flashcards.length) {
+    const summary = document.getElementById('fcSummary');
+    summary.style.display = 'block';
+    let html = '<div style="margin-top:1rem">';
+    const groups = { hard: [], medium: [], easy: [] };
+    flashcards.forEach((fc, i) => {
+      const r = cardRatings[i] || 'medium';
+      groups[r].push(fc.term);
+    });
+    if (groups.hard.length) {
+      html += '<div class="card" style="border-color:var(--red)"><p style="color:var(--red);font-weight:600">😰 Need more review 需要更多复习 (' + groups.hard.length + ')</p><ul style="padding-left:1.2rem;margin-top:0.5rem">';
+      groups.hard.forEach(t => html += '<li style="color:var(--text-dim)">' + t + '</li>');
+      html += '</ul></div>';
+    }
+    if (groups.medium.length) {
+      html += '<div class="card" style="border-color:var(--orange)"><p style="color:var(--orange);font-weight:600">🤔 Getting there 有点印象 (' + groups.medium.length + ')</p><ul style="padding-left:1.2rem;margin-top:0.5rem">';
+      groups.medium.forEach(t => html += '<li style="color:var(--text-dim)">' + t + '</li>');
+      html += '</ul></div>';
+    }
+    if (groups.easy.length) {
+      html += '<div class="card" style="border-color:var(--green)"><p style="color:var(--green);font-weight:600">😎 Confident 已掌握 (' + groups.easy.length + ')</p><ul style="padding-left:1.2rem;margin-top:0.5rem">';
+      groups.easy.forEach(t => html += '<li style="color:var(--text-dim)">' + t + '</li>');
+      html += '</ul></div>';
+    }
+    html += '</div>';
+    document.getElementById('fcSummaryContent').innerHTML = html;
+    updateProgress();
+  }
+}
+
+// ==================== Progress ====================
+function updateProgress() {
+  let done = 0;
+  if (quizAnswered === totalQuestions) done += 5;
+  done += Object.keys(cardRatings).length / 2;
+  const pct = Math.min(Math.round(done / 10 * 100), 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${pct}% complete — quiz ${quizAnswered}/${totalQuestions}, flashcards ${Object.keys(cardRatings).length}/${flashcards.length} rated`;
+}
+
+// Init
+renderCard();
+</script>
+</body>
+</html>

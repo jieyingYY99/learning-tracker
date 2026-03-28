@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2026-W13 Learning Hub | 第13周学习中心</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a25;
+    --border: #2a2a3a;
+    --text: #e8e8ef;
+    --text-dim: #8888a0;
+    --accent: #6c63ff;
+    --accent-glow: rgba(108,99,255,0.15);
+    --green: #22c55e;
+    --orange: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --pink: #ec4899;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Navigation */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+  }
+  nav ul {
+    display: flex; list-style: none; gap: 0;
+    max-width: 1100px; margin: 0 auto;
+  }
+  nav li a {
+    display: block; padding: 1rem 1.5rem;
+    color: var(--text-dim); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav li a:hover, nav li a.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Main */
+  main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 2rem;
+  }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  h1 {
+    font-size: 2rem; font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  h1 small { font-size: 1rem; color: var(--text-dim); font-weight: 400; }
+  .subtitle { color: var(--text-dim); margin-bottom: 2rem; }
+
+  h2 {
+    font-size: 1.3rem; font-weight: 600;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+  .card-title {
+    font-size: 1.1rem; font-weight: 600;
+  }
+  .badge {
+    font-size: 0.7rem; padding: 0.2rem 0.6rem;
+    border-radius: 20px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .badge-frontend { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-backend { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-general { background: rgba(245,158,11,0.15); color: var(--orange); }
+
+  .card p { color: var(--text-dim); font-size: 0.9rem; }
+  .card .commits {
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8rem; color: var(--text-dim);
+  }
+  .card .commits code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: var(--surface2); padding: 0.1rem 0.4rem;
+    border-radius: 4px; font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  /* Key Points */
+  .key-points {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface2);
+    border-radius: 8px;
+    display: none;
+  }
+  .key-points.open { display: block; }
+  .key-points h4 {
+    font-size: 0.85rem; color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .key-points ul {
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .key-points li { margin-bottom: 0.3rem; }
+  .toggle-btn {
+    margin-top: 0.75rem;
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 0.4rem 0.8rem;
+    border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .toggle-btn:hover {
+    border-color: var(--accent); color: var(--accent);
+  }
+
+  /* Code blocks */
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0.75rem 0;
+  }
+  code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* Quiz */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .quiz-q {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
+  .quiz-opt {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--accent); }
+  .quiz-opt.correct {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.1);
+  }
+  .quiz-opt.wrong {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.1);
+  }
+  .quiz-explain {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  /* Flashcards */
+  .flashcard-container {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1rem;
+  }
+  .flashcard {
+    width: 100%; max-width: 600px;
+    min-height: 250px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  .flashcard-inner {
+    position: relative;
+    width: 100%; height: 100%;
+    min-height: 250px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%; min-height: 250px;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+  .flashcard-front {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border);
+  }
+  .flashcard-front h3 {
+    font-size: 1.3rem; margin-bottom: 0.5rem;
+  }
+  .flashcard-front .hint {
+    font-size: 0.8rem; color: var(--text-dim);
+    margin-top: 1rem;
+  }
+  .flashcard-back {
+    background: linear-gradient(135deg, #1a1030, #12121a);
+    border: 1px solid var(--accent);
+    transform: rotateY(180deg);
+    text-align: left;
+    align-items: flex-start;
+  }
+  .flashcard-back h4 {
+    color: var(--accent); margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+  .flashcard-back p {
+    font-size: 0.9rem; color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+  .flashcard-nav {
+    display: flex; gap: 1rem; align-items: center;
+  }
+  .flashcard-nav button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .flashcard-nav button:hover {
+    border-color: var(--accent);
+  }
+  .flashcard-counter {
+    color: var(--text-dim); font-size: 0.9rem;
+  }
+
+  /* Review schedule */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .schedule-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .schedule-day .date {
+    font-weight: 600; font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+  .schedule-day .items {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .schedule-day .items li {
+    list-style: none;
+    padding: 0.2rem 0;
+  }
+  .schedule-day.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+
+  /* Stats */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-size: 2rem; font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-card .label {
+    font-size: 0.8rem; color: var(--text-dim);
+    margin-top: 0.25rem;
+  }
+
+  @media (max-width: 768px) {
+    nav ul { overflow-x: auto; }
+    nav li a { padding: 0.75rem 1rem; font-size: 0.8rem; white-space: nowrap; }
+    main { padding: 1rem; }
+    h1 { font-size: 1.5rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#home" class="active" onclick="showPage('home',this)">Home 首页</a></li>
+    <li><a href="#concepts" onclick="showPage('concepts',this)">Concepts 概念</a></li>
+    <li><a href="#quiz" onclick="showPage('quiz',this)">Quiz 测验</a></li>
+    <li><a href="#flashcards" onclick="showPage('flashcards',this)">Flashcards 闪卡</a></li>
+    <li><a href="#review" onclick="showPage('review',this)">Review 复习</a></li>
+  </ul>
+</nav>
+
+<main>
+
+<!-- ==================== HOME ==================== -->
+<div id="home" class="page active">
+  <h1>Week 13 Learning Hub <small>第13周学习中心</small></h1>
+  <p class="subtitle">KUSE App V2 — Mar 22-28, 2026 | Next.js + React + TypeScript</p>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="num">70</div>
+      <div class="label">Commits 提交</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5</div>
+      <div class="label">New Concepts 新概念</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5</div>
+      <div class="label">W12 Review Due W12待复习</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">10</div>
+      <div class="label">Total Concepts 总概念</div>
+    </div>
+  </div>
+
+  <h2>This Week's Focus 本周重点</h2>
+  <div class="card">
+    <p>Built the entire <strong>Customize View</strong> (Skills + Connectors tabs) from scratch, integrated <strong>Pipedream Connect OAuth</strong> for third-party service authorization, implemented <strong>UIBlock interactive cards</strong> for AI-driven multi-step flows, refactored the <strong>download/export system</strong> into a unified module, and shipped a complete <strong>credit dispute system</strong>.</p>
+    <p style="margin-top:0.5rem">从零构建了<strong>自定义视图</strong>（技能 + 连接器标签页），集成了 <strong>Pipedream Connect OAuth</strong> 实现第三方服务授权，实现了 <strong>UIBlock 交互卡片</strong>用于 AI 驱动的多步交互流程，将<strong>下载导出系统</strong>重构为统一模块，并交付了完整的<strong>积分争议系统</strong>。</p>
+  </div>
+</div>
+
+<!-- ==================== CONCEPTS ==================== -->
+<div id="concepts" class="page">
+  <h1>Concepts 概念</h1>
+  <p class="subtitle">5 new concepts learned this week 本周学习了5个新概念</p>
+
+  <!-- Concept 1: UIBlock -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">UIBlock Interactive Cards Pattern<br><span style="color:var(--text-dim);font-size:0.9rem">UIBlock 交互卡片模式</span></div>
+      <span class="badge badge-frontend">Frontend 前端</span>
+    </div>
+    <p>Parse structured UI directives (ask_user, suggest_connectors) from SSE streams and render them as interactive card components. User actions call the ask_user/respond API to return results to the backend agent, enabling AI-driven multi-step interaction flows.</p>
+    <p style="margin-top:0.5rem">在 AI Chat 的 SSE 流中解析结构化 UI 指令（ask_user、suggest_connectors），渲染为交互卡片组件（AskUserCard、SuggestConnectorCard），用户操作后调用 ask_user/respond API 回传结果给后端 agent，实现 AI 驱动的多步交互流程。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Stream parsing 流解析:</strong> streamProcessor detects UIBlock types in SSE chunks and routes to appropriate card components<br>streamProcessor 在 SSE 数据块中检测 UIBlock 类型并路由到对应的卡片组件</li>
+        <li><strong>Response pattern 响应模式:</strong> Each card submits via response_key to ask_user/respond API endpoint<br>每个卡片通过 response_key 向 ask_user/respond API 端点提交</li>
+        <li><strong>Component separation 组件分离:</strong> AskUserCard (selection + custom input + skip) and SuggestConnectorCard are independent, reusable UIBlock renderers<br>AskUserCard（选择 + 自定义输入 + 跳过）和 SuggestConnectorCard 是独立、可复用的 UIBlock 渲染器</li>
+        <li><strong>Type-driven rendering 类型驱动渲染:</strong> Chat types.ts defines UIBlock interfaces that drive which component renders<br>Chat types.ts 定义了 UIBlock 接口来驱动组件渲染</li>
+      </ul>
+<pre><code>// streamProcessor.ts — parsing UIBlock from SSE
+if (block.type === 'ask_user') {
+  return &lt;AskUserCard options={block.options} responseKey={block.response_key} /&gt;
+}
+
+// AskUserCard — submitting response
+const handleSubmit = async (value: string) =&gt; {
+  await api.post('/ask_user/respond', {
+    response_key: responseKey,
+    value
+  });
+};</code></pre>
+    </div>
+    <div class="commits">Related: <code>d8a095db</code> <code>d5bc5767</code> <code>0bb593b4</code> <code>8a657b9c</code></div>
+  </div>
+
+  <!-- Concept 2: Pipedream OAuth -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Pipedream Connect OAuth Integration<br><span style="color:var(--text-dim);font-size:0.9rem">第三方 OAuth 集成（Pipedream Connect）</span></div>
+      <span class="badge badge-backend">Backend 后端</span>
+    </div>
+    <p>Implement third-party OAuth via Pipedream Connect SDK: backend API route generates connect_token bound to user ID (preventing cross-user leaks), frontend PipedreamProvider wraps createFrontendClient, ConnectModal triggers OAuth popup, with full account lifecycle management.</p>
+    <p style="margin-top:0.5rem">通过 Pipedream Connect SDK 实现第三方服务 OAuth 授权：后端 API route 生成 connect_token（绑定用户 ID 防止跨用户泄漏）、前端 PipedreamProvider 包裹 createFrontendClient、ConnectModal 触发 OAuth 弹窗、完整的账户生命周期管理。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Security 安全性:</strong> connect_token must be bound to authenticated user ID — cookie key mismatch caused cross-user account leaks<br>connect_token 必须绑定已认证的用户 ID — cookie key 不匹配导致了跨用户账户泄漏</li>
+        <li><strong>Token flow 令牌流程:</strong> Server route reads real user ID from session cookie → generates short-lived connect_token → frontend SDK uses it to open OAuth popup<br>服务端路由从 session cookie 读取真实用户 ID → 生成短时效 connect_token → 前端 SDK 用它打开 OAuth 弹窗</li>
+        <li><strong>Provider pattern:</strong> PipedreamProvider at app root creates singleton frontend client for all connector components<br>PipedreamProvider 在应用根部创建单例前端客户端供所有连接器组件使用</li>
+        <li><strong>Account lifecycle 账户生命周期:</strong> Connect → list accounts → disconnect → reconnect, with auto-close modal on success<br>连接 → 列出账户 → 断开 → 重新连接，成功后自动关闭弹窗</li>
+      </ul>
+<pre><code>// app/api/connectors/token/route.ts
+export async function POST(req: Request) {
+  const userId = getUserIdFromCookie(req); // Must be real user ID!
+  const token = await pipedream.createConnectToken({
+    external_user_id: userId,
+  });
+  return Response.json({ token: token.token });
+}</code></pre>
+    </div>
+    <div class="commits">Related: <code>a7f50f29</code> <code>e2ab4e63</code> <code>6adb5844</code> <code>10836fc5</code> | <a href="pipedream-token-flow.html" style="color:var(--accent);text-decoration:none;font-weight:500;">Token Flow Deep Dive &rarr;</a></div>
+  </div>
+
+  <!-- Concept 3: Customize View -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Customize View Tab Architecture<br><span style="color:var(--text-dim);font-size:0.9rem">可定制化视图架构</span></div>
+      <span class="badge badge-frontend">Frontend 前端</span>
+    </div>
+    <p>Build a dual-tab management interface (Skills + Connectors): SkillsTab supports Official/Custom filtering with detail dialog featuring a file tree browser; ConnectorsTab integrates Pipedream curated apps with search, skeleton loading, and lazy-mount tabs for optimized initial render.</p>
+    <p style="margin-top:0.5rem">构建 Skills + Connectors 双标签页管理界面：SkillsTab 支持 Official/Custom 分类过滤、技能详情弹窗含文件树浏览器；ConnectorsTab 集成 Pipedream curated apps 列表、搜索过滤、skeleton loading、lazy-mount tabs 优化首次渲染。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Lazy-mount tabs 懒挂载标签页:</strong> Only mount tab content when first selected, avoiding heavy Pipedream SDK init on page load<br>仅在首次选中标签页时挂载内容，避免页面加载时初始化重量级 Pipedream SDK</li>
+        <li><strong>Skeleton loading:</strong> Show content placeholders while fetching skills/connectors data for perceived performance<br>在获取数据时显示内容占位符以提升感知性能</li>
+        <li><strong>File tree browser 文件树浏览器:</strong> SkillDetailDialog renders skill files as collapsible tree with expand/collapse directories<br>SkillDetailDialog 将技能文件渲染为可折叠的树形目录结构</li>
+        <li><strong>Radix primitives:</strong> Replaced raw buttons/dropdowns with Button component and Radix Dialog/Dropdown for accessibility<br>用 Button 组件和 Radix Dialog/Dropdown 替换原生按钮/下拉菜单以提升无障碍性</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>3fc4e56c</code> <code>ddfe9f5a</code> <code>6de56090</code> <code>b71c80e9</code></div>
+  </div>
+
+  <!-- Concept 4: Download/Export Refactor -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Download/Export System Refactoring<br><span style="color:var(--text-dim);font-size:0.9rem">下载导出系统重构</span></div>
+      <span class="badge badge-frontend">Frontend 前端</span>
+    </div>
+    <p>Consolidate scattered download logic into FolderWidgets/Download module: split handlers by file type (fromMarkdown, fromHtml, fromPptx), unify PDF export pipeline (Tiptap → HTML → PDF with TOC, ref-links, heading processing), and abstract URL-based download options.</p>
+    <p style="margin-top:0.5rem">将分散在各组件中的下载逻辑统一到 FolderWidgets/Download 模块：按文件类型拆分 handler（fromMarkdown、fromHtml、fromPptx）、统一 PDF 导出管线（Tiptap → HTML → PDF，含 TOC、ref-link、heading 处理）、URL-based 下载选项抽象。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>Pipeline architecture 管线架构:</strong> Markdown → Tiptap DOM → HTML string → PDF pages, with each step independently testable<br>Markdown → Tiptap DOM → HTML 字符串 → PDF 页面，每步可独立测试</li>
+        <li><strong>Heading with ID:</strong> HeadingWithId extension generates stable IDs for TOC navigation in exported PDFs<br>HeadingWithId 扩展生成稳定 ID 用于导出 PDF 中的目录导航</li>
+        <li><strong>Ref-link resolution:</strong> RefLinkMark resolves internal document references to proper URLs during export<br>RefLinkMark 在导出时将内部文档引用解析为正确的 URL</li>
+        <li><strong>Escape handling 转义处理:</strong> Special characters in headings must be escaped properly for PDF rendering<br>标题中的特殊字符必须正确转义以用于 PDF 渲染</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>dbeba01f</code> <code>66b5711d</code> <code>7a1ac35e</code> <code>96411fd3</code></div>
+  </div>
+
+  <!-- Concept 5: Credit Dispute -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Credit Dispute System<br><span style="color:var(--text-dim);font-size:0.9rem">积分争议系统</span></div>
+      <span class="badge badge-general">General 通用</span>
+    </div>
+    <p>Build a complete credit dispute workflow: DisputeDialog for submitting dispute reasons, API layer supporting dispute creation and status queries (pending/approved/rejected), Usage panel integration with status icons, and GA4 event tracking for user behavior analytics.</p>
+    <p style="margin-top:0.5rem">完整的用户积分争议处理流程：DisputeDialog 弹窗让用户提交争议原因、API 层支持 dispute 的创建和状态查询（pending/approved/rejected）、Usage 面板集成争议状态图标、GA4 埋点追踪用户行为。</p>
+    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
+    <div class="key-points">
+      <h4>Key Points 要点</h4>
+      <ul>
+        <li><strong>API path migration 路径迁移:</strong> Migrated from /credits/dispute to /dispute — keep API paths clean and resource-oriented<br>从 /credits/dispute 迁移到 /dispute — 保持 API 路径干净且面向资源</li>
+        <li><strong>Status tracking 状态追踪:</strong> Three states (pending/approved/rejected) with visual icons in Usage panel<br>三种状态（pending/approved/rejected），在 Usage 面板中用可视图标展示</li>
+        <li><strong>Analytics integration 分析集成:</strong> GA4 custom events track dispute creation, resolution, and user flow for ads attribution<br>GA4 自定义事件追踪争议创建、解决和用户流程，用于广告归因</li>
+      </ul>
+    </div>
+    <div class="commits">Related: <code>0862515d</code> <code>9625b35f</code> <code>66ebf6a5</code></div>
+  </div>
+</div>
+
+<!-- ==================== QUIZ ==================== -->
+<div id="quiz" class="page">
+  <h1>Quiz 测验</h1>
+  <p class="subtitle">Test your understanding 测试你的理解</p>
+
+  <div class="quiz-card">
+    <div class="quiz-q">1. In the UIBlock pattern, how does the frontend communicate the user's selection back to the backend agent?<br><span style="color:var(--text-dim);font-size:0.9rem">在 UIBlock 模式中，前端如何将用户的选择传回后端 agent？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. WebSocket message with selection data<br>WebSocket 消息携带选择数据</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. POST to ask_user/respond API with response_key and value<br>POST 到 ask_user/respond API 携带 response_key 和 value</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. Append selection to the next chat message<br>将选择追加到下一条聊天消息</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. Store in Zustand and let SSE pick it up<br>存入 Zustand 让 SSE 获取</div>
+    </div>
+    <div class="quiz-explain">The UIBlock cards use a dedicated REST endpoint (ask_user/respond) with a response_key to match the response to the original question. This decouples the interactive flow from the chat stream.<br>UIBlock 卡片使用专用 REST 端点（ask_user/respond）配合 response_key 将响应匹配到原始问题。这将交互流程与聊天流解耦。</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">2. What critical security issue was discovered in the Pipedream Connect integration?<br><span style="color:var(--text-dim);font-size:0.9rem">在 Pipedream Connect 集成中发现了什么关键安全问题？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. OAuth tokens were stored in localStorage<br>OAuth 令牌存储在 localStorage 中</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">B. connect_token had no expiry<br>connect_token 没有过期时间</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,true)">C. Wrong cookie key caused cross-user connector account leaks<br>错误的 cookie key 导致跨用户连接器账户泄漏</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. OAuth callback URL was not validated<br>OAuth 回调 URL 未经验证</div>
+    </div>
+    <div class="quiz-explain">Using the wrong cookie key to extract user ID meant connect_tokens could be generated for the wrong user, allowing one user to see another user's connected accounts. Fixed by using the correct session cookie key.<br>使用错误的 cookie key 提取用户 ID 意味着 connect_token 可能为错误的用户生成，导致一个用户能看到另一个用户的已连接账户。通过使用正确的 session cookie key 修复。</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">3. Why do the Customize View tabs use "lazy-mount" instead of rendering all tabs at once?<br><span style="color:var(--text-dim);font-size:0.9rem">为什么 Customize View 的标签页使用"懒挂载"而不是一次渲染所有标签页？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. To reduce bundle size with code splitting<br>通过代码分割减少包体积</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. To avoid initializing heavy Pipedream SDK and fetching data for hidden tabs<br>避免为隐藏的标签页初始化重量级 Pipedream SDK 和获取数据</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. Because Radix Tabs requires it<br>因为 Radix Tabs 要求这样做</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. To support server-side rendering<br>为了支持服务端渲染</div>
+    </div>
+    <div class="quiz-explain">The Connectors tab initializes the Pipedream frontend client and fetches curated apps data. Lazy-mounting ensures this heavy work only happens when the user actually clicks the Connectors tab, improving initial page load.<br>Connectors 标签页会初始化 Pipedream 前端客户端并获取 curated apps 数据。懒挂载确保这些重量级操作仅在用户实际点击 Connectors 标签页时才发生，提升了首次页面加载速度。</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">4. In the download/export refactoring, what is the PDF export pipeline order?<br><span style="color:var(--text-dim);font-size:0.9rem">在下载导出重构中，PDF 导出管线的顺序是什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. Markdown → PDF → TOC injection<br>Markdown → PDF → TOC 注入</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">B. HTML → Canvas → PDF pages<br>HTML → Canvas → PDF 页面</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,true)">C. Tiptap DOM → HTML string → PDF pages (with TOC, ref-links, heading processing)<br>Tiptap DOM → HTML 字符串 → PDF 页面（含 TOC、ref-link、heading 处理）</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. Markdown → AST → LaTeX → PDF<br>Markdown → AST → LaTeX → PDF</div>
+    </div>
+    <div class="quiz-explain">The pipeline converts Tiptap's ProseMirror document to HTML, then processes headings (with IDs for TOC), resolves ref-links, escapes special characters, and renders to PDF pages. Each step is modular and testable.<br>管线将 Tiptap 的 ProseMirror 文档转换为 HTML，然后处理标题（含 ID 用于 TOC）、解析 ref-link、转义特殊字符，最后渲染为 PDF 页面。每一步都是模块化和可测试的。</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">5. Why was the dispute API path migrated from /credits/dispute to /dispute?<br><span style="color:var(--text-dim);font-size:0.9rem">为什么 dispute API 路径从 /credits/dispute 迁移到 /dispute？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. To fix a routing conflict with the credits endpoint<br>修复与 credits 端点的路由冲突</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. To keep API paths clean and resource-oriented — disputes are their own resource<br>保持 API 路径干净且面向资源 — disputes 是独立资源</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. The backend team required a versioned API structure<br>后端团队要求版本化的 API 结构</div>
+      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. To enable caching at the CDN level<br>为了在 CDN 层启用缓存</div>
+    </div>
+    <div class="quiz-explain">Disputes, while related to credits, are their own distinct resource with independent CRUD operations and status lifecycle. Nesting them under /credits implied they were a sub-operation rather than a first-class entity.<br>Disputes 虽然与 credits 相关，但它们是独立的资源，有自己的 CRUD 操作和状态生命周期。将它们嵌套在 /credits 下暗示它们是子操作而非一等实体。</div>
+  </div>
+</div>
+
+<!-- ==================== FLASHCARDS ==================== -->
+<div id="flashcards" class="page">
+  <h1>Flashcards 闪卡</h1>
+  <p class="subtitle">Click to flip, arrow keys to navigate 点击翻转，方向键导航</p>
+
+  <div class="flashcard-container">
+    <div class="flashcard" onclick="flipCard(this)">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <h3>UIBlock Interactive Cards</h3>
+          <p style="color:var(--text-dim)">UIBlock 交互卡片模式</p>
+          <p class="hint">Click to reveal 点击翻转</p>
+        </div>
+        <div class="flashcard-back">
+          <h4>Definition 定义</h4>
+          <p>SSE 流中的结构化 UI 指令被解析并渲染为交互卡片（AskUserCard、SuggestConnectorCard）。</p>
+          <p>User selections are submitted via ask_user/respond API with a response_key, enabling AI-agent-driven multi-step workflows without breaking the chat stream.</p>
+          <p>用户选择通过 ask_user/respond API 配合 response_key 提交，实现 AI agent 驱动的多步工作流而不中断聊天流。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="flipCard(this)" style="display:none">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <h3>Pipedream Connect OAuth</h3>
+          <p style="color:var(--text-dim)">第三方 OAuth 集成</p>
+          <p class="hint">Click to reveal 点击翻转</p>
+        </div>
+        <div class="flashcard-back">
+          <h4>Definition 定义</h4>
+          <p>后端生成 connect_token（必须绑定真实用户 ID 防止跨用户泄漏）。</p>
+          <p>Frontend PipedreamProvider creates a singleton client; ConnectModal opens OAuth popup. Critical: wrong cookie key → cross-user account leaks.</p>
+          <p>前端 PipedreamProvider 创建单例客户端；ConnectModal 打开 OAuth 弹窗。关键：错误的 cookie key → 跨用户账户泄漏。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="flipCard(this)" style="display:none">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <h3>Customize View Architecture</h3>
+          <p style="color:var(--text-dim)">可定制化视图架构</p>
+          <p class="hint">Click to reveal 点击翻转</p>
+        </div>
+        <div class="flashcard-back">
+          <h4>Definition 定义</h4>
+          <p>Skills + Connectors 双标签页：SkillsTab 有 Official/Custom 过滤 + 文件树浏览器详情弹窗。</p>
+          <p>Lazy-mount tabs avoid initializing Pipedream SDK until user navigates to Connectors. Skeleton loading for perceived performance. Radix primitives for accessibility.</p>
+          <p>懒挂载标签页避免在用户导航到 Connectors 前初始化 Pipedream SDK。骨架屏用于感知性能。Radix 原语提升无障碍性。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="flipCard(this)" style="display:none">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <h3>Download/Export Pipeline</h3>
+          <p style="color:var(--text-dim)">下载导出管线</p>
+          <p class="hint">Click to reveal 点击翻转</p>
+        </div>
+        <div class="flashcard-back">
+          <h4>Definition 定义</h4>
+          <p>统一下载模块 FolderWidgets/Download：按文件类型拆分 handler（fromMarkdown、fromHtml、fromPptx）。</p>
+          <p>PDF pipeline: Tiptap DOM → HTML → PDF. HeadingWithId for TOC, RefLinkMark for internal links, proper character escaping for rendering.</p>
+          <p>PDF 管线：Tiptap DOM → HTML → PDF。HeadingWithId 生成目录，RefLinkMark 处理内部链接，正确的字符转义用于渲染。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="flipCard(this)" style="display:none">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <h3>Credit Dispute System</h3>
+          <p style="color:var(--text-dim)">积分争议系统</p>
+          <p class="hint">Click to reveal 点击翻转</p>
+        </div>
+        <div class="flashcard-back">
+          <h4>Definition 定义</h4>
+          <p>完整争议流程：DisputeDialog 提交原因 → API 创建/查询状态（pending/approved/rejected）→ Usage 面板状态图标。</p>
+          <p>API path migrated from /credits/dispute to /dispute — disputes are a first-class resource, not a credits sub-operation. GA4 events track the full funnel.</p>
+          <p>API 路径从 /credits/dispute 迁移到 /dispute — disputes 是一等资源而非 credits 的子操作。GA4 事件追踪完整漏斗。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard-nav">
+      <button onclick="prevCard()">← Prev 上一张</button>
+      <span class="flashcard-counter">1 / 5</span>
+      <button onclick="nextCard()">Next 下一张 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== REVIEW ==================== -->
+<div id="review" class="page">
+  <h1>Review Schedule 复习计划</h1>
+  <p class="subtitle">Based on Ebbinghaus forgetting curve 基于艾宾浩斯遗忘曲线</p>
+
+  <h2>Overdue — W12 Concepts 逾期 — 第12周概念</h2>
+  <p style="color:var(--orange);margin-bottom:1rem">These 5 concepts from W12 were due Mar 23 but not yet reviewed. Review them today!<br>第12周的5个概念原定3月23日复习但尚未完成。今天复习它们！</p>
+  <div class="card" style="border-color:var(--orange)">
+    <ul style="padding-left:1.2rem;color:var(--text-dim);font-size:0.9rem">
+      <li><strong>Virtual Scroll with Tree Flattening</strong> 虚拟滚动 + 树形扁平化 — learned Mar 22</li>
+      <li><strong>@dnd-kit Advanced Patterns</strong> 拖拽系统高级模式 — learned Mar 22</li>
+      <li><strong>Move Conflict Resolution & Rollback</strong> 文件移动冲突解决与回滚 — learned Mar 22</li>
+      <li><strong>Web Page Publish Workflow</strong> 网页发布流程 — learned Mar 22</li>
+      <li><strong>WebSocket Reconnect Safety</strong> WebSocket 重连安全机制 — learned Mar 22</li>
+    </ul>
+  </div>
+
+  <h2>Upcoming Schedule 即将到来</h2>
+  <div class="schedule-grid">
+    <div class="schedule-day today">
+      <div class="date">Mar 28 (Today 今天)</div>
+      <div class="items">
+        <ul>
+          <li>Review all 5 W12 concepts (overdue)<br>复习所有5个W12概念（逾期）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Mar 29 (Sun 周日)</div>
+      <div class="items">
+        <ul>
+          <li>UIBlock Interactive Cards</li>
+          <li>Pipedream Connect OAuth</li>
+          <li>Customize View Architecture</li>
+          <li>Download/Export Refactoring</li>
+          <li>Credit Dispute System</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Mar 31 (Tue 周二)</div>
+      <div class="items">
+        <ul>
+          <li>W12 concepts Stage 2<br>W12概念第2轮</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Apr 1 (Wed 周三)</div>
+      <div class="items">
+        <ul>
+          <li>W13 concepts Stage 2<br>W13概念第2轮</li>
+        </ul>
+      </div>
+    </div>
+    <div class="schedule-day">
+      <div class="date">Apr 5 (Sun 周日)</div>
+      <div class="items">
+        <ul>
+          <li>W13 concepts Stage 3<br>W13概念第3轮</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+function toggleKeyPoints(btn) {
+  const kp = btn.nextElementSibling;
+  kp.classList.toggle('open');
+  btn.textContent = kp.classList.contains('open') ? 'Key Points 要点 ▴' : 'Key Points 要点 ▾';
+}
+
+function checkQuiz(el, correct) {
+  const card = el.closest('.quiz-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = 'true';
+  if (correct) {
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    card.querySelector('.quiz-opt:nth-child(' +
+      ([...card.querySelectorAll('.quiz-opt')].findIndex(o =>
+        o.getAttribute('onclick').includes('true')) + 1) + ')').classList.add('correct');
+  }
+  card.querySelector('.quiz-explain').style.display = 'block';
+}
+
+let currentCard = 0;
+const cards = document.querySelectorAll('.flashcard');
+function showCard(i) {
+  cards.forEach(c => { c.style.display = 'none'; c.classList.remove('flipped'); });
+  cards[i].style.display = 'block';
+  document.querySelector('.flashcard-counter').textContent = (i+1) + ' / ' + cards.length;
+}
+function flipCard(el) { el.classList.toggle('flipped'); }
+function nextCard() { currentCard = (currentCard + 1) % cards.length; showCard(currentCard); }
+function prevCard() { currentCard = (currentCard - 1 + cards.length) % cards.length; showCard(currentCard); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') nextCard();
+  if (e.key === 'ArrowLeft') prevCard();
+  if (e.key === ' ') { e.preventDefault(); cards[currentCard].classList.toggle('flipped'); }
+});
+</script>
+</body>
+</html>

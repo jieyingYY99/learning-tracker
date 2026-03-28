@@ -1,0 +1,206 @@
+{
+  "concepts": [
+    {
+      "id": "virtual-scroll-tree-flatten",
+      "name": "虚拟滚动 + 树形扁平化（Virtual Scroll with Tree Flattening）",
+      "category": "frontend",
+      "description": "将递归 DOM 树迁移为扁平化数组 + react-window 虚拟滚动：用 useFlattenedTree hook 将嵌套的文件夹树递归展开为 FlatTreeItem[]，配合 useIndexTree 实现 O(1) 查找，解决大量文件夹节点导致的 DOM 性能问题",
+      "learned_date": "2026-03-22",
+      "source_commits": [
+        "d33ac480 refactor(list-view): migrate from recursive DOM to virtual scroll using useIndexTree",
+        "ffdca971 feat(list-view): add FlatTreeItem type and useFlattenedTree hook"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "dnd-kit-advanced-patterns",
+      "name": "拖拽系统高级模式（@dnd-kit Advanced Patterns）",
+      "category": "frontend",
+      "description": "在 @dnd-kit 框架上实现复杂交互：drag-over 时文件夹高亮、500ms 悬停自动展开、自动滚动、拖拽选区偏移修正、drop target 精确判定、以及拖拽操作的 undo 支持",
+      "learned_date": "2026-03-22",
+      "source_commits": [
+        "856d2018 feat: add folder group highlight on drag-over and enable file row drop targets",
+        "e8d4b107 fix: resolve drag-drop issues in FinderListView"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "move-conflict-resolution-rollback",
+      "name": "文件移动的冲突解决与失败回滚（Move Conflict Resolution & Rollback）",
+      "category": "frontend",
+      "description": "文件移动操作的容错设计：冲突时弹出 MoveConflictModal 让用户选择覆盖/跳过/重命名，部分失败时自动恢复被替换和被删除的文件到原位，以及 stop 行为的正确处理",
+      "learned_date": "2026-03-22",
+      "source_commits": [
+        "3fc278cc feat(list-view): add move conflict resolution dialog and breadcrumb collapse"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "html-publish-workflow",
+      "name": "网页发布流程设计（Web Page Publish Workflow）",
+      "category": "frontend",
+      "description": "完整的 HTML 文件发布到公网的流程：CustomPathDialog 支持用户自定义 URL 路径前缀、path validation、PublishButton 状态管理、SSE 过程中自动检查是否需要更新 publish、以及免费用户升级引导",
+      "learned_date": "2026-03-22",
+      "source_commits": [
+        "b0d5cc50 feat: 初步完成 webpage publish",
+        "dfa34ba6 feat(publish): PublishButton uses CustomPathDialog"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "websocket-reconnect-safety",
+      "name": "WebSocket 重连安全机制（WebSocket Reconnect Safety）",
+      "category": "frontend",
+      "description": "WebSocket 连接的健壮性设计：离线检测（navigator.onLine + online/offline 事件）、重连时的竞态防护（防止多个重连同时进行）、指数退避重试、以及重试状态的 UI 反馈",
+      "learned_date": "2026-03-22",
+      "source_commits": [
+        "a7882c84 fix: harden KuseClaw WebSocket with reconnect safety, offline detection, and retry UI"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "uiblock-interactive-cards",
+      "name": "UIBlock 交互卡片模式（UIBlock Interactive Cards Pattern）",
+      "category": "frontend",
+      "description": "在 AI Chat 的 SSE 流中解析结构化 UI 指令（ask_user、suggest_connectors），渲染为交互卡片组件（AskUserCard、SuggestConnectorCard），用户操作后调用 ask_user/respond API 回传结果给后端 agent，实现 AI 驱动的多步交互流程",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "d8a095db feat: add UIBlock interactive cards (ask_user + suggest_connectors)",
+        "d5bc5767 feat: UIBlock submit calls ask_user/respond API",
+        "0bb593b4 fix: send response_key directly to ask_user/respond API",
+        "8a657b9c feat: redesign AskUserCard — vertical list, custom input, skip"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "pipedream-connect-oauth",
+      "name": "第三方 OAuth 集成（Pipedream Connect OAuth Integration）",
+      "category": "backend",
+      "description": "通过 Pipedream Connect SDK 实现第三方服务 OAuth 授权：后端 API route 生成 connect_token（绑定用户 ID 防止跨用户泄漏）、前端 PipedreamProvider 包裹 createFrontendClient、ConnectModal 触发 OAuth 弹窗、账户列表管理（连接/断开/重新授权）",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "a7f50f29 feat: integrate Pipedream Connect for connector OAuth flow",
+        "f97628c9 feat: use real Pipedream data across all connector UI",
+        "e2ab4e63 fix: prevent cross-user connector account leaks",
+        "6adb5844 fix: resolve real user ID for Pipedream token creation",
+        "10836fc5 fix: use correct cookie key and add error logging for user ID fetch",
+        "33624a03 fix: connector UX — auto-close modal, fix disconnect, refetch accounts"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "customize-view-architecture",
+      "name": "可定制化视图架构（Customize View Tab Architecture）",
+      "category": "frontend",
+      "description": "构建 Skills + Connectors 双标签页管理界面：SkillsTab 支持 Official/Custom 分类过滤、技能详情弹窗含文件树浏览器、技能的 CRUD 与 toggle 操作；ConnectorsTab 集成 Pipedream 的 curated apps 列表、搜索过滤、skeleton loading、lazy-mount tabs 优化首次渲染",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "3fc4e56c feat: add Customize page with Skills tab, card grid, and Create with Kuse flow",
+        "ddfe9f5a feat: redesign skills UI with filter dropdown, card menus, and fix V2 API routing",
+        "6de56090 feat: add Skill V2 integration with file tree dialog, metadata, and remove flow",
+        "f59d9542 feat: tree view for skill file browser with expand/collapse directories",
+        "29f44db1 feat: curated connectors list, SkillCard polish, and code cleanup",
+        "97dd6da6 feat: polish Customize view UI",
+        "b71c80e9 feat: skeleton loading, auto-close Pipedream success, lazy-mount tabs",
+        "f7f9683d refactor: replace raw buttons with Button component, use Radix primitives"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "download-export-refactor",
+      "name": "下载导出系统重构（Download/Export System Refactoring）",
+      "category": "frontend",
+      "description": "将分散在各组件中的下载逻辑统一到 FolderWidgets/Download 模块：按文件类型拆分 handler（fromMarkdown、fromHtml、fromPptx）、统一 PDF 导出管线（Tiptap → HTML → PDF，含 TOC、ref-link、heading 处理）、URL-based 下载选项抽象",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "dbeba01f download refactor",
+        "66b5711d migration wip",
+        "7a1ac35e fix headings",
+        "96411fd3 fix ref link",
+        "ac9f82d6 fix task list item",
+        "4b3486c9 escape"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    },
+    {
+      "id": "credit-dispute-system",
+      "name": "积分争议系统（Credit Dispute System）",
+      "category": "general",
+      "description": "完整的用户积分争议处理流程：DisputeDialog 弹窗让用户提交争议原因、API 层支持 dispute 的创建和状态查询（pending/approved/rejected）、Usage 面板集成争议状态图标、GA4 埋点追踪用户行为",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "0862515d feat: credit dispute UI - dialog, status icons, Usage panel integration",
+        "9625b35f feat: credit dispute - tracking, UI polish, prompt field",
+        "66ebf6a5 refactor: migrate dispute API paths from /credits/dispute to /dispute"
+      ],
+      "reviews": [
+        { "date": "2026-03-28", "completed": true }
+      ],
+      "next_review": "2026-03-31",
+      "review_stage": 1
+    }
+  ],
+  "last_updated": "2026-03-28",
+  "weeks": [
+    {
+      "week": "2026-W12",
+      "summary": "FinderListView 虚拟滚动重构、拖拽系统增强、HTML Publish 功能、文件分享、WebSocket 重连加固",
+      "concepts_learned": [
+        "virtual-scroll-tree-flatten",
+        "dnd-kit-advanced-patterns",
+        "move-conflict-resolution-rollback",
+        "html-publish-workflow",
+        "websocket-reconnect-safety"
+      ],
+      "commits_analyzed": 90
+    },
+    {
+      "week": "2026-W13",
+      "summary": "Customize View（Skills + Connectors）全新页面、Pipedream OAuth 集成、UIBlock 交互卡片、下载导出重构、积分争议系统、Trash 批量删除",
+      "concepts_learned": [
+        "uiblock-interactive-cards",
+        "pipedream-connect-oauth",
+        "customize-view-architecture",
+        "download-export-refactor",
+        "credit-dispute-system"
+      ],
+      "commits_analyzed": 70
+    }
+  ]
+}
