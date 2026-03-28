@@ -7,9 +7,9 @@ import type { Concept } from "@/lib/types";
 import { isOverdue, getStageLabel } from "@/lib/tracker";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  frontend: "bg-blue/20 text-blue",
-  backend: "bg-green/20 text-green",
-  general: "bg-pink/20 text-pink",
+  frontend: "bg-blue/10 text-blue",
+  backend: "bg-green/10 text-green",
+  general: "bg-pink/10 text-pink",
 };
 
 export default function TodayReview({
@@ -43,12 +43,10 @@ export default function TodayReview({
 
   if (concepts.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface p-6 text-center">
+      <div className="rounded-xl bg-accent-light p-6 text-center">
         <CheckCircle2 className="mx-auto mb-2 text-green" size={32} />
-        <p className="text-text-dim">
+        <p className="font-medium text-green">
           No reviews due today. Great job!
-          <br />
-          <span className="text-sm">\u4eca\u5929\u6ca1\u6709\u5f85\u590d\u4e60\u7684\u6982\u5ff5\uff0c\u505a\u5f97\u597d\uff01</span>
         </p>
       </div>
     );
@@ -65,12 +63,12 @@ export default function TodayReview({
           <div
             key={c.id}
             className={clsx(
-              "rounded-xl border bg-surface p-4 transition-all",
+              "rounded-xl border p-4 transition-all",
               done
-                ? "border-green/30 opacity-60"
+                ? "border-green/30 bg-green/5 opacity-60"
                 : overdue
-                  ? "border-red/40"
-                  : "border-border"
+                  ? "border-red/30 bg-red/5"
+                  : "border-border bg-surface2"
             )}
           >
             <div className="mb-2 flex items-start justify-between gap-2">
@@ -105,15 +103,11 @@ export default function TodayReview({
                 className={clsx(
                   "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
                   done
-                    ? "bg-green/20 text-green cursor-default"
-                    : "bg-accent/20 text-accent hover:bg-accent/30 active:scale-95"
+                    ? "bg-green/10 text-green cursor-default"
+                    : "bg-accent text-white hover:bg-accent/90 active:scale-95"
                 )}
               >
-                {done
-                  ? "\u2713 Reviewed \u5df2\u590d\u4e60"
-                  : isLoading
-                    ? "..."
-                    : "Mark Reviewed \u6253\u5361"}
+                {done ? "✓ Reviewed" : isLoading ? "..." : "Mark Reviewed"}
               </button>
             </div>
           </div>

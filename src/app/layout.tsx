@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
         <Nav />
-        <main className="mx-auto max-w-[1100px] px-4 py-6 sm:px-6">
+        <main className="mx-auto max-w-[1400px] px-6 py-8 sm:px-10 lg:px-12">
           {children}
         </main>
       </body>

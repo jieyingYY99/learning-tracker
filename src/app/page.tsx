@@ -18,6 +18,7 @@ import {
   Trophy,
   AlertCircle,
   Calendar,
+  ArrowUpRight,
 } from "lucide-react";
 
 // Revalidate every 60 seconds to pick up KV updates
@@ -39,7 +40,6 @@ export default async function DashboardPage() {
     // No pages directory yet
   }
 
-  // If pages index doesn't exist in data, build it
   if (!data.pages || data.pages.length === 0) {
     data.pages = buildPagesIndex(data, htmlFiles);
   }
@@ -49,136 +49,163 @@ export default async function DashboardPage() {
   const breakdown = getCategoryBreakdown(data);
   const stats = getStats(data);
 
-  // Get latest week's recommendations
   const latestWeek = [...data.weeks].sort((a, b) =>
     a.week > b.week ? -1 : 1
   )[0];
   const recommendations = latestWeek?.learning_recommendations || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">
-          Learning Dashboard{" "}
-          <span className="text-base font-normal text-text-dim">
-            \u5b66\u4e60\u4eea\u8868\u76d8
-          </span>
-        </h1>
-        <p className="mt-1 text-sm text-text-dim">
-          Last updated: {data.last_updated}
-        </p>
-
-        {/* Stats bar */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            icon={<Brain size={18} className="text-accent" />}
-            value={stats.total}
-            label="Concepts \u6982\u5ff5"
-          />
-          <StatCard
-            icon={<Trophy size={18} className="text-green" />}
-            value={stats.mastered}
-            label="Mastered \u5df2\u638c\u63e1"
-          />
-          <StatCard
-            icon={<AlertCircle size={18} className="text-orange" />}
-            value={stats.dueToday}
-            label="Due Today \u4eca\u65e5\u5f85\u590d\u4e60"
-          />
-          <StatCard
-            icon={<Calendar size={18} className="text-blue" />}
-            value={stats.totalWeeks}
-            label="Weeks \u5468\u6570"
-          />
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="mt-1.5 text-sm text-text-dim">
+            Track your learning progress with spaced repetition review.
+          </p>
         </div>
+        <p className="text-xs text-text-dim">
+          Updated {data.last_updated}
+        </p>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          icon={<Brain size={18} />}
+          title="Total Concepts"
+          value={stats.total}
+          subtitle="All tracked concepts"
+          hero
+        />
+        <StatCard
+          icon={<Trophy size={18} />}
+          title="Mastered"
+          value={stats.mastered}
+          subtitle="Stage 5/5 completed"
+        />
+        <StatCard
+          icon={<AlertCircle size={18} />}
+          title="Due Today"
+          value={stats.dueToday}
+          subtitle={stats.dueToday > 0 ? "Needs review" : "All caught up"}
+        />
+        <StatCard
+          icon={<Calendar size={18} />}
+          title="Weeks Tracked"
+          value={stats.totalWeeks}
+          subtitle="Learning weeks"
+        />
       </div>
 
       {/* Today's Review */}
-      <Section title="Today's Review \u4eca\u65e5\u590d\u4e60" accent>
-        <TodayReview concepts={dueToday} />
-      </Section>
+      {dueToday.length > 0 && (
+        <Card title="Today's Review">
+          <TodayReview concepts={dueToday} />
+        </Card>
+      )}
 
-      {/* Two-column layout */}
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-8">
-          {/* Concept Library */}
-          <Section title="Concept Library \u6982\u5ff5\u5e93">
-            <ConceptTable concepts={data.concepts} />
-          </Section>
-
-          {/* Cross-Reference */}
-          <Section title="Cross-Reference \u5173\u8054\u56fe\u8c31">
-            <CrossReferenceMap
-              concepts={data.concepts}
-              pages={data.pages || []}
-            />
-          </Section>
-        </div>
-
-        <div className="space-y-8">
-          {/* Review Calendar */}
-          <Section title="Review Calendar \u590d\u4e60\u65e5\u5386">
+      {/* Row: Calendar/Categories + Timeline */}
+      <div className="flex flex-col gap-5 lg:flex-row">
+        {/* Left: Calendar + Categories stacked */}
+        <div className="flex flex-col gap-5 lg:w-3/5">
+          <Card title="Review Calendar">
             <ReviewCalendar calendar={calendar} />
-          </Section>
-
-          {/* Category Breakdown */}
-          <Section title="Categories \u7c7b\u522b\u5206\u5e03">
+          </Card>
+          <Card title="Categories">
             <CategoryBreakdown breakdown={breakdown} />
-          </Section>
-
-          {/* Weekly Timeline */}
-          <Section title="Timeline \u65f6\u95f4\u7ebf">
+          </Card>
+        </div>
+        {/* Right: Timeline fills full height */}
+        <div className="flex lg:w-2/5">
+          <Card title="Timeline" stretch>
             <WeeklyTimeline weeks={data.weeks} />
-          </Section>
+          </Card>
         </div>
       </div>
 
-      {/* Learning Recommendations */}
-      <Section title="Recommendations \u5b66\u4e60\u63a8\u8350">
-        <LearningRecommendations recommendations={recommendations} />
-      </Section>
+      {/* Concept Library - full width */}
+      <Card title="Concept Library">
+        <ConceptTable concepts={data.concepts} />
+      </Card>
+
+      {/* Row: Cross-Reference + Recommendations */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card title="Cross-Reference">
+          <CrossReferenceMap
+            concepts={data.concepts}
+            pages={data.pages || []}
+          />
+        </Card>
+        <Card title="Recommendations">
+          <LearningRecommendations recommendations={recommendations} />
+        </Card>
+      </div>
     </div>
   );
 }
 
 function StatCard({
   icon,
+  title,
   value,
-  label,
+  subtitle,
+  hero,
 }: {
   icon: React.ReactNode;
+  title: string;
   value: number;
-  label: string;
+  subtitle: string;
+  hero?: boolean;
 }) {
+  if (hero) {
+    return (
+      <div className="relative overflow-hidden rounded-2xl bg-accent p-5 text-white shadow-md">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-white/90">{title}</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
+            <ArrowUpRight size={16} />
+          </div>
+        </div>
+        <div className="mt-3 text-4xl font-bold">{value}</div>
+        <div className="mt-3 flex items-center gap-1.5 text-xs text-white/70">
+          {icon}
+          <span>{subtitle}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3">
-      {icon}
-      <div>
-        <div className="text-lg font-bold">{value}</div>
-        <div className="text-xs text-text-dim">{label}</div>
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-md">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-text-dim">{title}</span>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface2">
+          <ArrowUpRight size={16} className="text-text-dim" />
+        </div>
+      </div>
+      <div className="mt-3 text-4xl font-bold">{value}</div>
+      <div className="mt-3 flex items-center gap-1.5 text-xs text-text-dim">
+        {icon}
+        <span>{subtitle}</span>
       </div>
     </div>
   );
 }
 
-function Section({
+function Card({
   title,
-  accent,
   children,
+  stretch,
 }: {
   title: string;
-  accent?: boolean;
   children: React.ReactNode;
+  stretch?: boolean;
 }) {
   return (
-    <section>
-      <h2
-        className={`mb-4 border-b border-border pb-2 text-base font-semibold ${accent ? "text-accent" : ""}`}
-      >
-        {title}
-      </h2>
-      {children}
+    <section className={`rounded-2xl border border-border bg-surface p-6 shadow-md ${stretch ? "flex flex-1 flex-col" : ""}`}>
+      <h2 className="mb-5 text-base font-semibold">{title}</h2>
+      {stretch ? <div className="flex-1">{children}</div> : children}
     </section>
   );
 }

@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronRight,
   ArrowUpDown,
-  ExternalLink,
 } from "lucide-react";
 import clsx from "clsx";
 import type { Concept } from "@/lib/types";
@@ -14,9 +13,9 @@ import { getStageLabel, isOverdue } from "@/lib/tracker";
 type SortKey = "name" | "category" | "learned_date" | "review_stage";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  frontend: "bg-blue/20 text-blue",
-  backend: "bg-green/20 text-green",
-  general: "bg-pink/20 text-pink",
+  frontend: "bg-blue/10 text-blue",
+  backend: "bg-green/10 text-green",
+  general: "bg-pink/10 text-pink",
 };
 
 export default function ConceptTable({
@@ -59,13 +58,13 @@ export default function ConceptTable({
             key={cat}
             onClick={() => setFilter(cat)}
             className={clsx(
-              "rounded-lg px-3 py-1 text-xs font-medium transition-colors",
+              "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
               filter === cat
-                ? "bg-accent/20 text-accent"
-                : "text-text-dim hover:text-text"
+                ? "bg-accent text-white"
+                : "bg-surface2 text-text-dim hover:text-text"
             )}
           >
-            {cat === "all" ? "All \u5168\u90e8" : cat}
+            {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
           </button>
         ))}
       </div>
@@ -74,19 +73,19 @@ export default function ConceptTable({
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-surface">
+            <tr className="border-b border-border bg-surface2">
               <th className="p-3 text-left font-medium text-text-dim">
                 <button
                   onClick={() => toggleSort("name")}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 hover:text-text transition-colors"
                 >
-                  Name \u540d\u79f0 <ArrowUpDown size={12} />
+                  Name <ArrowUpDown size={12} />
                 </button>
               </th>
               <th className="hidden p-3 text-left font-medium text-text-dim sm:table-cell">
                 <button
                   onClick={() => toggleSort("category")}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 hover:text-text transition-colors"
                 >
                   Category <ArrowUpDown size={12} />
                 </button>
@@ -94,7 +93,7 @@ export default function ConceptTable({
               <th className="hidden p-3 text-left font-medium text-text-dim md:table-cell">
                 <button
                   onClick={() => toggleSort("learned_date")}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 hover:text-text transition-colors"
                 >
                   Learned <ArrowUpDown size={12} />
                 </button>
@@ -102,7 +101,7 @@ export default function ConceptTable({
               <th className="p-3 text-left font-medium text-text-dim">
                 <button
                   onClick={() => toggleSort("review_stage")}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 hover:text-text transition-colors"
                 >
                   Progress <ArrowUpDown size={12} />
                 </button>
@@ -134,7 +133,7 @@ export default function ConceptTable({
                         {c.name}
                       </span>
 
-                      {/* Category badge (hidden on mobile) */}
+                      {/* Category badge */}
                       <span
                         className={clsx(
                           "ml-2 hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-medium sm:inline",
@@ -144,7 +143,7 @@ export default function ConceptTable({
                         {c.category}
                       </span>
 
-                      {/* Date (hidden on mobile) */}
+                      {/* Date */}
                       <span className="ml-4 hidden shrink-0 text-xs text-text-dim md:inline">
                         {c.learned_date}
                       </span>
@@ -178,12 +177,12 @@ export default function ConceptTable({
                     <div className="border-t border-border bg-surface2 px-6 py-4 text-xs leading-relaxed text-text-dim">
                       <p className="mb-2">{c.description}</p>
                       <p className="mb-1">
-                        <span className="text-text">Next review:</span>{" "}
+                        <span className="font-medium text-text">Next review:</span>{" "}
                         {c.next_review}
                       </p>
                       {c.source_commits.length > 0 && (
                         <div className="mt-2">
-                          <span className="text-text">Source commits:</span>
+                          <span className="font-medium text-text">Source commits:</span>
                           <ul className="mt-1 space-y-0.5 font-mono text-[11px]">
                             {c.source_commits.map((commit, i) => (
                               <li key={i} className="truncate">
