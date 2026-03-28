@@ -174,6 +174,125 @@
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
+    },
+    {
+      "id": "batch-operations-design",
+      "name": "批量操作设计模式（Batch Operations Design Pattern）",
+      "category": "frontend",
+      "description": "设计文档驱动的 Trash 批量删除：区分清空全部和删除选中的独立端点、带 cleared_file_ids 的幂等 API 响应、store 层 Set<number> 选择管理、本地 Radix Dialog 确认、mutation flags 禁用并发操作",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "dbeac217 docs: add empty trash design and plan",
+        "7677aebd feat: add empty trash user flow",
+        "f72ced21 feat: replace empty trash confirm with radix dialog",
+        "6f099788 feat: add trash selected delete data flow",
+        "53585e92 feat: add trash selected delete ui",
+        "f4f26e94 feat: 更新 trash 工具栏按钮样式及弹窗 UI"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "store/assets/index.ts (deleteItems)",
+            "approach": "Finder delete: optimistic remove + backup nodesByPath/childrenByPath, UndoEntry for revert, global modal confirmation",
+            "key_code_pattern": "Backup entire tree state → optimistic delete → on success create UndoEntry → on failure restore from backup"
+          },
+          {
+            "location": "store/assets/index.ts (moveItems) + utils/api/files.ts",
+            "approach": "Finder move: POST batched with file_ids, returns successfulIds + failedIds, per-item conflict dialog loop, partial rollback on failure",
+            "key_code_pattern": "Optimistic rename → API returns success/fail split → restore failed items → emit ITEMS_MOVED event"
+          }
+        ],
+        "comparison": "Trash delete uses separate endpoints (empty vs selected) with idempotent responses (cleared_file_ids), local Radix dialogs, no undo. Finder delete uses global modal, UndoEntry for revert, no detailed response. Finder move handles partial failure with per-item conflict resolution and rollback queue.",
+        "trade_offs": "Trash: simpler (irreversible, no conflicts), idempotent, explicit confirmation. Finder delete: reversible via undo, optimistic for speed. Finder move: most complex but handles conflicts and partial failures gracefully.",
+        "decision_guide": "Irreversible + no conflicts → Trash pattern (idempotent API, explicit dialog). Reversible + no conflicts → Finder delete (optimistic + UndoEntry). Reversible + may conflict → Move pattern (per-item resolution, partial rollback)."
+      },
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
+    },
+    {
+      "id": "race-condition-prevention-patterns",
+      "name": "竞态条件防护模式集（Race Condition Prevention Patterns）",
+      "category": "frontend",
+      "description": "React + 异步工作流中防止竞态的五种模式：版本计数器（作废过时加载）、双重守卫（state + ref 去重）、布尔标志（并发防护）、AbortController（流取消）、定时器抑制（事件防抖）",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "1c5fec8c fix: type errors, duplicate upload button, new chat race condition, and nav switch bugs",
+        "457754c9 fix: prevent stale history overwriting new conversation and drag-select deselection",
+        "454210ba fix: clear sendToAgent payload in error catch to prevent duplicate sends",
+        "c36b2a62 fix: remove duplicate plus icon in chat input area"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/hooks/useConversationManager.ts",
+            "approach": "Version counter: loadVersionRef increments on createConversation, stale loads check and bail",
+            "key_code_pattern": "const v = loadVersionRef.current; await fetch(); if (v !== loadVersionRef.current) return;"
+          },
+          {
+            "location": "components/Chat/components/ChatInterface/index.tsx",
+            "approach": "Dual guard: state null check + processedPayloadRef JSON.stringify dedup",
+            "key_code_pattern": "if (!payload) return; const key = JSON.stringify(payload); if (key === ref.current) return;"
+          },
+          {
+            "location": "components/CustomizeView/ConnectorsTab.tsx",
+            "approach": "Boolean flag: connectingRef prevents concurrent OAuth popup opens",
+            "key_code_pattern": "if (ref.current) return; ref.current = true; try {} finally { ref.current = false; }"
+          },
+          {
+            "location": "components/Chat/hooks/useAIStream.ts",
+            "approach": "AbortController: cancel SSE stream on conversation switch or unmount",
+            "key_code_pattern": "abortControllerRef.current = new AbortController(); fetch(url, { signal: ref.current.signal })"
+          },
+          {
+            "location": "components/FinderView/hooks/useListDragSelect.ts",
+            "approach": "Timer suppression: suppressClickRef with armSuppressClick(ms) and re-arm on commitAndReset",
+            "key_code_pattern": "armSuppressClick(200) on drag start; armSuppressClick(300) on commitAndReset"
+          }
+        ],
+        "comparison": "Version counter invalidates stale async results without canceling them. Dual guard prevents duplicate processing of same payload across re-renders. Boolean flag blocks concurrent execution. AbortController cancels in-flight network operations. Timer suppression prevents post-transition events.",
+        "trade_offs": "Version counter: simple, works for any async, but stale request still completes (wasted bandwidth). AbortController: cancels early, saves bandwidth, but more complex setup. Boolean flag: simplest, but blocks all concurrent calls. Dual guard: handles React's batching, but JSON.stringify has performance cost for large payloads.",
+        "decision_guide": "Cancel network request → AbortController. Invalidate stale result → Version counter. Prevent duplicate processing → Dual guard. Block concurrent calls → Boolean flag. Suppress events during transitions → Timer suppression."
+      },
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
+    },
+    {
+      "id": "tiptap-inputrule-slash-commands",
+      "name": "Tiptap InputRule 斜杠命令节点（Tiptap InputRule for Slash Commands）",
+      "category": "frontend",
+      "description": "通过 Tiptap InputRule 正则触发的自定义内联节点：用户输入 /skillName 加空格后自动替换为不可编辑的原子标签。关键修复：正则需包含尾随 \\s$（因为 InputRule 在字符插入后触发），范围计算用 indexOf 而非 endsWith",
+      "learned_date": "2026-03-28",
+      "source_commits": [
+        "084f5372 fix: InlineSkillNode InputRule triggers on space after /command",
+        "b32942b0 feat: add V2 fields to ApiSkill interface and transform"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/components/InputArea/PromptInput/extensions/TemplatePlaceholderNode.ts",
+            "approach": "Manual command insertion (no InputRule), uses ReactNodeViewRenderer for interactive UI with name and filledValue attributes",
+            "key_code_pattern": "addNodeView() { return ReactNodeViewRenderer(TemplatePlaceholderView); }"
+          },
+          {
+            "location": "components/MarkdownOverlay/extensions/CustomImage.ts",
+            "approach": "Block node from markdown parsing, standard HTML img rendering with async upload state tracking",
+            "key_code_pattern": "Standard Node.create with HTML rendering, no InputRule, handles paste/upload lifecycle"
+          },
+          {
+            "location": "components/MarkdownOverlay/extensions/TextStyleMarks.ts",
+            "approach": "Mark extension using markInputRule() helper for text formatting like ==highlight==",
+            "key_code_pattern": "markInputRule({ find: /pattern/, type: this.type })"
+          }
+        ],
+        "comparison": "InlineSlashNode uses InputRule for auto-trigger on typing + atom node (non-editable span). TemplatePlaceholder uses manual command + ReactNodeViewRenderer (full React component). CustomImage is block-level with no InputRule. CustomHighlight is a Mark (text formatting) not a Node.",
+        "trade_offs": "InputRule: automatic, great UX for typing patterns, but regex timing is tricky (fires after character insertion). ReactNodeViewRenderer: full React rendering power, but heavier and not auto-triggered. Marks: simplest for text formatting, but can't represent complex content.",
+        "decision_guide": "Auto-trigger on typing pattern → InputRule + Atom Node. Needs interactive React UI → ReactNodeViewRenderer. Text formatting only → Mark extension. Block-level media → Standard HTML Node."
+      },
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
     }
   ],
   "last_updated": "2026-03-28",
@@ -192,15 +311,61 @@
     },
     {
       "week": "2026-W13",
-      "summary": "Customize View（Skills + Connectors）全新页面、Pipedream OAuth 集成、UIBlock 交互卡片、下载导出重构、积分争议系统、Trash 批量删除",
+      "summary": "Customize View 全新页面、Pipedream OAuth 集成、UIBlock 交互卡片、下载导出重构、积分争议系统、Trash 批量删除、Chat 竞态修复、Tiptap InlineSlashNode",
       "concepts_learned": [
         "uiblock-interactive-cards",
         "pipedream-connect-oauth",
         "customize-view-architecture",
         "download-export-refactor",
-        "credit-dispute-system"
+        "credit-dispute-system",
+        "batch-operations-design",
+        "race-condition-prevention-patterns",
+        "tiptap-inputrule-slash-commands"
       ],
-      "commits_analyzed": 70
+      "commits_analyzed": 95,
+      "learning_recommendations": [
+        {
+          "topic": "React Concurrent Rendering & Race Conditions",
+          "why": "Fixed 4 race condition bugs using 5 ad-hoc patterns — need systematic mental model for when React re-renders cause async overlap",
+          "how": "Read React docs 'Synchronizing with Effects' race conditions section; compare all 5 patterns side-by-side; use React DevTools Highlight Updates during rapid conversation switching",
+          "priority": "high"
+        },
+        {
+          "topic": "Tiptap/ProseMirror Plugin Architecture",
+          "why": "Fixed InputRule regex bug by pattern-matching, not understanding ProseMirror's transaction model — need to predict timing issues, not debug them",
+          "how": "Read ProseMirror inputrules package source (~200 lines); add console.log to observe state.doc content at InputRule handler time",
+          "priority": "medium"
+        },
+        {
+          "topic": "Backend Batch Operation Patterns",
+          "why": "W13 was 100% frontend (8 concepts, 0 backend). Designed trash delete API contract but only touched frontend. Understanding server-side transactions, soft-delete vs hard-delete, bulk optimization would improve API design skills",
+          "how": "Check trash delete endpoint server implementation; research database transaction patterns for bulk operations; consider GDPR implications of soft-delete (trash_cleared_at) vs hard-delete",
+          "priority": "medium"
+        }
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "filename": "week-2026-W12.html",
+      "title": "Week 12 Learning Hub",
+      "type": "weekly",
+      "generated_date": "2026-03-22",
+      "concepts": ["virtual-scroll-tree-flatten", "dnd-kit-advanced-patterns", "move-conflict-resolution-rollback", "html-publish-workflow", "websocket-reconnect-safety"]
+    },
+    {
+      "filename": "week-2026-W13.html",
+      "title": "Week 13 Learning Hub",
+      "type": "weekly",
+      "generated_date": "2026-03-28",
+      "concepts": ["uiblock-interactive-cards", "pipedream-connect-oauth", "customize-view-architecture", "download-export-refactor", "credit-dispute-system", "batch-operations-design", "race-condition-prevention-patterns", "tiptap-inputrule-slash-commands"]
+    },
+    {
+      "filename": "learn-react-race-conditions.html",
+      "title": "React Race Conditions: Systematic Mental Model",
+      "type": "topic",
+      "generated_date": "2026-03-28",
+      "concepts": ["race-condition-prevention-patterns"]
     }
   ]
 }

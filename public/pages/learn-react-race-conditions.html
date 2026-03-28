@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>React Race Conditions - Systematic Mental Model | React 竞态条件系统化心智模型</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --surface-3: #22222e;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --text-dim: #8888a0;
+    --text-muted: #55556a;
+    --accent: #6c5ce7;
+    --accent-light: #a29bfe;
+    --accent-dim: rgba(108, 92, 231, 0.15);
+    --green: #00b894;
+    --green-dim: rgba(0, 184, 148, 0.15);
+    --red: #e17055;
+    --red-dim: rgba(225, 112, 85, 0.15);
+    --yellow: #fdcb6e;
+    --yellow-dim: rgba(253, 203, 110, 0.15);
+    --blue: #74b9ff;
+    --blue-dim: rgba(116, 185, 255, 0.15);
+    --orange: #e17055;
+    --cyan: #81ecec;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  nav .inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; height: 56px; gap: 8px;
+    overflow-x: auto;
+  }
+  nav a {
+    color: var(--text-dim); text-decoration: none; font-size: 13px;
+    padding: 6px 14px; border-radius: 8px; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  nav a:hover, nav a.active { color: var(--text); background: var(--surface-2); }
+  nav a.active { color: var(--accent-light); background: var(--accent-dim); }
+  nav .logo { font-weight: 700; font-size: 15px; color: var(--accent-light); margin-right: 16px; }
+
+  /* ===== SECTIONS ===== */
+  .container { max-width: 1100px; margin: 0 auto; padding: 80px 24px 60px; }
+  section { display: none; }
+  section.active { display: block; }
+
+  h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+  h2 { font-size: 1.5rem; font-weight: 700; margin: 40px 0 16px; color: var(--accent-light); }
+  h3 { font-size: 1.15rem; font-weight: 600; margin: 24px 0 12px; }
+  p { color: var(--text-dim); margin-bottom: 12px; }
+  .subtitle { font-size: 1.05rem; color: var(--text-dim); margin-bottom: 32px; }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-header .num {
+    width: 36px; height: 36px;
+    background: var(--accent-dim);
+    color: var(--accent-light);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; flex-shrink: 0;
+  }
+  .card-header .title { font-size: 1.1rem; font-weight: 700; }
+  .card-header .title-zh { font-size: 0.85rem; color: var(--text-muted); }
+
+  .tag {
+    display: inline-block; font-size: 11px; padding: 3px 10px;
+    border-radius: 6px; font-weight: 600; margin-right: 6px; margin-bottom: 4px;
+  }
+  .tag-version { background: var(--blue-dim); color: var(--blue); }
+  .tag-dual { background: var(--green-dim); color: var(--green); }
+  .tag-boolean { background: var(--yellow-dim); color: var(--yellow); }
+  .tag-abort { background: var(--red-dim); color: var(--red); }
+  .tag-timer { background: rgba(129, 236, 236, 0.15); color: var(--cyan); }
+
+  /* ===== CODE ===== */
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0 16px;
+    color: var(--text-dim);
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; }
+  .hl-kw { color: #c792ea; }
+  .hl-fn { color: #82aaff; }
+  .hl-str { color: #c3e88d; }
+  .hl-cm { color: #546e7a; font-style: italic; }
+  .hl-num { color: #f78c6c; }
+  .hl-op { color: #89ddff; }
+  .hl-imp { color: #ffcb6b; font-weight: 700; }
+
+  /* ===== FLOWCHART ===== */
+  .flowchart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin: 24px 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 2;
+    overflow-x: auto;
+  }
+  .flow-q { color: var(--yellow); font-weight: 700; }
+  .flow-a { color: var(--green); }
+  .flow-arrow { color: var(--text-muted); }
+  .flow-result { color: var(--accent-light); font-weight: 600; }
+  .flow-indent { padding-left: 28px; }
+  .flow-indent-2 { padding-left: 56px; }
+
+  /* ===== COMPARISON TABLE ===== */
+  .comp-table {
+    width: 100%; border-collapse: collapse;
+    margin: 16px 0; font-size: 13px;
+  }
+  .comp-table th {
+    background: var(--surface-2);
+    color: var(--accent-light);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+  }
+  .comp-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  .comp-table tr:hover td { background: var(--surface); }
+
+  /* ===== DEEP DIVE TOGGLE ===== */
+  .deep-dive {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  .deep-dive summary {
+    cursor: pointer;
+    color: var(--accent-light);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 0;
+    list-style: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .deep-dive summary::before {
+    content: '>';
+    display: inline-block;
+    font-family: var(--font-mono);
+    transition: transform 0.2s;
+  }
+  .deep-dive[open] summary::before { transform: rotate(90deg); }
+  .deep-dive .content { padding-top: 12px; }
+
+  /* ===== SCENARIO BOX ===== */
+  .scenario {
+    background: var(--surface-2);
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-size: 13px;
+  }
+  .scenario .label { color: var(--yellow); font-weight: 700; font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .scenario ol { padding-left: 20px; color: var(--text-dim); }
+  .scenario li { margin-bottom: 4px; }
+  .scenario .bug { color: var(--red); font-weight: 600; }
+  .scenario .fix { color: var(--green); font-weight: 600; }
+
+  /* ===== QUIZ ===== */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .quiz-q { font-weight: 600; margin-bottom: 16px; font-size: 1rem; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--accent); color: var(--text); }
+  .quiz-opt.correct { border-color: var(--green); background: var(--green-dim); color: var(--green); }
+  .quiz-opt.wrong { border-color: var(--red); background: var(--red-dim); color: var(--red); }
+  .quiz-opt.disabled { pointer-events: none; }
+  .quiz-explain {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .quiz-explain.show { display: block; }
+  .quiz-score {
+    text-align: center; padding: 32px;
+    font-size: 1.3rem; font-weight: 700; color: var(--accent-light);
+  }
+
+  /* ===== FLASHCARDS ===== */
+  .flash-container {
+    perspective: 1000px;
+    max-width: 600px;
+    margin: 24px auto;
+  }
+  .flash-card {
+    position: relative;
+    width: 100%; min-height: 280px;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+  .flash-card.flipped { transform: rotateY(180deg); }
+  .flash-front, .flash-back {
+    position: absolute; top: 0; left: 0; width: 100%; min-height: 280px;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .flash-front {
+    background: linear-gradient(135deg, var(--surface), var(--surface-2));
+    border: 1px solid var(--border);
+  }
+  .flash-back {
+    background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+    border: 1px solid var(--accent);
+    transform: rotateY(180deg);
+  }
+  .flash-front .term { font-size: 1.4rem; font-weight: 700; color: var(--accent-light); margin-bottom: 8px; }
+  .flash-front .hint { font-size: 0.85rem; color: var(--text-muted); }
+  .flash-back .answer { font-size: 1rem; color: var(--text); line-height: 1.7; }
+  .flash-back .answer-en { font-size: 0.85rem; color: var(--text-dim); margin-top: 12px; font-style: italic; }
+  .flash-nav {
+    display: flex; justify-content: center; gap: 16px; margin-top: 20px;
+  }
+  .flash-btn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .flash-btn:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .flash-counter { text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 12px; }
+
+  /* ===== RECOMMENDATION ===== */
+  .rec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .rec-card .priority {
+    display: inline-block; font-size: 11px; padding: 2px 8px;
+    border-radius: 4px; font-weight: 700; margin-bottom: 8px;
+  }
+  .priority-high { background: var(--red-dim); color: var(--red); }
+  .priority-medium { background: var(--yellow-dim); color: var(--yellow); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    h1 { font-size: 1.6rem; }
+    .card, .quiz-card { padding: 20px; }
+    pre { font-size: 11px; padding: 14px; }
+    .comp-table { font-size: 11px; }
+    .comp-table th, .comp-table td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <span class="logo">RC</span>
+    <a href="#home" class="nav-link active" onclick="switchTab('home')">Home 首页</a>
+    <a href="#patterns" class="nav-link" onclick="switchTab('patterns')">5 Patterns 五种模式</a>
+    <a href="#flowchart" class="nav-link" onclick="switchTab('flowchart')">Decision Guide 决策指南</a>
+    <a href="#quiz" class="nav-link" onclick="switchTab('quiz')">Quiz 测验</a>
+    <a href="#flashcards" class="nav-link" onclick="switchTab('flashcards')">Flashcards 闪卡</a>
+    <a href="#next" class="nav-link" onclick="switchTab('next')">Next Steps 下一步</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ==================== HOME ==================== -->
+<section id="home" class="active">
+  <h1>React Race Conditions: A Systematic Mental Model</h1>
+  <p class="subtitle">React 竞态条件：系统化心智模型 — 基于 Kuse App V2 中修复的 4 个真实 bug 和 5 种防护模式</p>
+
+  <div class="card">
+    <h3>Why this matters 为什么重要</h3>
+    <p>This week you fixed 4 race condition bugs using 5 different patterns, but the patterns were discovered ad-hoc during debugging. You need a systematic mental model for <strong>when React re-renders cause async overlap</strong>.</p>
+    <p>本周你用 5 种不同模式修复了 4 个竞态 bug，但模式是调试过程中临时发现的。你需要一个系统化的心智模型来理解 React 重渲染何时导致异步重叠。</p>
+  </div>
+
+  <h2>The Core Problem 核心问题</h2>
+  <div class="card">
+    <p>React re-renders are <strong>synchronous</strong>, but the operations they trigger are often <strong>asynchronous</strong>. When a re-render fires while an async operation from a previous render is still in flight, you get a <strong>race condition</strong>.</p>
+    <p>React 重渲染是<strong>同步的</strong>，但它们触发的操作往往是<strong>异步的</strong>。当一个重渲染在上一次渲染的异步操作还在执行中时触发，就会产生<strong>竞态条件</strong>。</p>
+    <pre><code><span class="hl-cm">// The universal race condition template 竞态条件通用模板</span>
+<span class="hl-kw">useEffect</span>(() => {
+  <span class="hl-cm">// Render N: start async work</span>
+  <span class="hl-fn">fetchSomething</span>().<span class="hl-fn">then</span>(<span class="hl-kw">result</span> => {
+    <span class="hl-cm">// Render N+1 may have already happened!</span>
+    <span class="hl-cm">// This result is now STALE but still wants to setState</span>
+    <span class="hl-fn">setState</span>(result); <span class="hl-cm">// Bug: overwrites newer data</span>
+  });
+}, [dependency]); <span class="hl-cm">// dependency changes trigger Render N+1</span></code></pre>
+  </div>
+
+  <h2>5 Patterns at a Glance 五种模式概览</h2>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Pattern 模式</th>
+        <th>Mechanism 机制</th>
+        <th>Race Type 竞态类型</th>
+        <th>File 文件</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-version">1</span></td>
+        <td><strong>Version Counter</strong><br>版本计数器</td>
+        <td>useRef integer; check after await</td>
+        <td>Stale async result<br>过时异步结果</td>
+        <td>useConversationManager.ts</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-dual">2</span></td>
+        <td><strong>Dual Guard</strong><br>双重守卫</td>
+        <td>State null check + Ref JSON dedup</td>
+        <td>Effect re-fire<br>Effect 重复触发</td>
+        <td>ChatInterface/index.tsx</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-boolean">3</span></td>
+        <td><strong>Boolean Flag</strong><br>布尔标志</td>
+        <td>useRef&lt;boolean&gt; guard</td>
+        <td>Concurrent execution<br>并发执行</td>
+        <td>ConnectorsTab.tsx</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-abort">4</span></td>
+        <td><strong>AbortController</strong><br>中断控制器</td>
+        <td>Signal polling in async loop</td>
+        <td>Uncancelled stream<br>未取消的流</td>
+        <td>useAIStream.ts</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-timer">5</span></td>
+        <td><strong>Timer Suppression</strong><br>定时器抑制</td>
+        <td>Re-arming setTimeout flag</td>
+        <td>Post-transition events<br>过渡后事件</td>
+        <td>useListDragSelect.ts</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ==================== PATTERNS ==================== -->
+<section id="patterns">
+  <h1>5 Patterns Deep Dive 五种模式深度分析</h1>
+  <p class="subtitle">Each pattern with real code, trigger scenario, and gotchas from the Kuse App V2 codebase<br>每种模式配有真实代码、触发场景和来自 Kuse App V2 代码库的注意事项</p>
+
+  <!-- PATTERN 1 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">1</div>
+      <div>
+        <div class="title">Version Counter 版本计数器</div>
+        <div class="title-zh">Invalidate stale async results without canceling them 作废过时异步结果而不取消它们</div>
+      </div>
+    </div>
+    <span class="tag tag-version">STALE CLOSURE</span>
+    <span class="tag" style="background:var(--surface-2);color:var(--text-dim)">useConversationManager.ts</span>
+
+    <pre><code><span class="hl-cm">// Version counter: incremented by createConversation so that any</span>
+<span class="hl-cm">// in-flight loadConversationMessages can detect staleness.</span>
+<span class="hl-kw">const</span> loadVersionRef = <span class="hl-fn">useRef</span>(<span class="hl-num">0</span>);
+
+<span class="hl-kw">async function</span> <span class="hl-fn">loadConversationMessages</span>() {
+  <span class="hl-imp">const v = loadVersionRef.current;</span>  <span class="hl-cm">// Capture version BEFORE await</span>
+
+  <span class="hl-kw">const</span> messages = <span class="hl-kw">await</span> <span class="hl-fn">fetchMessages</span>(conversationId);
+
+  <span class="hl-imp">if (v !== loadVersionRef.current) {</span>  <span class="hl-cm">// Check AFTER await</span>
+    setState(prev => ({ ...prev, isLoadingMessages: <span class="hl-kw">false</span> }));
+    <span class="hl-kw">return</span>;  <span class="hl-cm">// Discard stale result 丢弃过时结果</span>
+  }
+  <span class="hl-cm">// ... apply messages ...</span>
+}
+
+<span class="hl-kw">async function</span> <span class="hl-fn">createConversation</span>() {
+  <span class="hl-imp">loadVersionRef.current++;</span>  <span class="hl-cm">// Invalidate ALL in-flight loads</span>
+  <span class="hl-cm">// ... create new conversation ...</span>
+}</code></pre>
+
+    <div class="scenario">
+      <div class="label">Trigger Scenario 触发场景</div>
+      <ol>
+        <li>User switches view → ChatInterface remounts</li>
+        <li>Init effect fires <code>loadConversationMessages()</code> (async, takes ~200ms)</li>
+        <li>Simultaneously, <code>handleProcessSendToAgent</code> calls <code>createConversation()</code></li>
+        <li class="bug">Without fix: stale history from step 2 overwrites new conversation messages</li>
+        <li class="fix">With fix: version counter mismatch → stale load discarded</li>
+      </ol>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep Dive: When to use 深度分析：何时使用</summary>
+      <div class="content">
+        <p><strong>Use when 使用场景：</strong> You have an async operation (fetch, computation) whose result should only be applied if the "context" hasn't changed while it was running.</p>
+        <p><strong>Key insight 关键洞察：</strong> The stale request still completes (wastes bandwidth), but its result is safely discarded. This is simpler than AbortController when you don't need to cancel the network request itself.</p>
+        <p><strong>Gotcha 注意事项：</strong> Early-return paths (validation failures, empty state checks) must still reset loading states, otherwise UI gets stuck in loading.</p>
+        <p><strong>vs AbortController：</strong> Version counter lets the request finish but ignores it. AbortController cancels it mid-flight. Use AbortController when the response is large (streaming) or the server does expensive work you want to stop.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- PATTERN 2 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">2</div>
+      <div>
+        <div class="title">Dual Guard 双重守卫</div>
+        <div class="title-zh">State + Ref dedup to prevent effect re-fire 状态 + Ref 去重防止 Effect 重复触发</div>
+      </div>
+    </div>
+    <span class="tag tag-dual">EFFECT RE-FIRE</span>
+    <span class="tag" style="background:var(--surface-2);color:var(--text-dim)">ChatInterface/index.tsx</span>
+
+    <pre><code><span class="hl-kw">const</span> processedPayloadRef = <span class="hl-fn">useRef</span>&lt;string | null&gt;(<span class="hl-kw">null</span>);
+
+<span class="hl-fn">useEffect</span>(() => {
+  <span class="hl-kw">if</span> (!sendToAgentPayload) <span class="hl-kw">return</span>;  <span class="hl-cm">// Guard 1: state null check</span>
+
+  <span class="hl-imp">const payloadKey = JSON.stringify(sendToAgentPayload);</span>
+  <span class="hl-imp">if (payloadKey === processedPayloadRef.current) return;</span>  <span class="hl-cm">// Guard 2: ref dedup</span>
+  processedPayloadRef.current = payloadKey;
+
+  <span class="hl-kw">try</span> {
+    <span class="hl-kw">await</span> <span class="hl-fn">sendMessage</span>(sendToAgentPayload);
+    <span class="hl-imp">sendToAgent(null);</span>            <span class="hl-cm">// Clear STATE</span>
+    <span class="hl-imp">processedPayloadRef.current = null;</span> <span class="hl-cm">// Clear REF</span>
+  } <span class="hl-kw">catch</span> (error) {
+    <span class="hl-imp">sendToAgent(null);</span>            <span class="hl-cm">// CRITICAL: clear state on error too!</span>
+    <span class="hl-imp">processedPayloadRef.current = null;</span>
+  }
+}, [sendToAgentPayload]);</code></pre>
+
+    <div class="scenario">
+      <div class="label">Trigger Scenario 触发场景</div>
+      <ol>
+        <li>User sends message → <code>sendToAgentPayload</code> state is set</li>
+        <li>Effect runs, processes payload, calls API</li>
+        <li>API throws error mid-processing</li>
+        <li class="bug">Old code: only clears ref, not state → React's batched setState still holds stale payload → effect re-fires → duplicate message sent</li>
+        <li class="fix">Fix: clear BOTH state AND ref in error catch → no re-fire</li>
+      </ol>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep Dive: Why two guards? 深度分析：为什么需要两层守卫？</summary>
+      <div class="content">
+        <p><strong>Guard 1 (state null check)：</strong> Prevents effect from running when there's nothing to process. Simple and fast.</p>
+        <p><strong>Guard 2 (ref JSON dedup)：</strong> React may batch multiple setState calls, causing the effect to re-run with the same payload. The ref ensures identical payloads are never processed twice.</p>
+        <p><strong>Why both are needed 为什么两者都需要：</strong> State alone can't prevent batching duplicates. Ref alone can't prevent null-state triggers. Together they cover both React-scheduling races and user-action races.</p>
+        <p><strong>Gotcha 注意事项：</strong> <code>JSON.stringify</code> has performance cost for large payloads. For simple primitives, direct comparison is better. Only use JSON.stringify when the payload is an object.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- PATTERN 3 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">3</div>
+      <div>
+        <div class="title">Boolean Flag 布尔标志</div>
+        <div class="title-zh">Mutex-like guard for async operations 类互斥锁的异步操作守卫</div>
+      </div>
+    </div>
+    <span class="tag tag-boolean">CONCURRENT EXECUTION</span>
+    <span class="tag" style="background:var(--surface-2);color:var(--text-dim)">ConnectorsTab.tsx</span>
+
+    <pre><code><span class="hl-kw">const</span> connectingRef = <span class="hl-fn">useRef</span>(<span class="hl-kw">false</span>);
+
+<span class="hl-kw">const</span> handleDirectConnect = <span class="hl-fn">useCallback</span>(<span class="hl-kw">async</span> (connector) => {
+  <span class="hl-imp">if (connectingRef.current) return;</span>  <span class="hl-cm">// Reject if already connecting</span>
+  <span class="hl-imp">connectingRef.current = true;</span>
+
+  <span class="hl-kw">try</span> {
+    <span class="hl-kw">await</span> <span class="hl-fn">pipedreamConnect</span>({
+      onSuccess: () => { <span class="hl-cm">/* handle success */</span> },
+      onError:   () => { <span class="hl-imp">connectingRef.current = false;</span> },
+      onClose:   () => { <span class="hl-imp">connectingRef.current = false;</span> },
+    });
+  } <span class="hl-kw">catch</span> {
+    <span class="hl-imp">connectingRef.current = false;</span>  <span class="hl-cm">// Reset in ALL exit paths!</span>
+  }
+}, []);</code></pre>
+
+    <div class="scenario">
+      <div class="label">Trigger Scenario 触发场景</div>
+      <ol>
+        <li>User clicks "Connect" for Slack → OAuth popup opens, <code>connectingRef = true</code></li>
+        <li>User rapidly clicks "Connect" for Zapier before Slack finishes</li>
+        <li class="bug">Without guard: two OAuth flows start → responses arrive out-of-order → confused state</li>
+        <li class="fix">With guard: second click blocked until <code>connectingRef = false</code></li>
+      </ol>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep Dive: Ref vs State for guards 深度分析：Ref vs State 作为守卫</summary>
+      <div class="content">
+        <p><strong>Why useRef, not useState 为什么用 useRef 而不是 useState：</strong></p>
+        <ul style="padding-left: 20px; color: var(--text-dim);">
+          <li>Refs don't trigger re-renders → safe to skip dependency arrays</li>
+          <li>State changes are batched and asynchronous → a rapidly-clicked button might see stale state</li>
+          <li>Ref updates are synchronous → guaranteed to block the next click immediately</li>
+        </ul>
+        <p style="margin-top: 12px;"><strong>Critical rule 关键规则：</strong> You MUST reset the flag in every exit path: onSuccess, onError, onClose, AND catch. Missing one path = permanent lock.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- PATTERN 4 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">4</div>
+      <div>
+        <div class="title">AbortController 中断控制器</div>
+        <div class="title-zh">Cancel in-flight streams on context change 上下文变化时取消进行中的流</div>
+      </div>
+    </div>
+    <span class="tag tag-abort">UNCANCELLED STREAM</span>
+    <span class="tag" style="background:var(--surface-2);color:var(--text-dim)">useAIStream.ts</span>
+
+    <pre><code><span class="hl-kw">const</span> abortControllerRef = <span class="hl-fn">useRef</span>&lt;AbortController | null&gt;(<span class="hl-kw">null</span>);
+
+<span class="hl-cm">// When starting a stream 开始流时</span>
+<span class="hl-imp">abortControllerRef.current = new AbortController();</span>
+<span class="hl-fn">fetch</span>(url, { <span class="hl-imp">signal: abortControllerRef.current.signal</span> });
+
+<span class="hl-cm">// Inside the processing loop 处理循环内</span>
+<span class="hl-kw">for await</span> (<span class="hl-kw">const</span> event <span class="hl-kw">of</span> eventStream) {
+  <span class="hl-imp">if (abortControllerRef.current?.signal.aborted) break;</span>
+  <span class="hl-cm">// process event...</span>
+}
+
+<span class="hl-cm">// User clicks "Stop" 用户点击"停止"</span>
+<span class="hl-kw">function</span> <span class="hl-fn">stopStream</span>() {
+  <span class="hl-imp">abortControllerRef.current?.abort();</span>
+}
+
+<span class="hl-cm">// Cleanup 清理</span>
+<span class="hl-kw">finally</span> { abortControllerRef.current = <span class="hl-kw">null</span>; }</code></pre>
+
+    <div class="scenario">
+      <div class="label">Trigger Scenario 触发场景</div>
+      <ol>
+        <li>User sends message → stream starts processing 50 SSE events</li>
+        <li>After 5 events, user clicks "Stop"</li>
+        <li><code>stopStream()</code> calls <code>abort()</code></li>
+        <li class="bug">Without abort check in loop: continues rendering all 50 events</li>
+        <li class="fix">With check: loop breaks at event #6, UI stops updating</li>
+      </ol>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep Dive: AbortController lifecycle 深度分析：AbortController 生命周期</summary>
+      <div class="content">
+        <p><strong>Must create NEW per request 每次请求必须新建：</strong> An aborted AbortController stays aborted forever. Reusing it would abort the next request immediately.</p>
+        <p><strong>Signal check placement 信号检查位置：</strong> Check inside the loop (passive cancellation), not before the loop. This ensures cleanup logic in the loop body still runs for the current event.</p>
+        <p><strong>vs Version Counter：</strong> AbortController cancels the network request itself (saves bandwidth for large streams). Version counter only discards the result (request still completes). For SSE streams with 50+ events, AbortController is clearly better.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- PATTERN 5 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">5</div>
+      <div>
+        <div class="title">Timer Suppression 定时器抑制</div>
+        <div class="title-zh">Re-arming timer to suppress post-interaction events 重新激活定时器抑制交互后事件</div>
+      </div>
+    </div>
+    <span class="tag tag-timer">EVENT TIMING</span>
+    <span class="tag" style="background:var(--surface-2);color:var(--text-dim)">useListDragSelect.ts</span>
+
+    <pre><code><span class="hl-kw">const</span> suppressClickRef = <span class="hl-fn">useRef</span>(<span class="hl-kw">false</span>);
+<span class="hl-kw">const</span> suppressTimerRef = <span class="hl-fn">useRef</span>&lt;ReturnType&lt;<span class="hl-kw">typeof</span> setTimeout&gt; | null&gt;(<span class="hl-kw">null</span>);
+
+<span class="hl-kw">function</span> <span class="hl-fn">armSuppressClick</span>(ms: number) {
+  suppressClickRef.current = <span class="hl-kw">true</span>;
+  <span class="hl-kw">if</span> (suppressTimerRef.current) <span class="hl-fn">clearTimeout</span>(suppressTimerRef.current);
+  suppressTimerRef.current = <span class="hl-fn">setTimeout</span>(() => {
+    suppressClickRef.current = <span class="hl-kw">false</span>;
+  }, ms);
+}
+
+<span class="hl-cm">// Drag starts: arm with 200ms</span>
+<span class="hl-fn">armSuppressClick</span>(<span class="hl-num">200</span>);
+
+<span class="hl-cm">// Drag ends (commitAndReset): RE-ARM with 300ms!</span>
+<span class="hl-imp">armSuppressClick(300);</span>  <span class="hl-cm">// This is the critical fix</span>
+
+<span class="hl-cm">// Click handler checks and consumes</span>
+<span class="hl-kw">if</span> (suppressClickRef.current) {
+  suppressClickRef.current = <span class="hl-kw">false</span>;
+  <span class="hl-fn">clearTimeout</span>(suppressTimerRef.current);
+  <span class="hl-kw">return</span> <span class="hl-kw">true</span>;  <span class="hl-cm">// Suppress click</span>
+}</code></pre>
+
+    <div class="scenario">
+      <div class="label">Trigger Scenario 触发场景</div>
+      <ol>
+        <li>User starts drag at 0ms → timer armed for 200ms</li>
+        <li>User drags slowly for 300ms (normal behavior)</li>
+        <li>At 200ms: initial timer fires → <code>suppressClickRef = false</code></li>
+        <li>At 300ms: user releases → pointerup fires</li>
+        <li>Browser generates click event at ~305ms</li>
+        <li class="bug">Without re-arm: flag is already false, click proceeds → clears selection!</li>
+        <li class="fix">With re-arm: <code>commitAndReset()</code> calls <code>armSuppressClick(300)</code> → flag is true at 305ms → click suppressed</li>
+      </ol>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep Dive: Browser event ordering 深度分析：浏览器事件顺序</summary>
+      <div class="content">
+        <p><strong>The problem 问题：</strong> Browser always fires <code>pointerdown → pointermove → pointerup → click</code> in this order. The <code>click</code> event is automatically generated by the OS after <code>pointerup</code>. You can't prevent it in <code>pointerup</code> handler.</p>
+        <p><strong>Why re-arm is needed 为什么需要重新激活：</strong> The initial timer (200ms) is just a heuristic for "we started dragging." But if the drag lasts longer than 200ms, the timer expires before the drag ends. The re-arm at <code>commitAndReset</code> creates a fresh window after the drag completes.</p>
+        <p><strong>Critical invariant 关键不变量：</strong> <code>SUPPRESS_CLICK_DRAG_END_MS</code> (300ms) MUST be >= <code>SUPPRESS_CLICK_DRAG_START_MS</code> (200ms). If end < start, there's a window where the click can sneak through.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ==================== FLOWCHART ==================== -->
+<section id="flowchart">
+  <h1>Decision Flowchart 决策流程图</h1>
+  <p class="subtitle">When you encounter async behavior in React, use this flowchart to pick the right pattern<br>当你在 React 中遇到异步行为时，使用此流程图选择正确的模式</p>
+
+  <div class="flowchart">
+    <div><span class="flow-q">Q1: Is the race between async operations or DOM events?</span></div>
+    <div><span class="flow-q">    问：竞态是在异步操作之间还是 DOM 事件之间？</span></div>
+    <br>
+    <div class="flow-indent"><span class="flow-arrow">├─</span> <span class="flow-a">DOM events (click after drag, event ordering)</span></div>
+    <div class="flow-indent"><span class="flow-arrow">│  </span> <span class="flow-a">DOM 事件（拖拽后的点击、事件顺序）</span></div>
+    <div class="flow-indent"><span class="flow-arrow">│  └─</span> <span class="flow-result">→ Pattern 5: Timer Suppression 定时器抑制</span></div>
+    <br>
+    <div class="flow-indent"><span class="flow-arrow">└─</span> <span class="flow-a">Async operations (fetch, streams, OAuth)</span></div>
+    <div class="flow-indent"><span class="flow-arrow">   </span> <span class="flow-a">异步操作（请求、流、OAuth）</span></div>
+    <br>
+    <div class="flow-indent-2"><span class="flow-q">Q2: Do you need to CANCEL the operation, or just IGNORE the result?</span></div>
+    <div class="flow-indent-2"><span class="flow-q">    问：你需要取消操作，还是只需忽略结果？</span></div>
+    <br>
+    <div class="flow-indent-2"><span class="flow-arrow">├─</span> <span class="flow-a">CANCEL (streaming, large payloads, server-side work)</span></div>
+    <div class="flow-indent-2"><span class="flow-arrow">│  </span> <span class="flow-a">取消（流式、大负载、服务端工作）</span></div>
+    <div class="flow-indent-2"><span class="flow-arrow">│  └─</span> <span class="flow-result">→ Pattern 4: AbortController 中断控制器</span></div>
+    <br>
+    <div class="flow-indent-2"><span class="flow-arrow">└─</span> <span class="flow-a">IGNORE result (lightweight fetch, won't waste much)</span></div>
+    <div class="flow-indent-2"><span class="flow-arrow">   </span> <span class="flow-a">忽略结果（轻量请求、浪费不大）</span></div>
+    <br>
+    <div style="padding-left: 84px;"><span class="flow-q">Q3: Is the race from the SAME effect re-firing, or DIFFERENT operations overlapping?</span></div>
+    <div style="padding-left: 84px;"><span class="flow-q">    问：竞态来自同一 Effect 重复触发，还是不同操作重叠？</span></div>
+    <br>
+    <div style="padding-left: 84px;"><span class="flow-arrow">├─</span> <span class="flow-a">Same effect re-firing (React batched setState, strict mode)</span></div>
+    <div style="padding-left: 84px;"><span class="flow-arrow">│  </span> <span class="flow-a">同一 Effect 重复触发（React 批量 setState、严格模式）</span></div>
+    <div style="padding-left: 84px;"><span class="flow-arrow">│  └─</span> <span class="flow-result">→ Pattern 2: Dual Guard 双重守卫</span></div>
+    <br>
+    <div style="padding-left: 84px;"><span class="flow-arrow">└─</span> <span class="flow-a">Different operations overlapping</span></div>
+    <div style="padding-left: 84px;"><span class="flow-arrow">   </span> <span class="flow-a">不同操作重叠</span></div>
+    <br>
+    <div style="padding-left: 112px;"><span class="flow-q">Q4: Should the second call be BLOCKED, or just make the first one STALE?</span></div>
+    <div style="padding-left: 112px;"><span class="flow-q">    问：第二次调用应该被阻止，还是只让第一次变成过时？</span></div>
+    <br>
+    <div style="padding-left: 112px;"><span class="flow-arrow">├─</span> <span class="flow-a">BLOCK (OAuth popups, one-at-a-time operations)</span></div>
+    <div style="padding-left: 112px;"><span class="flow-arrow">│  </span> <span class="flow-a">阻止（OAuth 弹窗、一次一个的操作）</span></div>
+    <div style="padding-left: 112px;"><span class="flow-arrow">│  └─</span> <span class="flow-result">→ Pattern 3: Boolean Flag 布尔标志</span></div>
+    <br>
+    <div style="padding-left: 112px;"><span class="flow-arrow">└─</span> <span class="flow-a">First result becomes STALE (load history → create new chat)</span></div>
+    <div style="padding-left: 112px;"><span class="flow-arrow">   </span> <span class="flow-a">第一次结果变为过时（加载历史 → 创建新聊天）</span></div>
+    <div style="padding-left: 112px;"><span class="flow-arrow">   └─</span> <span class="flow-result">→ Pattern 1: Version Counter 版本计数器</span></div>
+  </div>
+
+  <h2>Quick Reference Table 快速参考表</h2>
+  <table class="comp-table">
+    <thead>
+      <tr>
+        <th>Situation 情况</th>
+        <th>Pattern 模式</th>
+        <th>Why 原因</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>User switches conversation while messages load<br>用户在消息加载中切换对话</td>
+        <td><span class="tag tag-version">Version Counter</span></td>
+        <td>Stale load should be ignored, not cancelled (lightweight)</td>
+      </tr>
+      <tr>
+        <td>useEffect fires twice with same payload<br>useEffect 用相同 payload 触发两次</td>
+        <td><span class="tag tag-dual">Dual Guard</span></td>
+        <td>React batching, need dedup at ref level</td>
+      </tr>
+      <tr>
+        <td>User double-clicks "Connect" button<br>用户双击"连接"按钮</td>
+        <td><span class="tag tag-boolean">Boolean Flag</span></td>
+        <td>Second call must be blocked, not just stale</td>
+      </tr>
+      <tr>
+        <td>User clicks "Stop" during AI stream<br>用户在 AI 流中点击"停止"</td>
+        <td><span class="tag tag-abort">AbortController</span></td>
+        <td>Must cancel stream, not just ignore events</td>
+      </tr>
+      <tr>
+        <td>Click fires after drag-select ends<br>拖拽选择结束后触发点击</td>
+        <td><span class="tag tag-timer">Timer Suppression</span></td>
+        <td>DOM event ordering, not async operations</td>
+      </tr>
+      <tr>
+        <td>Component unmounts during fetch<br>组件在请求期间卸载</td>
+        <td><span class="tag tag-abort">AbortController</span> or <span class="tag tag-version">Version Counter</span></td>
+        <td>AbortController via useEffect cleanup; or version counter if you want the request to finish for caching</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ==================== QUIZ ==================== -->
+<section id="quiz">
+  <h1>Scenario Quiz 场景测验</h1>
+  <p class="subtitle">For each scenario, choose the best race condition pattern. 每个场景选择最佳的竞态防护模式。</p>
+
+  <div id="quiz-container"></div>
+  <div id="quiz-score" class="quiz-score" style="display:none;"></div>
+</section>
+
+<!-- ==================== FLASHCARDS ==================== -->
+<section id="flashcards">
+  <h1>Flashcards 闪卡</h1>
+  <p class="subtitle">Click to flip. Front: English term. Back: Chinese explanation + key insight.<br>点击翻转。正面：英文术语。背面：中文解释 + 关键洞察。</p>
+
+  <div class="flash-container">
+    <div class="flash-card" id="flash-card" onclick="flipCard()">
+      <div class="flash-front">
+        <div class="term" id="flash-term"></div>
+        <div class="hint" id="flash-hint"></div>
+      </div>
+      <div class="flash-back">
+        <div class="answer" id="flash-answer"></div>
+        <div class="answer-en" id="flash-answer-en"></div>
+      </div>
+    </div>
+  </div>
+  <div class="flash-counter" id="flash-counter"></div>
+  <div class="flash-nav">
+    <button class="flash-btn" onclick="prevCard()">← Prev 上一张</button>
+    <button class="flash-btn" onclick="nextCard()">Next 下一张 →</button>
+  </div>
+</section>
+
+<!-- ==================== NEXT STEPS ==================== -->
+<section id="next">
+  <h1>Next Steps 下一步学习推荐</h1>
+  <p class="subtitle">Based on this week's race condition work, here's what to study next<br>基于本周的竞态条件工作，以下是下一步学习方向</p>
+
+  <div class="rec-card">
+    <span class="priority priority-high">HIGH 高优先级</span>
+    <h3>React Effects Mental Model — "Synchronizing with Effects"</h3>
+    <h3 style="font-size:0.9rem;color:var(--text-muted);margin-top:4px;">React Effects 心智模型 — "与 Effects 同步"</h3>
+    <p><strong>Why 为什么学：</strong> You fixed 4 race bugs but each was discovered through debugging. Understanding the React effect lifecycle systematically would let you <em>predict</em> races before they happen.</p>
+    <p>你修复了 4 个竞态 bug，但每个都是调试时发现的。系统性理解 React effect 生命周期能让你在 bug 出现前就<em>预测</em>到竞态。</p>
+    <p><strong>How 怎么学：</strong></p>
+    <ul style="padding-left: 20px; color: var(--text-dim); font-size: 14px;">
+      <li><strong>Read source 读源码：</strong> Compare all 5 patterns side by side in your codebase — create a decision flowchart you can reference (done: this page!)</li>
+      <li><strong>Experiment 做实验：</strong> In React DevTools, enable "Highlight updates" and rapidly switch conversations — observe which components re-render and when effects re-fire</li>
+      <li><strong>Docs 看文档：</strong> React docs "Synchronizing with Effects" → "Race conditions" section; Dan Abramov's "A Complete Guide to useEffect"</li>
+    </ul>
+    <p style="margin-top: 12px;"><strong>Expected outcome 预期收获：</strong> Before writing any useEffect with async work, you'll automatically ask "what happens if deps change while this is running?" and pick the right pattern in 10 seconds.</p>
+  </div>
+
+  <div class="rec-card">
+    <span class="priority priority-medium">MEDIUM 中优先级</span>
+    <h3>AbortController Advanced Patterns — Nested Aborts & Timeout Races</h3>
+    <h3 style="font-size:0.9rem;color:var(--text-muted);margin-top:4px;">AbortController 高级模式 — 嵌套中断与超时竞赛</h3>
+    <p><strong>Why 为什么学：</strong> Your useAIStream uses basic abort, but the codebase also has retry logic that creates new AbortControllers. Understanding <code>AbortSignal.any()</code> and <code>AbortSignal.timeout()</code> would simplify complex cancellation chains.</p>
+    <p><strong>How 怎么学：</strong></p>
+    <ul style="padding-left: 20px; color: var(--text-dim); font-size: 14px;">
+      <li><strong>Read source 读源码：</strong> Trace <code>useAIStream.ts</code> lines 389-408 (cleanupForRetry) — understand when abort vs retry decisions happen</li>
+      <li><strong>Experiment 做实验：</strong> Replace the manual signal check in the for-await loop with <code>AbortSignal.any([userAbort, timeoutSignal])</code></li>
+      <li><strong>Docs 看文档：</strong> MDN AbortSignal.any() + AbortSignal.timeout() (2024 additions)</li>
+    </ul>
+  </div>
+
+  <div class="rec-card">
+    <span class="priority priority-medium">MEDIUM 中优先级</span>
+    <h3>React 19 use() + Suspense for Data Fetching</h3>
+    <h3 style="font-size:0.9rem;color:var(--text-muted);margin-top:4px;">React 19 use() + Suspense 数据获取</h3>
+    <p><strong>Why 为什么学：</strong> The Version Counter pattern exists because React has no built-in way to handle "this fetch is stale." React 19's <code>use()</code> + Suspense moves race condition handling into the framework itself, potentially eliminating the need for manual patterns 1 and 2.</p>
+    <p><strong>How 怎么学：</strong></p>
+    <ul style="padding-left: 20px; color: var(--text-dim); font-size: 14px;">
+      <li><strong>Read 阅读：</strong> React 19 docs on <code>use()</code> hook and how it interacts with Suspense boundaries</li>
+      <li><strong>Experiment 做实验：</strong> Prototype a conversation loader using <code>use(fetchPromise)</code> and measure if it naturally handles the version-counter scenario</li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<script>
+// ===== NAV =====
+function switchTab(id) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ===== QUIZ DATA =====
+const quizData = [
+  {
+    q: "A user rapidly clicks the 'Send' button in chat. The first message is still being processed when the second click fires the same useEffect. Which pattern?\n用户在聊天中快速点击"发送"按钮。第一条消息还在处理时，第二次点击触发了同一个 useEffect。用哪种模式？",
+    opts: ["Version Counter 版本计数器", "Dual Guard 双重守卫", "Boolean Flag 布尔标志", "AbortController 中断控制器"],
+    correct: 1,
+    explain: "This is a classic effect re-fire with the same payload. Dual Guard (state null check + ref JSON dedup) prevents processing the identical payload twice. Boolean Flag would work too, but Dual Guard is better because it specifically handles the \"same payload\" case — if the payload was different, you'd WANT both to process.\n\n这是经典的同一 payload 触发 Effect 重复执行。双重守卫（状态空值检查 + Ref JSON 去重）防止相同 payload 被处理两次。布尔标志也能用，但双重守卫更好，因为它专门处理"相同 payload"的情况——如果 payload 不同，你会希望两个都执行。"
+  },
+  {
+    q: "User switches from Conversation A to Conversation B. While A's messages are loading, B's messages should show instead. Which pattern?\n用户从对话 A 切换到对话 B。A 的消息还在加载时，应该显示 B 的消息。用哪种模式？",
+    opts: ["Version Counter 版本计数器", "Dual Guard 双重守卫", "Boolean Flag 布尔标志", "Timer Suppression 定时器抑制"],
+    correct: 0,
+    explain: "This is a stale async result scenario. When B's conversation starts loading, it increments the version counter. When A's messages finally arrive, the version check fails and the stale result is discarded. We don't need to cancel A's fetch (it's lightweight), just ignore its result.\n\n这是过时异步结果的场景。当 B 的对话开始加载时，版本计数器递增。当 A 的消息最终到达时，版本检查失败，过时结果被丢弃。我们不需要取消 A 的请求（它很轻量），只需忽略其结果。"
+  },
+  {
+    q: "An AI stream is sending 200 SSE events. User clicks 'Stop' at event #10. What should happen to events #11-200?\n一个 AI 流正在发送 200 个 SSE 事件。用户在第 10 个事件时点击"停止"。第 11-200 个事件应该怎么处理？",
+    opts: ["Ignore them with Version Counter 用版本计数器忽略", "Cancel with AbortController 用 AbortController 取消", "Block with Boolean Flag 用布尔标志阻止", "Suppress with Timer 用定时器抑制"],
+    correct: 1,
+    explain: "AbortController is the right choice because: (1) The remaining 190 events are a significant waste of bandwidth, (2) The server may be doing expensive work generating them, (3) The abort signal can be checked in the for-await loop to exit immediately. Version counter would work logically but waste bandwidth processing 190 events.\n\nAbortController 是正确选择因为：(1) 剩余 190 个事件会严重浪费带宽，(2) 服务器可能在做昂贵的生成工作，(3) 中止信号可以在 for-await 循环中检查并立即退出。版本计数器在逻辑上可行，但会浪费带宽处理 190 个事件。"
+  },
+  {
+    q: "User drag-selects 5 files, then releases the mouse. A spurious 'click' event fires and would deselect everything. Which pattern?\n用户拖拽选择了 5 个文件，然后松开鼠标。一个虚假的 click 事件触发了，会取消所有选择。用哪种模式？",
+    opts: ["AbortController 中断控制器", "Boolean Flag 布尔标志", "Version Counter 版本计数器", "Timer Suppression 定时器抑制"],
+    correct: 3,
+    explain: "This is a DOM event ordering issue, not an async operation race. The browser always generates pointerdown → pointermove → pointerup → click. The click after pointerup can't be prevented in the pointerup handler. Timer Suppression re-arms a flag at commitAndReset time, ensuring the post-drag click is suppressed.\n\n这是 DOM 事件顺序问题，不是异步操作竞态。浏览器总是按 pointerdown → pointermove → pointerup → click 顺序触发。pointerup 后的 click 无法在 pointerup 处理器中阻止。定时器抑制在 commitAndReset 时重新激活标志，确保拖拽后的 click 被抑制。"
+  },
+  {
+    q: "User clicks 'Connect Gmail' which opens an OAuth popup. While the popup is open, they click 'Connect Slack'. What should happen?\n用户点击"连接 Gmail"打开了 OAuth 弹窗。弹窗还开着时，他们点击了"连接 Slack"。应该怎么处理？",
+    opts: ["Let both run, Version Counter picks winner 让两个都运行，版本计数器选获胜者", "Cancel Gmail with AbortController 用 AbortController 取消 Gmail", "Block Slack with Boolean Flag 用布尔标志阻止 Slack", "Suppress with Timer 用定时器抑制"],
+    correct: 2,
+    explain: "Boolean Flag is correct because: (1) You can't and shouldn't cancel an OAuth flow mid-popup, (2) Having two OAuth popups simultaneously causes UX confusion, (3) The second click should be completely blocked until the first flow finishes (success, error, or close). The ref-based guard ensures synchronous blocking — even rapid clicks can't sneak through.\n\n布尔标志是正确的因为：(1) 你不能也不应该在弹窗中途取消 OAuth 流程，(2) 同时有两个 OAuth 弹窗会造成 UX 混乱，(3) 第二次点击应该被完全阻止直到第一个流程结束。基于 ref 的守卫确保同步阻止——即使快速点击也无法突破。"
+  },
+  {
+    q: "A search input triggers API calls on each keystroke. User types 'react' — 5 requests fire for 'r', 're', 'rea', 'reac', 'react'. Only the last result should show. Which pattern(s)?\n搜索输入框每次按键都触发 API 调用。用户输入 'react' — 5 个请求分别为 'r', 're', 'rea', 'reac', 'react'。只应显示最后一个结果。用哪种模式？",
+    opts: ["Version Counter only 仅版本计数器", "AbortController only 仅 AbortController", "Debounce + AbortController 防抖 + AbortController", "Debounce + Version Counter 防抖 + 版本计数器"],
+    correct: 2,
+    explain: "Best answer is Debounce + AbortController. Debounce reduces the 5 requests to ~1 (only fires after typing pauses). AbortController cancels any in-flight request when a new one starts. This is better than Version Counter because cancelled requests save bandwidth and server resources. Version Counter alone would waste 4 API calls.\n\n最佳答案是防抖 + AbortController。防抖将 5 个请求减少到约 1 个（只在停止输入后触发）。AbortController 在新请求开始时取消进行中的请求。这比版本计数器好因为取消的请求节省带宽和服务器资源。仅版本计数器会浪费 4 次 API 调用。"
+  }
+];
+
+// ===== QUIZ RENDERING =====
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = quizData.map((q, i) => `
+    <div class="quiz-card" id="quiz-${i}">
+      <div class="quiz-q">Q${i+1}. ${q.q.replace(/\n/g, '<br>')}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((opt, j) => `
+          <div class="quiz-opt" onclick="answerQuiz(${i}, ${j})" id="quiz-${i}-opt-${j}">${String.fromCharCode(65+j)}. ${opt}</div>
+        `).join('')}
+      </div>
+      <div class="quiz-explain" id="quiz-${i}-explain">${q.explain.replace(/\n/g, '<br>')}</div>
+    </div>
+  `).join('');
+}
+
+function answerQuiz(qi, oi) {
+  const q = quizData[qi];
+  const opts = document.querySelectorAll(`#quiz-${qi} .quiz-opt`);
+  if (opts[0].classList.contains('disabled')) return;
+
+  opts.forEach((o, i) => {
+    o.classList.add('disabled');
+    if (i === q.correct) o.classList.add('correct');
+    if (i === oi && oi !== q.correct) o.classList.add('wrong');
+  });
+
+  document.getElementById(`quiz-${qi}-explain`).classList.add('show');
+  quizAnswered++;
+  if (oi === q.correct) quizCorrect++;
+
+  if (quizAnswered === quizData.length) {
+    const scoreEl = document.getElementById('quiz-score');
+    scoreEl.style.display = 'block';
+    scoreEl.textContent = `Score 得分: ${quizCorrect}/${quizData.length} (${Math.round(quizCorrect/quizData.length*100)}%)`;
+  }
+}
+
+// ===== FLASHCARD DATA =====
+const flashcards = [
+  {
+    term: "Version Counter",
+    hint: "Pattern 1 — Stale closure detection",
+    answer: "版本计数器：在 await 前捕获版本号，await 后检查是否匹配。用于让过时的异步结果自动失效。\n\n关键代码：const v = ref.current; await fetch(); if (v !== ref.current) return;",
+    answerEn: "Capture version before await, check after. Stale results silently discarded. Request still completes (wastes bandwidth) — use AbortController for large payloads."
+  },
+  {
+    term: "Dual Guard",
+    hint: "Pattern 2 — State + Ref dedup",
+    answer: "双重守卫：State 空值检查 + Ref JSON 去重。防止 React 批量 setState 导致 Effect 用相同 payload 重复触发。\n\n关键：error catch 中必须同时清除 state 和 ref！",
+    answerEn: "Two layers: state null check blocks empty runs, ref JSON.stringify dedup blocks same-payload re-fires from React batching. MUST clear both state AND ref in error paths."
+  },
+  {
+    term: "Boolean Flag (Mutex)",
+    hint: "Pattern 3 — Concurrent execution guard",
+    answer: "布尔标志（互斥锁）：用 useRef<boolean> 阻止并发异步操作。适合一次只能运行一个的操作（如 OAuth 弹窗）。\n\n关键：必须在所有退出路径（success/error/close/catch）重置为 false！",
+    answerEn: "useRef<boolean> as a synchronous guard. Unlike useState, ref updates are instant — no batching delay. Must reset in ALL exit paths or the operation permanently locks."
+  },
+  {
+    term: "AbortController",
+    hint: "Pattern 4 — Stream/fetch cancellation",
+    answer: "中断控制器：通过 signal 传递取消令牌。在 for-await 循环内检查 signal.aborted 退出。\n\n关键：每次请求必须 new AbortController()，已中断的控制器不可复用！",
+    answerEn: "Pass signal to fetch/stream. Check signal.aborted in processing loop. Must create NEW controller per request — aborted controllers stay aborted forever."
+  },
+  {
+    term: "Timer Suppression",
+    hint: "Pattern 5 — DOM event ordering",
+    answer: "定时器抑制：用 setTimeout + re-arm 模式抑制拖拽后的虚假 click 事件。\n\n关键不变量：DRAG_END_MS >= DRAG_START_MS，否则存在 click 穿透的时间窗口！",
+    answerEn: "Browser fires pointerdown → pointermove → pointerup → click. Can't preventDefault the auto-generated click. Re-arm timer at commitAndReset to cover the gap. End timeout MUST >= start timeout."
+  },
+  {
+    term: "Why useRef, not useState?",
+    hint: "The fundamental question for all 5 patterns",
+    answer: "为什么用 useRef 而不是 useState？\n\n1. Ref 更新是同步的 — 下一行代码立即看到新值\n2. State 更新是异步的 — 要等到下次渲染才生效\n3. Ref 不触发重渲染 — 不会进入死循环\n4. Ref 不受 React 批处理影响 — 快速点击不会穿透",
+    answerEn: "Refs are synchronous (instant read-after-write), don't trigger re-renders (no infinite loops), and aren't affected by React batching (no stale reads between renders)."
+  },
+  {
+    term: "Stale Closure",
+    hint: "The root cause of most React race conditions",
+    answer: "过时闭包：JavaScript 闭包捕获了创建时的变量值。当 React 重渲染时，旧闭包里的值已经过时，但异步回调仍然引用它们。\n\n这就是为什么 useEffect 的回调可能用错误的状态调用 setState。",
+    answerEn: "A closure captures variables at creation time. When React re-renders, old closures still reference stale values. This is why async callbacks inside useEffect can overwrite newer state with older data."
+  },
+  {
+    term: "Q1: Async or DOM event?",
+    hint: "Decision flowchart — first question",
+    answer: "决策流程图第一问：竞态是异步操作之间还是 DOM 事件之间？\n\n→ DOM 事件顺序问题 → Timer Suppression\n→ 异步操作 → 继续问 Q2",
+    answerEn: "If it's a DOM event ordering problem (click after drag, focus after blur), use Timer Suppression. Everything else is async operation races — continue to Q2."
+  },
+  {
+    term: "Q2: Cancel or Ignore?",
+    hint: "Decision flowchart — second question",
+    answer: "决策流程图第二问：需要取消操作还是只忽略结果？\n\n→ 取消（流式、大负载、服务端昂贵操作）→ AbortController\n→ 忽略（轻量请求）→ 继续问 Q3",
+    answerEn: "Cancel = AbortController (saves bandwidth, stops server work). Ignore = lighter patterns. Use cancel for streams, large payloads, expensive server operations."
+  },
+  {
+    term: "Q3-Q4: Same effect or different ops?",
+    hint: "Decision flowchart — final questions",
+    answer: "Q3：是同一 Effect 重复触发还是不同操作重叠？\n→ 同一 Effect 重复 → Dual Guard\n→ 不同操作重叠 → Q4\n\nQ4：第二次调用应该被阻止还是让第一次变成过时？\n→ 阻止 → Boolean Flag\n→ 过时 → Version Counter",
+    answerEn: "Same effect re-firing (React batching) → Dual Guard. Different ops: block second call → Boolean Flag. Let first become stale → Version Counter."
+  }
+];
+
+let currentFlash = 0;
+
+function renderFlashcard() {
+  const f = flashcards[currentFlash];
+  document.getElementById('flash-term').textContent = f.term;
+  document.getElementById('flash-hint').textContent = f.hint;
+  document.getElementById('flash-answer').textContent = f.answer;
+  document.getElementById('flash-answer-en').textContent = f.answerEn;
+  document.getElementById('flash-counter').textContent = `${currentFlash + 1} / ${flashcards.length}`;
+  document.getElementById('flash-card').classList.remove('flipped');
+}
+
+function flipCard() {
+  document.getElementById('flash-card').classList.toggle('flipped');
+}
+
+function nextCard() {
+  currentFlash = (currentFlash + 1) % flashcards.length;
+  renderFlashcard();
+}
+
+function prevCard() {
+  currentFlash = (currentFlash - 1 + flashcards.length) % flashcards.length;
+  renderFlashcard();
+}
+
+// ===== INIT =====
+renderQuiz();
+renderFlashcard();
+</script>
+
+</body>
+</html>
