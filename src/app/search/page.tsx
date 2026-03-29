@@ -14,7 +14,7 @@ export default async function SearchPage() {
 
   return (
     <Suspense fallback={<div className="text-center text-text-dim py-8">Loading...</div>}>
-      <SearchClient concepts={data.concepts} allTags={allTags} />
+      <SearchClient concepts={data.concepts} allTags={allTags} pages={data.pages || []} />
     </Suspense>
   );
 }
