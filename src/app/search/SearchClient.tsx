@@ -475,7 +475,7 @@ function DetailPreview({
 
       {/* Deep Dive Request */}
       {concept.review_stage < 5 && (
-        <DeepDiveButton conceptId={concept.id} />
+        <DeepDiveButton key={concept.id} conceptId={concept.id} />
       )}
     </div>
   );

@@ -1,10 +1,23 @@
 import { Redis } from "@upstash/redis";
 import { readFileSync } from "fs";
+import { writeFile } from "fs/promises";
 import { join } from "path";
-import type { TrackerData, FeedbackLevel } from "./types";
-import { computeNextReview, computeNextReviewWithFeedback, computeMasteryFromReviews } from "./tracker";
+import type { TrackerData, FeedbackLevel, ArchNode, Exercise } from "./types";
+import { computeNextReviewWithFeedback, computeMasteryFromReviews } from "./tracker";
+
+// --- KV keys & file paths ---
+
+const DATA_DIR = join(process.cwd(), "data");
 
 const KV_KEY = "tracker:data";
+const ARCH_KV_KEY = "tracker:architecture";
+const EXERCISES_KV_KEY = "tracker:exercises";
+
+const TRACKER_FILE = join(DATA_DIR, ".learning-tracker.json");
+const ARCH_FILE = join(DATA_DIR, "architecture.json");
+const EXERCISES_FILE = join(DATA_DIR, "exercises.json");
+
+// --- Generic KV helpers ---
 
 function getRedis(): Redis | null {
   if (
@@ -19,30 +32,44 @@ function getRedis(): Redis | null {
   });
 }
 
-/** Read tracker data from KV, falling back to local JSON file */
-export async function getTrackerData(): Promise<TrackerData> {
+/** Read from Redis KV, falling back to local JSON file */
+async function getFromKV<T>(kvKey: string, filePath: string, defaultValue: T): Promise<T> {
   const redis = getRedis();
-
   if (redis) {
     try {
-      const data = await redis.get<TrackerData>(KV_KEY);
+      const data = await redis.get<T>(kvKey);
       if (data) return data;
     } catch {
       // Fall through to local file
     }
   }
 
-  // Fallback: read from local JSON file
-  const filePath = join(process.cwd(), "data", ".learning-tracker.json");
-  const raw = readFileSync(filePath, "utf-8");
-  return JSON.parse(raw) as TrackerData;
+  try {
+    const raw = readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return defaultValue;
+  }
+}
+
+/** Save to Redis KV + local JSON file (non-blocking write) */
+async function saveToKV<T>(kvKey: string, filePath: string, data: T): Promise<void> {
+  const redis = getRedis();
+  if (redis) {
+    await redis.set(kvKey, JSON.stringify(data));
+  }
+  await writeFile(filePath, JSON.stringify(data, null, 2), "utf-8");
+}
+
+// --- Tracker data ---
+
+export async function getTrackerData(): Promise<TrackerData> {
+  // TrackerData always exists in local file, so cast is safe
+  return getFromKV<TrackerData>(KV_KEY, TRACKER_FILE, null as unknown as TrackerData);
 }
 
 async function saveData(data: TrackerData): Promise<void> {
-  const redis = getRedis();
-  if (redis) {
-    await redis.set(KV_KEY, JSON.stringify(data));
-  }
+  return saveToKV(KV_KEY, TRACKER_FILE, data);
 }
 
 /** Mark a concept as reviewed with optional feedback */
@@ -59,10 +86,8 @@ export async function markReviewed(
     throw new Error(`Concept not found: ${conceptId}`);
   }
 
-  // Add review entry with feedback
   concept.reviews.push({ date, completed: true, feedback, notes });
 
-  // Compute next review using feedback-based algorithm
   const { nextReview, newStage } = computeNextReviewWithFeedback(
     concept.review_stage,
     date,
@@ -73,7 +98,6 @@ export async function markReviewed(
     concept.next_review = nextReview;
   }
 
-  // Update mastery level based on recent reviews
   concept.mastery_level = computeMasteryFromReviews(
     concept.reviews,
     concept.mastery_level
@@ -94,7 +118,6 @@ export async function addLearningRequest(
 
   if (!data.learning_requests) data.learning_requests = [];
 
-  // Avoid duplicate pending requests for same concept
   const existing = data.learning_requests.find(
     (r) => r.concept_id === conceptId && r.status === "pending"
   );
@@ -113,7 +136,43 @@ export async function addLearningRequest(
   return data;
 }
 
-/** Seed KV with tracker data from the JSON file */
+// --- Architecture ---
+
+export async function getArchitecture(): Promise<ArchNode | null> {
+  return getFromKV<ArchNode | null>(ARCH_KV_KEY, ARCH_FILE, null);
+}
+
+export async function setArchitecture(tree: ArchNode): Promise<void> {
+  return saveToKV(ARCH_KV_KEY, ARCH_FILE, tree);
+}
+
+// --- Exercises ---
+
+export async function getExercises(): Promise<Exercise[]> {
+  return getFromKV<Exercise[]>(EXERCISES_KV_KEY, EXERCISES_FILE, []);
+}
+
+async function saveExercises(exercises: Exercise[]): Promise<void> {
+  return saveToKV(EXERCISES_KV_KEY, EXERCISES_FILE, exercises);
+}
+
+export async function markExerciseCompleted(exerciseId: string): Promise<Exercise[]> {
+  const exercises = await getExercises();
+  const exercise = exercises.find((e) => e.id === exerciseId);
+
+  if (!exercise) {
+    throw new Error(`Exercise not found: ${exerciseId}`);
+  }
+
+  exercise.completed = true;
+  exercise.completed_date = new Date().toISOString().split("T")[0];
+
+  await saveExercises(exercises);
+  return exercises;
+}
+
+// --- Seed ---
+
 export async function seedKV(): Promise<void> {
   const redis = getRedis();
   if (!redis) {
@@ -121,8 +180,7 @@ export async function seedKV(): Promise<void> {
     return;
   }
 
-  const filePath = join(process.cwd(), "data", ".learning-tracker.json");
-  const raw = readFileSync(filePath, "utf-8");
+  const raw = readFileSync(TRACKER_FILE, "utf-8");
   await redis.set(KV_KEY, raw);
   console.log("Seeded KV with tracker data");
 }

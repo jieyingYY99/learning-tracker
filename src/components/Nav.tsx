@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, LayoutDashboard, Search } from "lucide-react";
+import { BookOpen, LayoutDashboard, Search, GitFork, Server, BarChart3, Workflow, Dumbbell, Route } from "lucide-react";
 import clsx from "clsx";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/map", label: "Map", icon: GitFork },
+  { href: "/architecture", label: "Architecture", icon: Server },
+  { href: "/progress", label: "Progress", icon: BarChart3 },
+  { href: "/flows", label: "Flows", icon: Workflow },
+  { href: "/exercises", label: "Exercises", icon: Dumbbell },
+  { href: "/path", label: "Path", icon: Route },
   { href: "/search", label: "Search", icon: Search },
   { href: "/pages", label: "Pages", icon: BookOpen },
 ];

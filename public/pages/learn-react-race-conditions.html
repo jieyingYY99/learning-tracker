@@ -339,12 +339,12 @@
 <nav>
   <div class="inner">
     <span class="logo">RC</span>
-    <a href="#home" class="nav-link active" onclick="switchTab('home')">Home 首页</a>
-    <a href="#patterns" class="nav-link" onclick="switchTab('patterns')">5 Patterns 五种模式</a>
-    <a href="#flowchart" class="nav-link" onclick="switchTab('flowchart')">Decision Guide 决策指南</a>
-    <a href="#quiz" class="nav-link" onclick="switchTab('quiz')">Quiz 测验</a>
-    <a href="#flashcards" class="nav-link" onclick="switchTab('flashcards')">Flashcards 闪卡</a>
-    <a href="#next" class="nav-link" onclick="switchTab('next')">Next Steps 下一步</a>
+    <a href="#home" class="nav-link active" onclick="switchTab('home');return false">Home 首页</a>
+    <a href="#patterns" class="nav-link" onclick="switchTab('patterns');return false">5 Patterns 五种模式</a>
+    <a href="#flowchart" class="nav-link" onclick="switchTab('flowchart');return false">Decision Guide 决策指南</a>
+    <a href="#quiz" class="nav-link" onclick="switchTab('quiz');return false">Quiz 测验</a>
+    <a href="#flashcards" class="nav-link" onclick="switchTab('flashcards');return false">Flashcards 闪卡</a>
+    <a href="#next" class="nav-link" onclick="switchTab('next');return false">Next Steps 下一步</a>
   </div>
 </nav>
 
@@ -885,7 +885,7 @@ function switchTab(id) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelector(`[onclick="switchTab('${id}')"]`).classList.add('active');
+  document.querySelector(`a[href="#${id}"]`).classList.add('active');
   window.scrollTo(0, 0);
 }
 

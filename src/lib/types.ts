@@ -75,12 +75,69 @@ export interface FocusArea {
   forgotCount: number;
 }
 
+export interface ArchNode {
+  id: string;
+  name: string;
+  type: "system" | "module" | "file" | "function";
+  description: string;
+  concepts: string[];
+  children: ArchNode[];
+  metadata?: {
+    file_path?: string;
+    language?: string;
+  };
+}
+
+export interface ExerciseQuestion {
+  question: string;
+  code_snippet?: string;
+  options: string[];
+  correct_index: number;
+  explanation: string;
+}
+
+export interface Exercise {
+  id: string;
+  concept_id: string;
+  type: "quiz" | "task";
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  title: string;
+  description: string;
+  questions?: ExerciseQuestion[];
+  instructions?: string;
+  completed?: boolean;
+  completed_date?: string;
+}
+
+export interface LearningPathStep {
+  concept_id: string;
+  reason: string;
+  exercises: string[];
+  estimated_hours: number;
+}
+
+export interface LearningPath {
+  generated_date: string;
+  steps: LearningPathStep[];
+}
+
+export interface DomainFlow {
+  id: string;
+  name: string;
+  steps: {
+    concept_id: string;
+    description: string;
+    domain: "frontend" | "backend" | "infra" | "ai";
+  }[];
+}
+
 export interface TrackerData {
   concepts: Concept[];
   last_updated: string;
   weeks: Week[];
   pages?: Page[];
   learning_requests?: LearningRequest[];
+  domain_flows?: DomainFlow[];
   metadata?: {
     schema_version: number;
     total_reviews_completed: number;

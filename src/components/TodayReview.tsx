@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Clock, AlertTriangle, MessageSquare } from "lucide-react";
 import clsx from "clsx";
 import type { Concept, FeedbackLevel } from "@/lib/types";
@@ -36,9 +36,17 @@ export default function TodayReview({
   concepts: Concept[];
 }) {
   const [reviewedFeedback, setReviewedFeedback] = useState<Record<string, FeedbackLevel>>({});
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<string | null>(null);
   const [showNotes, setShowNotes] = useState<Set<string>>(new Set());
   const [notesInput, setNotesInput] = useState<Record<string, string>>({});
+  const timers = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  useEffect(() => {
+    return () => {
+      timers.current.forEach((id) => clearTimeout(id));
+    };
+  }, []);
 
   async function handleReview(conceptId: string, feedback: FeedbackLevel) {
     // For hard/forgot, show notes input first (if not already shown)
@@ -66,6 +74,11 @@ export default function TodayReview({
           next.delete(conceptId);
           return next;
         });
+        const tid = setTimeout(() => {
+          setDismissed((prev) => new Set(prev).add(conceptId));
+          timers.current.delete(conceptId);
+        }, 1000);
+        timers.current.set(conceptId, tid);
       }
     } catch {
       // Silent fail — user can retry
@@ -85,9 +98,22 @@ export default function TodayReview({
     );
   }
 
+  const visible = concepts.filter((c) => !dismissed.has(c.id));
+
+  if (visible.length === 0) {
+    return (
+      <div className="rounded-xl bg-accent-light p-6 text-center">
+        <span className="mx-auto mb-2 block text-2xl">🎉</span>
+        <p className="font-medium text-green">
+          All reviews completed. Great job!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {concepts.map((c) => {
+      {visible.map((c) => {
         const overdue = isOverdue(c);
         const done = c.id in reviewedFeedback;
         const isLoading = loading === c.id;

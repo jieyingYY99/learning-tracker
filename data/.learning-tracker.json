@@ -11,7 +11,10 @@
         "ffdca971 feat(list-view): add FlatTreeItem type and useFlattenedTree hook"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -27,7 +30,10 @@
         "e8d4b107 fix: resolve drag-drop issues in FinderListView"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -42,7 +48,10 @@
         "3fc278cc feat(list-view): add move conflict resolution dialog and breadcrumb collapse"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -58,7 +67,10 @@
         "dfa34ba6 feat(publish): PublishButton uses CustomPathDialog"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -73,7 +85,10 @@
         "a7882c84 fix: harden KuseClaw WebSocket with reconnect safety, offline detection, and retry UI"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -91,7 +106,10 @@
         "8a657b9c feat: redesign AskUserCard — vertical list, custom input, skip"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -111,7 +129,10 @@
         "33624a03 fix: connector UX — auto-close modal, fix disconnect, refetch accounts"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -133,7 +154,10 @@
         "f7f9683d refactor: replace raw buttons with Button component, use Radix primitives"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -153,7 +177,10 @@
         "4b3486c9 escape"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -170,7 +197,10 @@
         "66ebf6a5 refactor: migrate dispute API paths from /credits/dispute to /dispute"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -206,9 +236,16 @@
         "trade_offs": "Trash: simpler (irreversible, no conflicts), idempotent, explicit confirmation. Finder delete: reversible via undo, optimistic for speed. Finder move: most complex but handles conflicts and partial failures gracefully.",
         "decision_guide": "Irreversible + no conflicts → Trash pattern (idempotent API, explicit dialog). Reversible + no conflicts → Finder delete (optimistic + UndoEntry). Reversible + may conflict → Move pattern (per-item resolution, partial rollback)."
       },
-      "reviews": [],
-      "next_review": "2026-03-29",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-03-29",
+          "completed": true,
+          "feedback": "medium"
+        }
+      ],
+      "next_review": "2026-04-01",
+      "review_stage": 1,
+      "mastery_level": "seen"
     },
     {
       "id": "race-condition-prevention-patterns",
@@ -254,9 +291,16 @@
         "trade_offs": "Version counter: simple, works for any async, but stale request still completes (wasted bandwidth). AbortController: cancels early, saves bandwidth, but more complex setup. Boolean flag: simplest, but blocks all concurrent calls. Dual guard: handles React's batching, but JSON.stringify has performance cost for large payloads.",
         "decision_guide": "Cancel network request → AbortController. Invalidate stale result → Version counter. Prevent duplicate processing → Dual guard. Block concurrent calls → Boolean flag. Suppress events during transitions → Timer suppression."
       },
-      "reviews": [],
-      "next_review": "2026-03-29",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-03-29",
+          "completed": true,
+          "feedback": "hard"
+        }
+      ],
+      "next_review": "2026-03-30",
+      "review_stage": 0,
+      "mastery_level": "seen"
     },
     {
       "id": "tiptap-inputrule-slash-commands",
@@ -290,12 +334,24 @@
         "trade_offs": "InputRule: automatic, great UX for typing patterns, but regex timing is tricky (fires after character insertion). ReactNodeViewRenderer: full React rendering power, but heavier and not auto-triggered. Marks: simplest for text formatting, but can't represent complex content.",
         "decision_guide": "Auto-trigger on typing pattern → InputRule + Atom Node. Needs interactive React UI → ReactNodeViewRenderer. Text formatting only → Mark extension. Block-level media → Standard HTML Node."
       },
-      "reviews": [],
-      "next_review": "2026-03-29",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-03-29",
+          "completed": true,
+          "feedback": "medium"
+        },
+        {
+          "date": "2026-03-29",
+          "completed": true,
+          "feedback": "medium"
+        }
+      ],
+      "next_review": "2026-04-05",
+      "review_stage": 2,
+      "mastery_level": "understand"
     }
   ],
-  "last_updated": "2026-03-28",
+  "last_updated": "2026-03-29",
   "weeks": [
     {
       "week": "2026-W12",
@@ -351,21 +407,45 @@
       "title": "Week 12 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-22",
-      "concepts": ["virtual-scroll-tree-flatten", "dnd-kit-advanced-patterns", "move-conflict-resolution-rollback", "html-publish-workflow", "websocket-reconnect-safety"]
+      "concepts": [
+        "virtual-scroll-tree-flatten",
+        "dnd-kit-advanced-patterns",
+        "move-conflict-resolution-rollback",
+        "html-publish-workflow",
+        "websocket-reconnect-safety"
+      ]
     },
     {
       "filename": "week-2026-W13.html",
       "title": "Week 13 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-28",
-      "concepts": ["uiblock-interactive-cards", "pipedream-connect-oauth", "customize-view-architecture", "download-export-refactor", "credit-dispute-system", "batch-operations-design", "race-condition-prevention-patterns", "tiptap-inputrule-slash-commands"]
+      "concepts": [
+        "uiblock-interactive-cards",
+        "pipedream-connect-oauth",
+        "customize-view-architecture",
+        "download-export-refactor",
+        "credit-dispute-system",
+        "batch-operations-design",
+        "race-condition-prevention-patterns",
+        "tiptap-inputrule-slash-commands"
+      ]
     },
     {
       "filename": "learn-react-race-conditions.html",
       "title": "React Race Conditions: Systematic Mental Model",
       "type": "topic",
       "generated_date": "2026-03-28",
-      "concepts": ["race-condition-prevention-patterns"]
+      "concepts": [
+        "race-condition-prevention-patterns"
+      ]
+    }
+  ],
+  "learning_requests": [
+    {
+      "concept_id": "race-condition-prevention-patterns",
+      "requested_date": "2026-03-29",
+      "status": "pending"
     }
   ]
 }
