@@ -11,10 +11,7 @@
         "ffdca971 feat(list-view): add FlatTreeItem type and useFlattenedTree hook"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -30,10 +27,7 @@
         "e8d4b107 fix: resolve drag-drop issues in FinderListView"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -48,10 +42,7 @@
         "3fc278cc feat(list-view): add move conflict resolution dialog and breadcrumb collapse"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -67,10 +58,7 @@
         "dfa34ba6 feat(publish): PublishButton uses CustomPathDialog"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -85,10 +73,7 @@
         "a7882c84 fix: harden KuseClaw WebSocket with reconnect safety, offline detection, and retry UI"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -106,10 +91,7 @@
         "8a657b9c feat: redesign AskUserCard — vertical list, custom input, skip"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -129,10 +111,7 @@
         "33624a03 fix: connector UX — auto-close modal, fix disconnect, refetch accounts"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -154,10 +133,7 @@
         "f7f9683d refactor: replace raw buttons with Button component, use Radix primitives"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -177,10 +153,7 @@
         "4b3486c9 escape"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -197,10 +170,7 @@
         "66ebf6a5 refactor: migrate dispute API paths from /credits/dispute to /dispute"
       ],
       "reviews": [
-        {
-          "date": "2026-03-28",
-          "completed": true
-        }
+        { "date": "2026-03-28", "completed": true }
       ],
       "next_review": "2026-03-31",
       "review_stage": 1
@@ -236,16 +206,9 @@
         "trade_offs": "Trash: simpler (irreversible, no conflicts), idempotent, explicit confirmation. Finder delete: reversible via undo, optimistic for speed. Finder move: most complex but handles conflicts and partial failures gracefully.",
         "decision_guide": "Irreversible + no conflicts → Trash pattern (idempotent API, explicit dialog). Reversible + no conflicts → Finder delete (optimistic + UndoEntry). Reversible + may conflict → Move pattern (per-item resolution, partial rollback)."
       },
-      "reviews": [
-        {
-          "date": "2026-03-29",
-          "completed": true,
-          "feedback": "medium"
-        }
-      ],
-      "next_review": "2026-04-01",
-      "review_stage": 1,
-      "mastery_level": "seen"
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
     },
     {
       "id": "race-condition-prevention-patterns",
@@ -291,16 +254,9 @@
         "trade_offs": "Version counter: simple, works for any async, but stale request still completes (wasted bandwidth). AbortController: cancels early, saves bandwidth, but more complex setup. Boolean flag: simplest, but blocks all concurrent calls. Dual guard: handles React's batching, but JSON.stringify has performance cost for large payloads.",
         "decision_guide": "Cancel network request → AbortController. Invalidate stale result → Version counter. Prevent duplicate processing → Dual guard. Block concurrent calls → Boolean flag. Suppress events during transitions → Timer suppression."
       },
-      "reviews": [
-        {
-          "date": "2026-03-29",
-          "completed": true,
-          "feedback": "hard"
-        }
-      ],
-      "next_review": "2026-03-30",
-      "review_stage": 0,
-      "mastery_level": "seen"
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
     },
     {
       "id": "tiptap-inputrule-slash-commands",
@@ -334,24 +290,61 @@
         "trade_offs": "InputRule: automatic, great UX for typing patterns, but regex timing is tricky (fires after character insertion). ReactNodeViewRenderer: full React rendering power, but heavier and not auto-triggered. Marks: simplest for text formatting, but can't represent complex content.",
         "decision_guide": "Auto-trigger on typing pattern → InputRule + Atom Node. Needs interactive React UI → ReactNodeViewRenderer. Text formatting only → Mark extension. Block-level media → Standard HTML Node."
       },
-      "reviews": [
-        {
-          "date": "2026-03-29",
-          "completed": true,
-          "feedback": "medium"
-        },
-        {
-          "date": "2026-03-29",
-          "completed": true,
-          "feedback": "medium"
-        }
+      "reviews": [],
+      "next_review": "2026-03-29",
+      "review_stage": 0
+    },
+    {
+      "id": "sse-streaming-architecture",
+      "name": "SSE 流式通信三层架构（SSE Streaming 3-Layer Architecture）",
+      "category": "frontend",
+      "description": "Chat Panel 的完整 SSE 数据流转管线：三层架构 — StreamManager（连接控制/重试/TTL/AbortController）→ AIStreamProcessor（事件分发/Agent-SubAgent 聚合/Tool 流式处理）→ MessageBuilder（增量消息构建/Part 合并/UIBlock）。通过 AsyncGenerator yield 链式传递 ProcessedEvent，useAIStream hook 消费并更新 React 状态",
+      "learned_date": "2026-03-30",
+      "source_commits": [
+        "d8a095db feat: add UIBlock interactive cards (ask_user + suggest_connectors)",
+        "8a657b9c feat: redesign AskUserCard — vertical list, custom input, skip",
+        "2df16ddd fix: use sentinel UID for temp conversation to prevent stale reload",
+        "454210ba fix: clear sendToAgent payload in error catch to prevent duplicate sends",
+        "67a92317 feat: add slash command menu (/) for quick access to Add files and Skills"
       ],
-      "next_review": "2026-04-05",
-      "review_stage": 2,
-      "mastery_level": "understand"
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "packages/htmlEditor/api/refine.ts",
+            "approach": "Simple SSE: 直接调用 @microsoft/fetch-event-source，单一 onmessage 回调处理所有事件，无分层、无重试、无 Agent 聚合",
+            "key_code_pattern": "fetchEventSource(url, { onmessage(msg) { onMessage(msg.data); }, onerror(err) { throw err; } })"
+          },
+          {
+            "location": "lib/fetchEventSource/index.ts + parse.ts",
+            "approach": "自定义 fetchEventSource 库：基于 ReadableStream 的字节级 SSE 解析，支持 Last-Event-ID 重连、visibility change 自动重连、自定义 onopen 验证",
+            "key_code_pattern": "getBytes(body) → getLines(bytes) → getMessages(lines) → onmessage(event)"
+          },
+          {
+            "location": "components/Chat/utils/streamManager.ts",
+            "approach": "连接管理层：AsyncGenerator 封装 fetchEventSource，管理 Request-ID/Last-Event-ID、指数退避重试（AUTO/MANUAL/RELOAD 策略）、TTL 过期降级、visibility retry、AbortController 可中断 sleep",
+            "key_code_pattern": "async *streamWithRetry() { while(true) { yield* connectAndStream(); // 错误时分类 → 自动重试或 yield error } }"
+          },
+          {
+            "location": "components/Chat/utils/streamProcessor.ts",
+            "approach": "事件处理层：消费 AsyncGenerator<RawSSEEvent>，switch 分发 20+ 事件类型，管理 Agent/SubAgent 状态机、Tool 生命周期、文件流式预览、历史消息回放",
+            "key_code_pattern": "async *processEventStream(eventStream) { for await (const event of eventStream) { yield* processEvent(event); } }"
+          },
+          {
+            "location": "components/Chat/utils/messageBuilder.ts",
+            "approach": "消息构建层：增量构建 Message 对象，基于 eventId 合并连续同类 Part，支持 text/thinking/coding/image/table/tool_call/ui_block/agent_block 等 11 种 Part 类型",
+            "key_code_pattern": "appendText(content, type, eventId) { if (lastPart.eventId === eventId) merge; else push new; }"
+          }
+        ],
+        "comparison": "项目中存在两套 SSE 方案：(1) htmlEditor/refine.ts 的简单方案：单层回调，无分层无重试，~50 行代码，适合一次性 AI 编辑请求；(2) Chat 系统的三层架构：StreamManager→AIStreamProcessor→MessageBuilder，~2500 行代码，支持多 Agent 嵌套、Tool 流式文件预览、断点续传、TTL 降级重载。核心差异在于 Chat 需要处理复杂的 Agent 层级（主 Agent + SubAgent）和 Tool 生命周期（start→stream→result→end），而 htmlEditor 只需要简单的文本流。",
+        "trade_offs": "简单方案（refine.ts）：代码少、易维护、无状态管理开销，但不支持重试、不能处理多 Agent、不能做断点续传。三层架构（Chat）：功能完整、健壮、可扩展，但代码量大（2500+ 行）、调试复杂（事件要经过 3 层转换才到 UI）、新增事件类型需要修改 streamProcessor 的 switch。",
+        "decision_guide": "单向文本流 + 一次性请求（如 AI 编辑）→ 简单方案（直接 fetchEventSource + 单回调）。多 Agent 嵌套 + Tool 流式 + 需要重试/断点续传 → 三层架构。介于两者之间（如需要重试但无 Agent 嵌套）→ 只用 StreamManager + 简单 processor，跳过 MessageBuilder 的复杂 Part 系统。"
+      },
+      "reviews": [],
+      "next_review": "2026-03-31",
+      "review_stage": 0
     }
   ],
-  "last_updated": "2026-03-29",
+  "last_updated": "2026-03-30",
   "weeks": [
     {
       "week": "2026-W12",
@@ -399,6 +392,40 @@
           "priority": "medium"
         }
       ]
+    },
+    {
+      "week": "2026-W14",
+      "summary": "Scheduled Tasks UI、Folder Tree Side Panel、Slash Command Menu、Chat AttachMenu Connectors/Skills 子菜单、深入分析 Chat SSE 三层流式架构",
+      "concepts_learned": [
+        "sse-streaming-architecture"
+      ],
+      "commits_analyzed": 70,
+      "learning_recommendations": [
+        {
+          "topic": "AsyncGenerator 与 Backpressure 机制",
+          "why": "Chat SSE 架构大量使用 async *generator yield 链式传递事件，但目前 eventQueue 无上限。高频事件可能导致内存压力，需要理解 JS AsyncGenerator 的背压行为",
+          "how": "读源码：streamManager.ts connectAndStream() 中的 eventQueue 实现；做实验：模拟 1000+ 事件/秒测试内存表现；看文档：MDN AsyncGenerator protocol + TC39 async iteration proposal",
+          "priority": "high"
+        },
+        {
+          "topic": "SSE vs WebSocket 的系统性对比",
+          "why": "项目里 Chat 用 SSE（单向流 + POST body），KuseClaw 用 WebSocket（双向）。两者的选型理由、重连策略、代理兼容性差异需要系统化理解",
+          "how": "对比 streamManager.ts 的 SSE 重连（Last-Event-ID 断点续传）和 WebSocket reconnect 的状态恢复差异；测试 CDN/Nginx proxy 对 SSE 和 WS 的 timeout 行为",
+          "priority": "medium"
+        },
+        {
+          "topic": "事件驱动状态机设计（Agent/Tool 生命周期）",
+          "why": "streamProcessor.ts 管理 20+ 事件类型和 Agent/SubAgent/Tool 多层状态机，但没有用显式的状态机库。理解何时需要正式状态机 vs switch 就够用",
+          "how": "画出 Agent 状态转换图（starting→executing→completed/error）和 Tool 状态转换图；研究 XState 的 actor model 是否适合这个场景；对比当前 Map<string, State> 方案的优缺点",
+          "priority": "medium"
+        },
+        {
+          "topic": "后端 SSE 事件设计（协议层）",
+          "why": "前端消费了 20+ 种事件类型但对后端如何 produce 这些事件不了解。理解后端的事件生成逻辑有助于调试前后端不匹配问题",
+          "how": "读后端 API 的 SSE response 生成代码（conversation/chat endpoint）；关注事件顺序保证、agent_execution_id 的分配逻辑、error 事件的触发条件",
+          "priority": "low"
+        }
+      ]
     }
   ],
   "pages": [
@@ -407,45 +434,28 @@
       "title": "Week 12 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-22",
-      "concepts": [
-        "virtual-scroll-tree-flatten",
-        "dnd-kit-advanced-patterns",
-        "move-conflict-resolution-rollback",
-        "html-publish-workflow",
-        "websocket-reconnect-safety"
-      ]
+      "concepts": ["virtual-scroll-tree-flatten", "dnd-kit-advanced-patterns", "move-conflict-resolution-rollback", "html-publish-workflow", "websocket-reconnect-safety"]
     },
     {
       "filename": "week-2026-W13.html",
       "title": "Week 13 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-28",
-      "concepts": [
-        "uiblock-interactive-cards",
-        "pipedream-connect-oauth",
-        "customize-view-architecture",
-        "download-export-refactor",
-        "credit-dispute-system",
-        "batch-operations-design",
-        "race-condition-prevention-patterns",
-        "tiptap-inputrule-slash-commands"
-      ]
+      "concepts": ["uiblock-interactive-cards", "pipedream-connect-oauth", "customize-view-architecture", "download-export-refactor", "credit-dispute-system", "batch-operations-design", "race-condition-prevention-patterns", "tiptap-inputrule-slash-commands"]
     },
     {
       "filename": "learn-react-race-conditions.html",
       "title": "React Race Conditions: Systematic Mental Model",
       "type": "topic",
       "generated_date": "2026-03-28",
-      "concepts": [
-        "race-condition-prevention-patterns"
-      ]
-    }
-  ],
-  "learning_requests": [
+      "concepts": ["race-condition-prevention-patterns"]
+    },
     {
-      "concept_id": "race-condition-prevention-patterns",
-      "requested_date": "2026-03-29",
-      "status": "pending"
+      "filename": "week-2026-W14.html",
+      "title": "Week 14 Learning Hub — SSE Streaming Architecture Deep Dive",
+      "type": "weekly",
+      "generated_date": "2026-03-30",
+      "concepts": ["sse-streaming-architecture"]
     }
   ]
 }
