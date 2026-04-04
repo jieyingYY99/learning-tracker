@@ -13,7 +13,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -29,7 +29,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -44,7 +44,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -60,7 +60,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -75,7 +75,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -93,7 +93,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -113,7 +113,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -135,7 +135,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -155,7 +155,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -172,7 +172,7 @@
       "reviews": [
         { "date": "2026-03-28", "completed": true }
       ],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-07",
       "review_stage": 1
     },
     {
@@ -207,7 +207,7 @@
         "decision_guide": "Irreversible + no conflicts → Trash pattern (idempotent API, explicit dialog). Reversible + no conflicts → Finder delete (optimistic + UndoEntry). Reversible + may conflict → Move pattern (per-item resolution, partial rollback)."
       },
       "reviews": [],
-      "next_review": "2026-03-29",
+      "next_review": "2026-04-05",
       "review_stage": 0
     },
     {
@@ -255,7 +255,7 @@
         "decision_guide": "Cancel network request → AbortController. Invalidate stale result → Version counter. Prevent duplicate processing → Dual guard. Block concurrent calls → Boolean flag. Suppress events during transitions → Timer suppression."
       },
       "reviews": [],
-      "next_review": "2026-03-29",
+      "next_review": "2026-04-05",
       "review_stage": 0
     },
     {
@@ -291,7 +291,7 @@
         "decision_guide": "Auto-trigger on typing pattern → InputRule + Atom Node. Needs interactive React UI → ReactNodeViewRenderer. Text formatting only → Mark extension. Block-level media → Standard HTML Node."
       },
       "reviews": [],
-      "next_review": "2026-03-29",
+      "next_review": "2026-04-05",
       "review_stage": 0
     },
     {
@@ -340,11 +340,165 @@
         "decision_guide": "单向文本流 + 一次性请求（如 AI 编辑）→ 简单方案（直接 fetchEventSource + 单回调）。多 Agent 嵌套 + Tool 流式 + 需要重试/断点续传 → 三层架构。介于两者之间（如需要重试但无 Agent 嵌套）→ 只用 StreamManager + 简单 processor，跳过 MessageBuilder 的复杂 Part 系统。"
       },
       "reviews": [],
-      "next_review": "2026-03-31",
+      "next_review": "2026-04-05",
+      "review_stage": 0
+    },
+    {
+      "id": "scheduled-tasks-crud-architecture",
+      "name": "定时任务 CRUD 架构（Scheduled Tasks CRUD Architecture）",
+      "category": "frontend",
+      "description": "从零构建完整的定时 AI 任务管理功能：API class 封装 REST 端点（PUT 状态更新 + PATCH 字段编辑的分离）、Zustand store 乐观更新 + toast 反馈、TaskCreateDialog/EditDialog 的 delta-diff 提交、SchedulePicker cron 表达式双向转换、FolderSelector 复用 Chat 模块的 FolderPickerDialog、ScrollablePopoverContent 解决 Radix Popover 滚动问题",
+      "learned_date": "2026-04-04",
+      "source_commits": [
+        "28e029df feat: scheduled tasks UI — API client, store, components",
+        "2f06c1aa feat: add Scheduled Tasks sidebar entry + view integration",
+        "092b746b feat: SchedulePicker — user-friendly schedule editor",
+        "4a18f745 feat: refactor ScheduledTasks with TaskCreateDialog and Tailwind migration",
+        "9ca258f4 feat: enhance ScheduledTasks with calendar picker, task CRUD, and UI polish",
+        "6e2e197e feat: redesign ScheduledTasks dialogs with Figma spec, add folder/model selectors",
+        "22a99687 fix: UI review — dark mode, accessibility, responsive, token consistency",
+        "1b292a7f feat: add task detail drawer in right panel slot",
+        "a37281a7 ux: improve TaskCard feedback, empty state, and error display"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "store/trash/index.ts",
+            "approach": "Mature Zustand store: subscribeWithSelector middleware, event bus integration (TRASH_UPDATED), AbortController for request cancellation, named selector exports (useTrashItems), getInitialState() for reset, granular loading flags (isRestoring, isDeleting, isEmptying)",
+            "key_code_pattern": "create<T>()(subscribeWithSelector(...)) + emitStoreEvent(STORE_EVENTS.TRASH_UPDATED)"
+          },
+          {
+            "location": "store/assets/index.ts",
+            "approach": "Most complex store: tree data management, optimistic IDs, UndoEntry rollback, subscribeWithSelector + devtools middleware, fine-grained backup-and-restore on failure",
+            "key_code_pattern": "Backup nodesByPath/childrenByPath → optimistic write → on failure restore from backup → emit typed events"
+          },
+          {
+            "location": "components/Chat/components/WorkInFolder/FolderPickerDialog.tsx",
+            "approach": "Full folder picker: virtualized tree dialog, inline NewFolderDialog with nested path support, calls registerExternalFolder after mkdir",
+            "key_code_pattern": "FolderPickerDialog + NewFolderDialog → assetsStore.registerExternalFolder()"
+          }
+        ],
+        "comparison": "useTurboTasksStore 是项目中最简单的 CRUD store：plain create() 无中间件、无事件总线、无 AbortController、无 named selector exports。与 useTrashStore 对比缺少 subscribeWithSelector（外部无法订阅细粒度变化）、request cancellation（快速切换可能导致 stale write）、getInitialState（无法 reset）。FolderSelector 复用了 FolderPickerDialog 但其内置 CreateFolderDialog 不调用 registerExternalFolder，新建文件夹不会立即出现在树中。SchedulePicker 的 ScrollablePopoverContent 解决了 Radix Popover 在 Dialog 内的 animation+scroll 冲突，是项目级可复用的方案。",
+        "trade_offs": "简单 store（TurboTasks）：代码少、易理解、开发快，但缺少 request cancellation 和事件集成。成熟 store（Trash/Assets）：健壮但代码量大、学习曲线高。delta-diff edit 模式：只发送改变的字段，减少服务端写入，但需要 undefined vs null 语义约定。",
+        "decision_guide": "新功能 MVP → 简单 store 模式（plain create + 乐观更新 + toast）。功能稳定后需要跨组件响应 → 升级到 subscribeWithSelector + event bus。有并发写入风险 → 加 AbortController。需要 undo → 参考 assetsStore 的 backup-restore 模式。Dialog 内有 Popover → 使用 ScrollablePopoverContent。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-05",
+      "review_stage": 0
+    },
+    {
+      "id": "ime-composition-state-guard",
+      "name": "IME 输入法组合状态防护（IME Composition State Guard）",
+      "category": "frontend",
+      "description": "useCompositionState hook 实现 CJK 输入法的 Enter 键防护：双重检查（composingRef + nativeEvent.isComposing）防止浏览器竞态，ref 而非 state 避免重渲染。两种消费模式：组件内直接实例化 vs 父组件实例化后 props 下传（虚拟列表场景共享单一 ref）",
+      "learned_date": "2026-04-04",
+      "source_commits": [
+        "c38f44bb fix: resolve IME composition Enter key bugs in rename inputs"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "hooks/useCompositionState.ts",
+            "approach": "标准 hook：composingRef (useRef<boolean>) + handleCompositionStart/End + isComposing(e) 双重检查（ref || nativeEvent.isComposing）",
+            "key_code_pattern": "composingRef.current || e.nativeEvent.isComposing"
+          },
+          {
+            "location": "components/Chat/components/InputArea/PromptInput/index.tsx (line 83, 203-221)",
+            "approach": "Tiptap/ProseMirror 环境：native DOM addEventListener（非 React synthetic event），单一 ref 检查（无 nativeEvent.isComposing），因为 ProseMirror handleKeyDown 收到的是原生 KeyboardEvent",
+            "key_code_pattern": "el.addEventListener('compositionstart/end', ...); if (isComposingRef.current) return false;"
+          },
+          {
+            "location": "components/Chat/components/WorkInFolder/index.tsx (line 121)",
+            "approach": "内联检查：直接用 e.nativeEvent.isComposing，无 ref 备份，无 hook",
+            "key_code_pattern": "if (e.nativeEvent.isComposing) return;"
+          },
+          {
+            "location": "app/(dashboard)/components/AccountSettings.tsx (line 225)",
+            "approach": "最老的模式：e.nativeEvent.isComposing || e.keyCode === 229，含 legacy Android keyCode 229 fallback",
+            "key_code_pattern": "e.nativeEvent.isComposing || e.keyCode === 229"
+          }
+        ],
+        "comparison": "项目中有 5 种 IME 防护层级：(1) useCompositionState hook 双重检查（最健壮）；(2) ProseMirror native DOM + 单 ref（Tiptap 必须用 native listener）；(3) TemplatePlaceholderView 手动双重检查（在 ProseMirror NodeView 中重新实现 hook 逻辑）；(4) 内联 nativeEvent.isComposing（简单但缺少 ref 备份）；(5) keyCode === 229 legacy fallback（最老，兼容旧 Android）。核心差异在于 React synthetic event vs native DOM event 的环境约束。",
+        "trade_offs": "useCompositionState hook：最安全（双重检查），但需要 3 个 props 传递。内联 nativeEvent.isComposing：最简单，但在某些浏览器/OS 组合中 isComposing 可能在 keydown 时已经为 false（已知竞态）。ProseMirror native listener：唯一选择（ProseMirror 不走 React event），但需要 useEffect 清理。prop delegation 模式：虚拟列表中避免 N 个 ref 实例（只有一个同时在编辑），但让 TreeRowContentProps 承载了 IME 相关 props。",
+        "decision_guide": "React 控制的 input/contentEditable（rename、search、modal）→ useCompositionState hook。Tiptap/ProseMirror 内部 → native DOM listener + ref。低风险输入（非提交型）→ 内联 nativeEvent.isComposing。虚拟列表中的编辑行（同一时间只有一个编辑）→ 父组件实例化 hook + props 下传。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-05",
+      "review_stage": 0
+    },
+    {
+      "id": "tiptap-suggestion-plugin",
+      "name": "Tiptap Suggestion 插件（Slash Command Menu）",
+      "category": "frontend",
+      "description": "通过 Tiptap Suggestion 插件实现 Notion 风格的 / 斜杠命令菜单：ProseMirror plugin 监控输入触发字符、ReactRenderer 在 document.body 创建独立 React root 渲染下拉菜单、@floating-ui/dom 基于光标 VirtualElement 定位、PluginKey 状态共享实现 Enter 键冲突解决（编辑器的 Enter-to-submit 让步给菜单的 Enter-to-select）",
+      "learned_date": "2026-04-04",
+      "source_commits": [
+        "67a92317 feat: add slash command menu (/) for quick access to Add files and Skills"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/components/InputArea/PromptInput/extensions/InlineSlashNode.ts (addInputRules)",
+            "approach": "InputRule 模式：正则匹配完成的 /skillName + 空格后自动替换为 atom 节点。无 UI overlay，纯文本模式匹配",
+            "key_code_pattern": "new InputRule({ find: /(?:^|\\s)\\/([^\\s/]+)\\s$/, handler: ... })"
+          },
+          {
+            "location": "components/Chat/components/InputArea/PromptInput/extensions/TemplatePlaceholderNode.ts + View.tsx",
+            "approach": "ReactNodeViewRenderer 模式：通过编程命令插入节点，节点内部是完整 React 组件（含 input、事件处理），需要 stopPropagation 防止 ProseMirror 拦截键盘事件",
+            "key_code_pattern": "addNodeView() { return ReactNodeViewRenderer(TemplatePlaceholderView); } + native event listeners with stopPropagation"
+          }
+        ],
+        "comparison": "三种 Tiptap 扩展模式各解决不同问题：Suggestion 是最重的方案（ProseMirror plugin + ReactRenderer + floating UI），但提供最好的发现性 UX（用户不需要记住命令名）。InputRule 是最轻的（纯正则替换），适合 power user 的快捷输入。ReactNodeView 是最灵活的（完整 React 渲染），适合文档内嵌入交互组件。Suggestion 和 InputRule 在本项目中互补：Suggestion 是发现入口，InputRule 是快捷入口，两者产生相同的 inlineSlash 节点。",
+        "trade_offs": "Suggestion：完整的发现性 UX（popup + 搜索过滤 + 键盘导航），但需要手动管理 React 生命周期（ReactRenderer 创建独立 React root，不继承父应用的 Context）。InputRule：零 UI 开销，但用户必须知道命令名。ReactNodeView：全功能 React 渲染，但必须手动 stopPropagation 所有键盘事件，且所有事件必须用 native listener（ProseMirror 会先于 React 拦截 keydown）。",
+        "decision_guide": "需要发现性菜单（搜索 + 选择列表）→ Suggestion plugin + ReactRenderer。需要自动文本替换（无 UI）→ InputRule。需要文档内嵌入 React 交互组件 → ReactNodeViewRenderer + native event interception。需要两者 → 同时注册（如本项目：Suggestion 是主路径，InputRule 是 fallback）。关键注意：ReactRenderer 的 React root 不继承 Context，需要全局 Provider（Lingui macro 可工作因为是编译时转换）。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-05",
+      "review_stage": 0
+    },
+    {
+      "id": "exclusive-view-state-pattern",
+      "name": "互斥视图状态模式（Exclusive View State Pattern）",
+      "category": "frontend",
+      "description": "多布尔标志 + resetAllViews 集中清除函数实现视图互斥：6 个 is*View 标志通过 resetAllViews() 原子性清除再设置，保证同一时刻只有一个视图激活。配套的 auto-rename + scroll-into-view 模式：Store 事件 → subscribeToStoreEvent(FOLDER_CREATED) → requestAnimationFrame → selectMultiple + setEditingPath → scrolledForRef 去重滚动",
+      "learned_date": "2026-04-04",
+      "source_commits": [
+        "abdf1927 feat: unify exclusive views into single activeView state and add task utils",
+        "e3a4faca feat: auto-rename mode and scroll-into-view after New Folder creation"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "store/ui/index.ts (resetAllViews, lines 543-564)",
+            "approach": "多布尔标志 + 集中清除：6 个 is*View boolean 通过 resetAllViews({ newFlag: true }) 原子性切换，早退优化（无活跃视图时跳过 set()）",
+            "key_code_pattern": "resetAllViews(merge?) { if (!anyActive && !merge) return; set({ isTrash: false, isShared: false, ..., ...merge }); }"
+          },
+          {
+            "location": "store/ui/index.ts (viewMode, line 49)",
+            "approach": "字符串联合枚举：type ViewMode = 'blob' | 'list'，纯互斥无附带 metadata，TypeScript 编译时保证穷尽",
+            "key_code_pattern": "type ViewMode = 'blob' | 'list'; set({ viewMode: 'list' })"
+          },
+          {
+            "location": "components/FinderView/FinderView.tsx (lines 269-278)",
+            "approach": "Store event 驱动的 auto-rename：subscribeToStoreEvent(FOLDER_CREATED) → pathDirname guard → requestAnimationFrame → selectMultiple + setEditingPath",
+            "key_code_pattern": "subscribeToStoreEvent(FOLDER_CREATED, ({path}) => { rAF(() => { selectMultiple([path]); setEditingPath(path); }); })"
+          },
+          {
+            "location": "components/FinderView/components/FinderListView.tsx (lines 379-392)",
+            "approach": "去重滚动：scrolledForRef 防止同一 editingPath 重复滚动，可见性检查（只在 off-screen 时滚动），居中对齐（scrollTop = targetTop - clientHeight/2）",
+            "key_code_pattern": "if (editingPath === scrolledForRef.current) return; scrolledForRef.current = editingPath; el.scrollTop = targetTop - el.clientHeight/2;"
+          }
+        ],
+        "comparison": "项目中视图互斥有两种方案：(1) 多布尔 + resetAllViews：允许每个视图携带独立 metadata（customizeInitialTab、pendingShareToken、newTaskInitialPrompt），但 TypeScript 无法静态保证互斥。(2) ViewMode 字符串枚举：编译时穷尽检查，但不支持 per-state metadata。Auto-rename 的 store event 模式是一个跨层通信典型：assetsStore 创建文件夹 → emit FOLDER_CREATED → FinderView 订阅 → 进入编辑模式 → FinderListView 滚动到位，全程无 prop drilling。",
+        "trade_offs": "多布尔 + enforcer：灵活（每个视图独立 metadata）、渐进式（新增视图只加一个 boolean + 在 resetAllViews 中清除），但无编译时互斥保证（直接 set() 可绕过 enforcer）。枚举/判别联合：编译时安全，但新增状态需修改 union type + 所有 switch/if 消费点。Store event auto-rename：解耦好（store 不关心 UI 如何响应），但事件链长（3 层跳转），调试需要追踪事件流。",
+        "decision_guide": "2 种状态、无 metadata → boolean。3+ 种状态、无 per-state metadata → 字符串枚举（如 ViewMode）。3+ 种状态、部分带 metadata → 多布尔 + resetAllViews（当前方案）或判别联合 type（更安全但迁移成本高）。跨层 UI 响应（store action → 多个 UI 副作用）→ Store event pub-sub + subscribeToStoreEvent。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-05",
       "review_stage": 0
     }
   ],
-  "last_updated": "2026-03-30",
+  "last_updated": "2026-04-04",
   "weeks": [
     {
       "week": "2026-W12",
@@ -395,34 +549,38 @@
     },
     {
       "week": "2026-W14",
-      "summary": "Scheduled Tasks UI、Folder Tree Side Panel、Slash Command Menu、Chat AttachMenu Connectors/Skills 子菜单、深入分析 Chat SSE 三层流式架构",
+      "summary": "Scheduled Tasks 完整 CRUD 功能、IME 输入法 Enter 键 bug 修复、Slash Command 菜单（Tiptap Suggestion）、互斥视图状态 resetAllViews 模式、auto-rename + scroll-into-view、Insurance landing page、SSE 三层架构深度分析",
       "concepts_learned": [
-        "sse-streaming-architecture"
+        "sse-streaming-architecture",
+        "scheduled-tasks-crud-architecture",
+        "ime-composition-state-guard",
+        "tiptap-suggestion-plugin",
+        "exclusive-view-state-pattern"
       ],
       "commits_analyzed": 70,
       "learning_recommendations": [
         {
-          "topic": "AsyncGenerator 与 Backpressure 机制",
-          "why": "Chat SSE 架构大量使用 async *generator yield 链式传递事件，但目前 eventQueue 无上限。高频事件可能导致内存压力，需要理解 JS AsyncGenerator 的背压行为",
-          "how": "读源码：streamManager.ts connectAndStream() 中的 eventQueue 实现；做实验：模拟 1000+ 事件/秒测试内存表现；看文档：MDN AsyncGenerator protocol + TC39 async iteration proposal",
+          "topic": "Zustand Store 成熟度升级模式",
+          "why": "本周 useTurboTasksStore 是最简单的 CRUD store（plain create, 无中间件），对比 useTrashStore/useAssetsStore 缺少 subscribeWithSelector、AbortController、event bus。需要建立从 MVP store 到 production store 的升级路径",
+          "how": "读源码：对比 store/turboTasks/index.ts（~130 行）和 store/trash/index.ts（~300 行）的差异；做实验：给 turboTasksStore 添加 subscribeWithSelector，观察是否有外部需要订阅的场景；看文档：Zustand v4 middleware composition 文档",
           "priority": "high"
         },
         {
-          "topic": "SSE vs WebSocket 的系统性对比",
-          "why": "项目里 Chat 用 SSE（单向流 + POST body），KuseClaw 用 WebSocket（双向）。两者的选型理由、重连策略、代理兼容性差异需要系统化理解",
-          "how": "对比 streamManager.ts 的 SSE 重连（Last-Event-ID 断点续传）和 WebSocket reconnect 的状态恢复差异；测试 CDN/Nginx proxy 对 SSE 和 WS 的 timeout 行为",
+          "topic": "ProseMirror Plugin State 与 React 状态同步",
+          "why": "Slash Command 用 SLASH_SUGGESTION_KEY.getState(view.state) 在 ProseMirror handleKeyDown 中读取插件状态，实现 Enter 键冲突解决。这个 ProseMirror PluginKey 状态读取是理解 Tiptap 扩展间通信的关键",
+          "how": "读源码：@tiptap/suggestion 包的 suggestion.ts（~200 行），关注 PluginKey 如何 set/get 状态；做实验：在 PromptInput handleKeyDown 中 console.log 所有 PluginKey 状态",
           "priority": "medium"
         },
         {
-          "topic": "事件驱动状态机设计（Agent/Tool 生命周期）",
-          "why": "streamProcessor.ts 管理 20+ 事件类型和 Agent/SubAgent/Tool 多层状态机，但没有用显式的状态机库。理解何时需要正式状态机 vs switch 就够用",
-          "how": "画出 Agent 状态转换图（starting→executing→completed/error）和 Tool 状态转换图；研究 XState 的 actor model 是否适合这个场景；对比当前 Map<string, State> 方案的优缺点",
+          "topic": "Radix UI 组件在嵌套场景的陷阱",
+          "why": "本周发现 Radix Popover 在 Dialog 内的 animation 阻塞 overflow scroll 问题，用 ScrollablePopoverContent 解决。Radix 组件的 Portal/Focus trap/Animation 在嵌套场景经常出问题",
+          "how": "读源码：SchedulePicker.tsx 的 ScrollablePopoverContent 实现；系统性测试：Dialog 内嵌 Popover、Popover 内嵌 Select、Dialog 内嵌 AlertDialog 的焦点和滚动行为；看 Radix GitHub issues 标签 'portal' 和 'focus-trap'",
           "priority": "medium"
         },
         {
-          "topic": "后端 SSE 事件设计（协议层）",
-          "why": "前端消费了 20+ 种事件类型但对后端如何 produce 这些事件不了解。理解后端的事件生成逻辑有助于调试前后端不匹配问题",
-          "how": "读后端 API 的 SSE response 生成代码（conversation/chat endpoint）；关注事件顺序保证、agent_execution_id 的分配逻辑、error 事件的触发条件",
+          "topic": "跨浏览器 IME 事件时序",
+          "why": "useCompositionState 的双重检查是为了防止特定浏览器/OS 组合中的竞态。但目前对 Chrome/Firefox/Safari 各自的 composition event 时序差异缺乏系统理解",
+          "how": "做实验：在 Chrome、Firefox、Safari 中分别用中文输入法测试 compositionstart → keydown → compositionend 的事件顺序和 isComposing 值；看规范：W3C UI Events spec 的 Composition Events 章节",
           "priority": "low"
         }
       ]
@@ -452,10 +610,10 @@
     },
     {
       "filename": "week-2026-W14.html",
-      "title": "Week 14 Learning Hub — SSE Streaming Architecture Deep Dive",
+      "title": "Week 14 Learning Hub — CRUD Architecture, IME Guards, Tiptap Suggestion & View State Patterns",
       "type": "weekly",
-      "generated_date": "2026-03-30",
-      "concepts": ["sse-streaming-architecture"]
+      "generated_date": "2026-04-04",
+      "concepts": ["sse-streaming-architecture", "scheduled-tasks-crud-architecture", "ime-composition-state-guard", "tiptap-suggestion-plugin", "exclusive-view-state-pattern"]
     }
   ]
 }

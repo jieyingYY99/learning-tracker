@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Week 2026-W13 Learning Hub | 第13周学习中心</title>
+<title>Week 2026-W13 Deep Learning Hub | 第13周深度学习中心</title>
 <style>
   :root {
     --bg: #0a0a0f;
     --surface: #12121a;
     --surface2: #1a1a25;
+    --surface3: #222233;
     --border: #2a2a3a;
     --text: #e8e8ef;
     --text-dim: #8888a0;
@@ -19,323 +20,123 @@
     --red: #ef4444;
     --blue: #3b82f6;
     --pink: #ec4899;
+    --cyan: #06b6d4;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
 
-  /* Navigation */
-  nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(10,10,15,0.9);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-  }
-  nav ul {
-    display: flex; list-style: none; gap: 0;
-    max-width: 1100px; margin: 0 auto;
-  }
-  nav li a {
-    display: block; padding: 1rem 1.5rem;
-    color: var(--text-dim); text-decoration: none;
-    font-size: 0.9rem; font-weight: 500;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  nav li a:hover, nav li a.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 2rem; }
+  nav ul { display: flex; list-style: none; gap: 0; max-width: 1200px; margin: 0 auto; }
+  nav li a { display: block; padding: 1rem 1.2rem; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  nav li a:hover, nav li a.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* Main */
-  main {
-    max-width: 1100px; margin: 0 auto;
-    padding: 2rem;
-  }
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
   .page { display: none; }
   .page.active { display: block; }
 
-  h1 {
-    font-size: 2rem; font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
   h1 small { font-size: 1rem; color: var(--text-dim); font-weight: 400; }
   .subtitle { color: var(--text-dim); margin-bottom: 2rem; }
+  h2 { font-size: 1.3rem; font-weight: 600; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; }
 
-  h2 {
-    font-size: 1.3rem; font-weight: 600;
-    margin: 2rem 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    transition: border-color 0.2s;
-  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; transition: border-color 0.2s; }
   .card:hover { border-color: var(--accent); }
-  .card-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    margin-bottom: 0.75rem;
-  }
-  .card-title {
-    font-size: 1.1rem; font-weight: 600;
-  }
-  .badge {
-    font-size: 0.7rem; padding: 0.2rem 0.6rem;
-    border-radius: 20px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+  .card-title { font-size: 1.1rem; font-weight: 600; }
+  .badge { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
   .badge-frontend { background: rgba(59,130,246,0.15); color: var(--blue); }
   .badge-backend { background: rgba(34,197,94,0.15); color: var(--green); }
   .badge-general { background: rgba(245,158,11,0.15); color: var(--orange); }
-
+  .badge-new { background: rgba(236,72,153,0.15); color: var(--pink); font-size: 0.6rem; margin-left: 0.4rem; }
   .card p { color: var(--text-dim); font-size: 0.9rem; }
-  .card .commits {
-    margin-top: 0.75rem; padding-top: 0.75rem;
-    border-top: 1px solid var(--border);
-    font-size: 0.8rem; color: var(--text-dim);
-  }
-  .card .commits code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    background: var(--surface2); padding: 0.1rem 0.4rem;
-    border-radius: 4px; font-size: 0.75rem;
-    color: var(--accent);
-  }
+  .card .commits { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-dim); }
+  .card .commits code { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--surface2); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; color: var(--accent); }
 
-  /* Key Points */
-  .key-points {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: var(--surface2);
-    border-radius: 8px;
-    display: none;
-  }
-  .key-points.open { display: block; }
-  .key-points h4 {
-    font-size: 0.85rem; color: var(--accent);
-    margin-bottom: 0.5rem;
-  }
-  .key-points ul {
-    padding-left: 1.2rem;
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
-  .key-points li { margin-bottom: 0.3rem; }
-  .toggle-btn {
-    margin-top: 0.75rem;
-    background: none; border: 1px solid var(--border);
-    color: var(--text-dim); padding: 0.4rem 0.8rem;
-    border-radius: 6px; cursor: pointer; font-size: 0.8rem;
-    transition: all 0.2s;
-  }
-  .toggle-btn:hover {
-    border-color: var(--accent); color: var(--accent);
-  }
+  /* Toggle sections */
+  .toggle-section { margin-top: 1rem; padding: 1rem; background: var(--surface2); border-radius: 8px; display: none; }
+  .toggle-section.open { display: block; }
+  .toggle-section h4 { font-size: 0.85rem; color: var(--accent); margin-bottom: 0.5rem; }
+  .toggle-section ul { padding-left: 1.2rem; font-size: 0.85rem; color: var(--text-dim); }
+  .toggle-section li { margin-bottom: 0.3rem; }
+  .toggle-btn { margin-top: 0.75rem; background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; margin-right: 0.5rem; }
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 
-  /* Code blocks */
-  pre {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    overflow-x: auto;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin: 0.75rem 0;
-  }
-  code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-  }
+  /* Deep analysis */
+  .deep-dive { margin-top: 1rem; padding: 1.25rem; background: linear-gradient(135deg, rgba(108,99,255,0.05), rgba(59,130,246,0.05)); border: 1px solid rgba(108,99,255,0.2); border-radius: 10px; display: none; }
+  .deep-dive.open { display: block; }
+  .deep-dive h4 { font-size: 0.9rem; color: var(--accent); margin-bottom: 0.75rem; }
+
+  /* Comparison table */
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0.75rem 0; }
+  .cmp-table th { text-align: left; padding: 0.5rem; color: var(--text); border-bottom: 1px solid var(--border); font-weight: 600; }
+  .cmp-table td { padding: 0.5rem; color: var(--text-dim); border-bottom: 1px solid rgba(42,42,58,0.5); }
+
+  /* Decision tree */
+  .decision-tree { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; font-size: 0.85rem; }
+  .decision-tree .node { padding: 0.3rem 0; }
+  .decision-tree .question { color: var(--orange); font-weight: 600; }
+  .decision-tree .answer { color: var(--green); padding-left: 1.5rem; }
+  .decision-tree .arrow { color: var(--text-dim); }
+
+  pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; font-size: 0.82rem; line-height: 1.5; margin: 0.75rem 0; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; }
 
   /* Quiz */
-  .quiz-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  .quiz-q {
-    font-weight: 600;
-    margin-bottom: 1rem;
-    font-size: 1rem;
-  }
+  .quiz-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .quiz-q { font-weight: 600; margin-bottom: 1rem; font-size: 1rem; }
+  .quiz-scenario { background: var(--surface2); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-dim); border-left: 3px solid var(--accent); }
   .quiz-options { display: flex; flex-direction: column; gap: 0.5rem; }
-  .quiz-opt {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-  }
+  .quiz-opt { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
   .quiz-opt:hover { border-color: var(--accent); }
-  .quiz-opt.correct {
-    border-color: var(--green);
-    background: rgba(34,197,94,0.1);
-  }
-  .quiz-opt.wrong {
-    border-color: var(--red);
-    background: rgba(239,68,68,0.1);
-  }
-  .quiz-explain {
-    display: none;
-    margin-top: 1rem;
-    padding: 1rem;
-    background: var(--surface2);
-    border-radius: 8px;
-    font-size: 0.85rem;
-    color: var(--text-dim);
-  }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(34,197,94,0.1); }
+  .quiz-opt.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); }
+  .quiz-opt.disabled { pointer-events: none; }
+  .quiz-explain { display: none; margin-top: 1rem; padding: 1rem; background: var(--surface2); border-radius: 8px; font-size: 0.85rem; color: var(--text-dim); }
 
   /* Flashcards */
-  .flashcard-container {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 1rem;
-  }
-  .flashcard {
-    width: 100%; max-width: 600px;
-    min-height: 250px;
-    perspective: 1000px;
-    cursor: pointer;
-  }
-  .flashcard-inner {
-    position: relative;
-    width: 100%; height: 100%;
-    min-height: 250px;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-  }
-  .flashcard.flipped .flashcard-inner {
-    transform: rotateY(180deg);
-  }
-  .flashcard-front, .flashcard-back {
-    position: absolute;
-    width: 100%; min-height: 250px;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
-  .flashcard-front {
-    background: linear-gradient(135deg, var(--surface), var(--surface2));
-    border: 1px solid var(--border);
-  }
-  .flashcard-front h3 {
-    font-size: 1.3rem; margin-bottom: 0.5rem;
-  }
-  .flashcard-front .hint {
-    font-size: 0.8rem; color: var(--text-dim);
-    margin-top: 1rem;
-  }
-  .flashcard-back {
-    background: linear-gradient(135deg, #1a1030, #12121a);
-    border: 1px solid var(--accent);
-    transform: rotateY(180deg);
-    text-align: left;
-    align-items: flex-start;
-  }
-  .flashcard-back h4 {
-    color: var(--accent); margin-bottom: 0.75rem;
-    font-size: 1rem;
-  }
-  .flashcard-back p {
-    font-size: 0.9rem; color: var(--text-dim);
-    margin-bottom: 0.5rem;
-  }
-  .flashcard-nav {
-    display: flex; gap: 1rem; align-items: center;
-  }
-  .flashcard-nav button {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.5rem 1.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-  }
-  .flashcard-nav button:hover {
-    border-color: var(--accent);
-  }
-  .flashcard-counter {
-    color: var(--text-dim); font-size: 0.9rem;
-  }
-
-  /* Review schedule */
-  .schedule-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-  }
-  .schedule-day {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem;
-  }
-  .schedule-day .date {
-    font-weight: 600; font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    color: var(--accent);
-  }
-  .schedule-day .items {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-  }
-  .schedule-day .items li {
-    list-style: none;
-    padding: 0.2rem 0;
-  }
-  .schedule-day.today {
-    border-color: var(--accent);
-    box-shadow: 0 0 20px var(--accent-glow);
-  }
+  .flashcard-container { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .flashcard { width: 100%; max-width: 620px; min-height: 300px; perspective: 1000px; cursor: pointer; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; min-height: 300px; transition: transform 0.6s; transform-style: preserve-3d; }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back { position: absolute; width: 100%; min-height: 300px; backface-visibility: hidden; border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .flashcard-front { background: linear-gradient(135deg, var(--surface), var(--surface2)); border: 1px solid var(--border); }
+  .flashcard-front h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .flashcard-front .hint { font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem; }
+  .flashcard-back { background: linear-gradient(135deg, #1a1030, #12121a); border: 1px solid var(--accent); transform: rotateY(180deg); text-align: left; align-items: flex-start; }
+  .flashcard-back h4 { color: var(--accent); margin-bottom: 0.5rem; font-size: 0.95rem; }
+  .flashcard-back p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.4rem; }
+  .flashcard-back ul { padding-left: 1.2rem; font-size: 0.82rem; color: var(--text-dim); }
+  .flashcard-back li { margin-bottom: 0.25rem; }
+  .flashcard-nav { display: flex; gap: 1rem; align-items: center; }
+  .flashcard-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
+  .flashcard-nav button:hover { border-color: var(--accent); }
+  .flashcard-counter { color: var(--text-dim); font-size: 0.9rem; }
 
   /* Stats */
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-    text-align: center;
-  }
-  .stat-card .num {
-    font-size: 2rem; font-weight: 700;
-    color: var(--accent);
-  }
-  .stat-card .label {
-    font-size: 0.8rem; color: var(--text-dim);
-    margin-top: 0.25rem;
-  }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; }
+  .stat-card .num { font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .stat-card .label { font-size: 0.78rem; color: var(--text-dim); margin-top: 0.25rem; }
+
+  /* Schedule */
+  .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+  .schedule-day { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+  .schedule-day .date { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--accent); }
+  .schedule-day .items { font-size: 0.8rem; color: var(--text-dim); }
+  .schedule-day .items li { list-style: none; padding: 0.2rem 0; }
+  .schedule-day.today { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
+
+  /* Recommendations */
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+  .rec-card .priority { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
+  .priority-high { background: rgba(239,68,68,0.15); color: var(--red); }
+  .priority-medium { background: rgba(245,158,11,0.15); color: var(--orange); }
 
   @media (max-width: 768px) {
     nav ul { overflow-x: auto; }
-    nav li a { padding: 0.75rem 1rem; font-size: 0.8rem; white-space: nowrap; }
+    nav li a { padding: 0.75rem 0.8rem; font-size: 0.78rem; }
     main { padding: 1rem; }
     h1 { font-size: 1.5rem; }
     .stats { grid-template-columns: repeat(2, 1fr); }
@@ -350,7 +151,8 @@
     <li><a href="#concepts" onclick="showPage('concepts',this)">Concepts 概念</a></li>
     <li><a href="#quiz" onclick="showPage('quiz',this)">Quiz 测验</a></li>
     <li><a href="#flashcards" onclick="showPage('flashcards',this)">Flashcards 闪卡</a></li>
-    <li><a href="#review" onclick="showPage('review',this)">Review 复习</a></li>
+    <li><a href="#schedule" onclick="showPage('schedule',this)">Schedule 计划</a></li>
+    <li><a href="#recommend" onclick="showPage('recommend',this)">Next Steps 推荐</a></li>
   </ul>
 </nav>
 
@@ -358,383 +160,469 @@
 
 <!-- ==================== HOME ==================== -->
 <div id="home" class="page active">
-  <h1>Week 13 Learning Hub <small>第13周学习中心</small></h1>
-  <p class="subtitle">KUSE App V2 — Mar 22-28, 2026 | Next.js + React + TypeScript</p>
+  <h1>Week 13 Deep Learning Hub <small>第13周深度学习中心</small></h1>
+  <p class="subtitle">KUSE App V2 — Mar 22-28, 2026 | Next.js + React + TypeScript<br>Deep Analysis Edition 深度分析版 — 每个概念含项目内对比和决策指南</p>
 
   <div class="stats">
-    <div class="stat-card">
-      <div class="num">70</div>
-      <div class="label">Commits 提交</div>
-    </div>
-    <div class="stat-card">
-      <div class="num">5</div>
-      <div class="label">New Concepts 新概念</div>
-    </div>
-    <div class="stat-card">
-      <div class="num">5</div>
-      <div class="label">W12 Review Due W12待复习</div>
-    </div>
-    <div class="stat-card">
-      <div class="num">10</div>
-      <div class="label">Total Concepts 总概念</div>
-    </div>
+    <div class="stat-card"><div class="num">70+</div><div class="label">Commits 提交</div></div>
+    <div class="stat-card"><div class="num">8</div><div class="label">Concepts 概念</div></div>
+    <div class="stat-card"><div class="num">3</div><div class="label">New This Week 本周新增</div></div>
+    <div class="stat-card"><div class="num">5</div><div class="label">From W12 Review W12复习</div></div>
   </div>
 
-  <h2>This Week's Focus 本周重点</h2>
+  <h2>This Week's Deep Insights 本周深度洞察</h2>
   <div class="card">
-    <p>Built the entire <strong>Customize View</strong> (Skills + Connectors tabs) from scratch, integrated <strong>Pipedream Connect OAuth</strong> for third-party service authorization, implemented <strong>UIBlock interactive cards</strong> for AI-driven multi-step flows, refactored the <strong>download/export system</strong> into a unified module, and shipped a complete <strong>credit dispute system</strong>.</p>
-    <p style="margin-top:0.5rem">从零构建了<strong>自定义视图</strong>（技能 + 连接器标签页），集成了 <strong>Pipedream Connect OAuth</strong> 实现第三方服务授权，实现了 <strong>UIBlock 交互卡片</strong>用于 AI 驱动的多步交互流程，将<strong>下载导出系统</strong>重构为统一模块，并交付了完整的<strong>积分争议系统</strong>。</p>
+    <p><strong>New patterns discovered 发现的新模式：</strong></p>
+    <p style="margin-top:0.5rem">1. <strong>Batch Operations Design</strong> — Trash delete uses design-doc-driven development with idempotent APIs and separate endpoints, contrasting with Finder's optimistic-update + rollback approach<br>
+    批量操作设计 — Trash 删除采用设计文档驱动开发、幂等 API 和独立端点，与 Finder 的乐观更新 + 回滚方式形成对比</p>
+    <p style="margin-top:0.5rem">2. <strong>Race Condition Prevention Toolkit</strong> — 5 distinct patterns found in the codebase: version counter, dual guard, boolean flag, AbortController, timer suppression<br>
+    竞态条件防护工具箱 — 代码库中发现 5 种不同模式：版本计数器、双重守卫、布尔标志、AbortController、定时器抑制</p>
+    <p style="margin-top:0.5rem">3. <strong>Tiptap InputRule for Slash Commands</strong> — Custom inline nodes triggered by regex, contrasting with manual command insertion and React NodeView rendering<br>
+    Tiptap InputRule 斜杠命令 — 通过正则触发的自定义内联节点，与手动命令插入和 React NodeView 渲染形成对比</p>
   </div>
 </div>
 
 <!-- ==================== CONCEPTS ==================== -->
 <div id="concepts" class="page">
-  <h1>Concepts 概念</h1>
-  <p class="subtitle">5 new concepts learned this week 本周学习了5个新概念</p>
+  <h1>Concepts 概念 <small>with Deep Analysis 含深度分析</small></h1>
+  <p class="subtitle">3 new concepts this week + 5 from W12 with deep analysis<br>本周 3 个新概念 + W12 的 5 个深度分析</p>
 
-  <!-- Concept 1: UIBlock -->
+  <h2>New This Week 本周新概念</h2>
+
+  <!-- C1: Batch Operations -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">UIBlock Interactive Cards Pattern<br><span style="color:var(--text-dim);font-size:0.9rem">UIBlock 交互卡片模式</span></div>
-      <span class="badge badge-frontend">Frontend 前端</span>
+      <div class="card-title">Batch Operations Design Pattern<br><span style="color:var(--text-dim);font-size:0.9rem">批量操作设计模式</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-new">NEW</span></div>
     </div>
-    <p>Parse structured UI directives (ask_user, suggest_connectors) from SSE streams and render them as interactive card components. User actions call the ask_user/respond API to return results to the backend agent, enabling AI-driven multi-step interaction flows.</p>
-    <p style="margin-top:0.5rem">在 AI Chat 的 SSE 流中解析结构化 UI 指令（ask_user、suggest_connectors），渲染为交互卡片组件（AskUserCard、SuggestConnectorCard），用户操作后调用 ask_user/respond API 回传结果给后端 agent，实现 AI 驱动的多步交互流程。</p>
-    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
-    <div class="key-points">
+    <p>Design-doc-driven batch delete for Trash: separate endpoints for "empty all" vs "delete selected", idempotent API responses with cleared_file_ids, store-level selection via Set&lt;number&gt;, and local Radix dialogs for confirmation.</p>
+    <p style="margin-top:0.5rem">设计文档驱动的 Trash 批量删除：区分"清空全部"和"删除选中"的独立端点、带 cleared_file_ids 的幂等 API 响应、store 层 Set&lt;number&gt; 选择管理、本地 Radix Dialog 确认。</p>
+
+    <button class="toggle-btn" onclick="toggleSection(this,'kp1')">Key Points 要点 ▾</button>
+    <button class="toggle-btn" onclick="toggleSection(this,'dd1')">Deep Dive 深度分析 ▾</button>
+
+    <div class="toggle-section" id="kp1">
       <h4>Key Points 要点</h4>
       <ul>
-        <li><strong>Stream parsing 流解析:</strong> streamProcessor detects UIBlock types in SSE chunks and routes to appropriate card components<br>streamProcessor 在 SSE 数据块中检测 UIBlock 类型并路由到对应的卡片组件</li>
-        <li><strong>Response pattern 响应模式:</strong> Each card submits via response_key to ask_user/respond API endpoint<br>每个卡片通过 response_key 向 ask_user/respond API 端点提交</li>
-        <li><strong>Component separation 组件分离:</strong> AskUserCard (selection + custom input + skip) and SuggestConnectorCard are independent, reusable UIBlock renderers<br>AskUserCard（选择 + 自定义输入 + 跳过）和 SuggestConnectorCard 是独立、可复用的 UIBlock 渲染器</li>
-        <li><strong>Type-driven rendering 类型驱动渲染:</strong> Chat types.ts defines UIBlock interfaces that drive which component renders<br>Chat types.ts 定义了 UIBlock 接口来驱动组件渲染</li>
+        <li><strong>Separate endpoints 独立端点:</strong> POST /trash-bin/empty (no body) vs POST /trash-bin/delete (file_ids array). Keeps semantics clean, avoids parameter explosion.<br>POST /trash-bin/empty（无请求体）vs POST /trash-bin/delete（file_ids 数组）。保持语义清晰，避免参数膨胀。</li>
+        <li><strong>Idempotent response 幂等响应:</strong> Server returns cleared_file_ids — frontend doesn't guess which rows transitioned, just filters by returned IDs.<br>服务端返回 cleared_file_ids — 前端不用猜测哪些行被操作了，直接按返回的 ID 过滤。</li>
+        <li><strong>Store-level selection Store 层选择:</strong> selectedIds: Set&lt;number&gt; lives in trash store, not component state. UI is purely presentational.<br>selectedIds: Set&lt;number&gt; 存在 trash store 中，非组件状态。UI 纯展示。</li>
+        <li><strong>Mutation flags 操作标志:</strong> isDeleting, isEmptying, isRestoring — all three disable toolbar buttons via isBusy computed value.<br>isDeleting、isEmptying、isRestoring — 三个标志通过 isBusy 计算值禁用工具栏按钮。</li>
       </ul>
-<pre><code>// streamProcessor.ts — parsing UIBlock from SSE
-if (block.type === 'ask_user') {
-  return &lt;AskUserCard options={block.options} responseKey={block.response_key} /&gt;
-}
-
-// AskUserCard — submitting response
-const handleSubmit = async (value: string) =&gt; {
-  await api.post('/ask_user/respond', {
-    response_key: responseKey,
-    value
-  });
-};</code></pre>
     </div>
-    <div class="commits">Related: <code>d8a095db</code> <code>d5bc5767</code> <code>0bb593b4</code> <code>8a657b9c</code></div>
+
+    <div class="deep-dive" id="dd1">
+      <h4>Deep Dive: Trash Delete vs Finder Delete vs Finder Move 深度对比</h4>
+      <table class="cmp-table">
+        <tr><th>Aspect 维度</th><th>Trash Delete 回收站删除</th><th>Finder Delete 文件删除</th><th>Finder Move 文件移动</th></tr>
+        <tr><td>Selection 选择</td><td>Store Set&lt;number&gt;</td><td>Passed array of paths</td><td>Passed array of IDs</td></tr>
+        <tr><td>API 接口</td><td>POST with IDs (separate endpoint)</td><td>DELETE batched</td><td>POST batched</td></tr>
+        <tr><td>Response 响应</td><td>cleared_file_ids (idempotent)</td><td>No detailed response</td><td>successfulIds + failedIds</td></tr>
+        <tr><td>Confirmation 确认</td><td>Local Radix Dialog</td><td>Global Modal</td><td>Per-item conflict dialog loop</td></tr>
+        <tr><td>Optimistic 乐观更新</td><td>Remove from items</td><td>Remove + backup</td><td>Rename node keys</td></tr>
+        <tr><td>Undo 撤销</td><td>No (permanent)</td><td>Yes (UndoEntry)</td><td>Yes (UndoEntry)</td></tr>
+        <tr><td>Partial Failure 部分失败</td><td>Not expected</td><td>Detected</td><td>Detected + rollback</td></tr>
+      </table>
+
+      <div class="decision-tree">
+        <div class="node"><span class="question">Decision: Which batch operation pattern? 选哪种批量操作模式？</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Is the operation irreversible? 操作不可逆？</span></div>
+        <div class="node"><span class="answer">→ Yes: Trash pattern — idempotent API, explicit confirmation, no undo needed</span></div>
+        <div class="node"><span class="answer">  是：Trash 模式 — 幂等 API、明确确认、无需撤销</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Can items conflict with existing? 可能与已有项冲突？</span></div>
+        <div class="node"><span class="answer">→ Yes: Move pattern — per-item conflict resolution, partial rollback</span></div>
+        <div class="node"><span class="answer">  是：Move 模式 — 逐项冲突解决、部分回滚</span></div>
+        <div class="node"><span class="arrow">└─</span> <span class="question">Simple reversible operation? 简单可逆操作？</span></div>
+        <div class="node"><span class="answer">→ Yes: Finder delete — optimistic update + UndoEntry for quick revert</span></div>
+        <div class="node"><span class="answer">  是：Finder 删除 — 乐观更新 + UndoEntry 快速恢复</span></div>
+      </div>
+    </div>
+    <div class="commits">Related: <code>dbeac217</code> <code>7677aebd</code> <code>f72ced21</code> <code>6f099788</code> <code>53585e92</code> <code>f4f26e94</code></div>
   </div>
 
-  <!-- Concept 2: Pipedream OAuth -->
+  <!-- C2: Race Condition Prevention -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">Pipedream Connect OAuth Integration<br><span style="color:var(--text-dim);font-size:0.9rem">第三方 OAuth 集成（Pipedream Connect）</span></div>
-      <span class="badge badge-backend">Backend 后端</span>
+      <div class="card-title">Race Condition Prevention Patterns<br><span style="color:var(--text-dim);font-size:0.9rem">竞态条件防护模式集</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-new">NEW</span></div>
     </div>
-    <p>Implement third-party OAuth via Pipedream Connect SDK: backend API route generates connect_token bound to user ID (preventing cross-user leaks), frontend PipedreamProvider wraps createFrontendClient, ConnectModal triggers OAuth popup, with full account lifecycle management.</p>
-    <p style="margin-top:0.5rem">通过 Pipedream Connect SDK 实现第三方服务 OAuth 授权：后端 API route 生成 connect_token（绑定用户 ID 防止跨用户泄漏）、前端 PipedreamProvider 包裹 createFrontendClient、ConnectModal 触发 OAuth 弹窗、完整的账户生命周期管理。</p>
-    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
-    <div class="key-points">
+    <p>Five distinct patterns for preventing race conditions in React + async workflows: version counter (invalidate stale loads), dual guard (state + ref), boolean flag (concurrent prevention), AbortController (stream cancellation), and timer suppression (event debounce).</p>
+    <p style="margin-top:0.5rem">React + 异步工作流中防止竞态的五种模式：版本计数器（作废过时加载）、双重守卫（state + ref）、布尔标志（并发防护）、AbortController（流取消）、定时器抑制（事件防抖）。</p>
+
+    <button class="toggle-btn" onclick="toggleSection(this,'kp2')">Key Points 要点 ▾</button>
+    <button class="toggle-btn" onclick="toggleSection(this,'dd2')">Deep Dive 深度分析 ▾</button>
+
+    <div class="toggle-section" id="kp2">
       <h4>Key Points 要点</h4>
       <ul>
-        <li><strong>Security 安全性:</strong> connect_token must be bound to authenticated user ID — cookie key mismatch caused cross-user account leaks<br>connect_token 必须绑定已认证的用户 ID — cookie key 不匹配导致了跨用户账户泄漏</li>
-        <li><strong>Token flow 令牌流程:</strong> Server route reads real user ID from session cookie → generates short-lived connect_token → frontend SDK uses it to open OAuth popup<br>服务端路由从 session cookie 读取真实用户 ID → 生成短时效 connect_token → 前端 SDK 用它打开 OAuth 弹窗</li>
-        <li><strong>Provider pattern:</strong> PipedreamProvider at app root creates singleton frontend client for all connector components<br>PipedreamProvider 在应用根部创建单例前端客户端供所有连接器组件使用</li>
-        <li><strong>Account lifecycle 账户生命周期:</strong> Connect → list accounts → disconnect → reconnect, with auto-close modal on success<br>连接 → 列出账户 → 断开 → 重新连接，成功后自动关闭弹窗</li>
+        <li><strong>Bug 1 — Missing await:</strong> newConversationHandler() wasn't awaited, so message sent before conversation existed on server. Fix: make it async + await.<br>Bug 1 — 缺少 await：newConversationHandler() 未被 await，导致消息在会话创建前就发送。修复：改为 async + await。</li>
+        <li><strong>Bug 2 — Stale history overwrite:</strong> loadConversationMessages races with createConversation. Fix: loadVersionRef counter, increment on create, check on load completion.<br>Bug 2 — 过时历史覆盖：loadConversationMessages 与 createConversation 竞争。修复：loadVersionRef 计数器。</li>
+        <li><strong>Bug 3 — Duplicate sends:</strong> Error catch cleared ref but not state, causing re-fire. Fix: clear both sendToAgent(null) + processedPayloadRef = null.<br>Bug 3 — 重复发送：错误捕获清除了 ref 但未清除 state，导致重新触发。修复：同时清除两者。</li>
+        <li><strong>Bug 4 — Drag-select lost:</strong> 200ms suppress timer expired before commitAndReset. Fix: re-arm with 300ms on commit.<br>Bug 4 — 拖选丢失：200ms 抑制定时器在 commitAndReset 前过期。修复：在 commit 时重新设置 300ms。</li>
       </ul>
-<pre><code>// app/api/connectors/token/route.ts
-export async function POST(req: Request) {
-  const userId = getUserIdFromCookie(req); // Must be real user ID!
-  const token = await pipedream.createConnectToken({
-    external_user_id: userId,
-  });
-  return Response.json({ token: token.token });
-}</code></pre>
     </div>
-    <div class="commits">Related: <code>a7f50f29</code> <code>e2ab4e63</code> <code>6adb5844</code> <code>10836fc5</code> | <a href="pipedream-token-flow.html" style="color:var(--accent);text-decoration:none;font-weight:500;">Token Flow Deep Dive &rarr;</a></div>
+
+    <div class="deep-dive" id="dd2">
+      <h4>Deep Dive: 5 Race Condition Patterns in the Codebase 代码库中的5种竞态防护模式</h4>
+      <table class="cmp-table">
+        <tr><th>Pattern 模式</th><th>Location 位置</th><th>Mechanism 机制</th><th>When to Use 适用场景</th></tr>
+        <tr><td>Version Counter<br>版本计数器</td><td>useConversationManager</td><td>Ref counter; increment on new op; stale ops check and bail</td><td>Long-running async that can be superseded<br>可被取代的长时间异步操作</td></tr>
+        <tr><td>Dual Guard<br>双重守卫</td><td>ChatInterface sendToAgent</td><td>State check + JSON.stringify ref dedup</td><td>Effects that re-fire with same props<br>可能用相同 props 重新触发的 effect</td></tr>
+        <tr><td>Boolean Flag<br>布尔标志</td><td>ConnectorsTab handleConnect</td><td>Ref flag: set true → try/finally → set false</td><td>Prevent concurrent execution<br>防止并发执行</td></tr>
+        <tr><td>AbortController</td><td>useAIStream</td><td>Create controller → pass signal → abort on cleanup</td><td>Fetch/SSE that need cancellation<br>需要取消的 Fetch/SSE</td></tr>
+        <tr><td>Timer Suppression<br>定时器抑制</td><td>useListDragSelect</td><td>suppressClickRef + setTimeout with re-arm on commit</td><td>Suppress events during transitions<br>过渡期间抑制事件</td></tr>
+      </table>
+
+      <div class="decision-tree">
+        <div class="node"><span class="question">Which race condition pattern? 选哪种竞态防护？</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Need to cancel in-flight network request? 需要取消进行中的网络请求？</span></div>
+        <div class="node"><span class="answer">→ AbortController (passes signal to fetch/EventSource)</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">New operation should invalidate old result? 新操作应作废旧结果？</span></div>
+        <div class="node"><span class="answer">→ Version counter (loadVersionRef++, check at completion)</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Same effect re-fires with identical data? 相同 effect 用相同数据重新触发？</span></div>
+        <div class="node"><span class="answer">→ Dual guard (state null check + ref dedup by serialized key)</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Prevent button double-click / concurrent calls? 防止按钮重复点击/并发调用？</span></div>
+        <div class="node"><span class="answer">→ Boolean flag (isProcessingRef)</span></div>
+        <div class="node"><span class="arrow">└─</span> <span class="question">Suppress post-transition events? 抑制过渡后事件？</span></div>
+        <div class="node"><span class="answer">→ Timer suppression (setTimeout + re-arm on state change)</span></div>
+      </div>
+
+<pre><code>// Pattern 1: Version Counter
+const loadVersionRef = useRef(0);
+const load = async () => {
+  const v = loadVersionRef.current;
+  const data = await fetchData();
+  if (v !== loadVersionRef.current) return; // Stale!
+  setData(data);
+};
+const create = () => { loadVersionRef.current++; /* ... */ };
+
+// Pattern 2: Dual Guard
+const processedRef = useRef&lt;string | null&gt;(null);
+useEffect(() => {
+  if (!payload) return;                           // Guard 1
+  const key = JSON.stringify(payload);
+  if (key === processedRef.current) return;       // Guard 2
+  processedRef.current = key;
+  try { await process(payload); }
+  finally { setPayload(null); processedRef.current = null; }
+}, [payload]);</code></pre>
+    </div>
+    <div class="commits">Related: <code>1c5fec8c</code> <code>457754c9</code> <code>454210ba</code> <code>c36b2a62</code></div>
   </div>
 
-  <!-- Concept 3: Customize View -->
+  <!-- C3: Tiptap InlineSlashNode -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">Customize View Tab Architecture<br><span style="color:var(--text-dim);font-size:0.9rem">可定制化视图架构</span></div>
-      <span class="badge badge-frontend">Frontend 前端</span>
+      <div class="card-title">Tiptap InputRule for Slash Commands<br><span style="color:var(--text-dim);font-size:0.9rem">Tiptap InputRule 斜杠命令内联节点</span></div>
+      <div><span class="badge badge-frontend">Frontend</span><span class="badge badge-new">NEW</span></div>
     </div>
-    <p>Build a dual-tab management interface (Skills + Connectors): SkillsTab supports Official/Custom filtering with detail dialog featuring a file tree browser; ConnectorsTab integrates Pipedream curated apps with search, skeleton loading, and lazy-mount tabs for optimized initial render.</p>
-    <p style="margin-top:0.5rem">构建 Skills + Connectors 双标签页管理界面：SkillsTab 支持 Official/Custom 分类过滤、技能详情弹窗含文件树浏览器；ConnectorsTab 集成 Pipedream curated apps 列表、搜索过滤、skeleton loading、lazy-mount tabs 优化首次渲染。</p>
-    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
-    <div class="key-points">
+    <p>Custom Tiptap Node triggered by InputRule regex: when user types /skillName followed by space, the text is replaced with an atomic, non-editable pill node. Fixed regex to account for the trailing space already being inserted before InputRule fires.</p>
+    <p style="margin-top:0.5rem">通过 InputRule 正则触发的 Tiptap 自定义节点：用户输入 /skillName 加空格后，文本被替换为不可编辑的原子标签节点。修复了正则以处理 InputRule 触发前空格已被插入的问题。</p>
+
+    <button class="toggle-btn" onclick="toggleSection(this,'kp3')">Key Points 要点 ▾</button>
+    <button class="toggle-btn" onclick="toggleSection(this,'dd3')">Deep Dive 深度分析 ▾</button>
+
+    <div class="toggle-section" id="kp3">
       <h4>Key Points 要点</h4>
       <ul>
-        <li><strong>Lazy-mount tabs 懒挂载标签页:</strong> Only mount tab content when first selected, avoiding heavy Pipedream SDK init on page load<br>仅在首次选中标签页时挂载内容，避免页面加载时初始化重量级 Pipedream SDK</li>
-        <li><strong>Skeleton loading:</strong> Show content placeholders while fetching skills/connectors data for perceived performance<br>在获取数据时显示内容占位符以提升感知性能</li>
-        <li><strong>File tree browser 文件树浏览器:</strong> SkillDetailDialog renders skill files as collapsible tree with expand/collapse directories<br>SkillDetailDialog 将技能文件渲染为可折叠的树形目录结构</li>
-        <li><strong>Radix primitives:</strong> Replaced raw buttons/dropdowns with Button component and Radix Dialog/Dropdown for accessibility<br>用 Button 组件和 Radix Dialog/Dropdown 替换原生按钮/下拉菜单以提升无障碍性</li>
+        <li><strong>Regex timing 正则时序:</strong> Tiptap InputRules fire AFTER the character is inserted. So /skill&lt;space&gt; needs regex ending with \s$, not just matching /skill$.<br>Tiptap InputRules 在字符插入后触发。所以 /skill&lt;空格&gt; 需要正则以 \s$ 结尾。</li>
+        <li><strong>Range calculation 范围计算:</strong> Use indexOf() to find exact position of /skillName in matched text, not endsWith() which breaks with leading whitespace.<br>用 indexOf() 找到 /skillName 的精确位置，而非 endsWith()（在有前导空格时会出错）。</li>
+        <li><strong>Skill validation 技能验证:</strong> Before creating the node, check skillNameSet from store to ensure it's a real skill name.<br>创建节点前，检查 store 中的 skillNameSet 确保是真实的技能名。</li>
+        <li><strong>Atom node 原子节点:</strong> atom: true makes the node non-editable, non-splittable — it behaves like a single character that can only be deleted whole.<br>atom: true 使节点不可编辑、不可分割 — 行为像单个字符，只能整体删除。</li>
       </ul>
     </div>
-    <div class="commits">Related: <code>3fc4e56c</code> <code>ddfe9f5a</code> <code>6de56090</code> <code>b71c80e9</code></div>
+
+    <div class="deep-dive" id="dd3">
+      <h4>Deep Dive: Tiptap Custom Node Patterns in the Project 项目中的 Tiptap 自定义节点模式</h4>
+      <table class="cmp-table">
+        <tr><th>Node 节点</th><th>Trigger 触发方式</th><th>Rendering 渲染</th><th>Use Case 用途</th></tr>
+        <tr><td>InlineSlashNode</td><td>InputRule (regex on typing)</td><td>Atom node (HTML span)</td><td>/skill commands in chat input<br>聊天输入中的 /技能 命令</td></tr>
+        <tr><td>TemplatePlaceholder</td><td>Manual command (no InputRule)</td><td>ReactNodeViewRenderer</td><td>Template variables {name}<br>模板变量 {name}</td></tr>
+        <tr><td>CustomImage</td><td>Parse from markdown/paste</td><td>Standard HTML img</td><td>Image with upload tracking<br>带上传跟踪的图片</td></tr>
+        <tr><td>CustomHighlight</td><td>markInputRule() helper</td><td>Mark (text formatting)</td><td>==highlighted text==<br>高亮文本</td></tr>
+      </table>
+
+      <div class="decision-tree">
+        <div class="node"><span class="question">Which Tiptap node type? 选哪种 Tiptap 节点类型？</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Auto-triggered by typing pattern? 通过打字模式自动触发？</span></div>
+        <div class="node"><span class="answer">→ InputRule + Atom Node (like InlineSlashNode)</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Needs interactive React UI? 需要交互式 React UI？</span></div>
+        <div class="node"><span class="answer">→ ReactNodeViewRenderer (like TemplatePlaceholder)</span></div>
+        <div class="node"><span class="arrow">├─</span> <span class="question">Text formatting only? 仅文本格式化？</span></div>
+        <div class="node"><span class="answer">→ Mark extension (like CustomHighlight)</span></div>
+        <div class="node"><span class="arrow">└─</span> <span class="question">Block-level media? 块级媒体？</span></div>
+        <div class="node"><span class="answer">→ Standard HTML rendering (like CustomImage)</span></div>
+      </div>
+
+<pre><code>// InputRule pattern: fires AFTER character insertion
+const SLASH_TRIGGER_REGEX = /(?:^|\s)\/([^\s/]+)\s$/;
+//                                                 ^^ trailing space already inserted!
+
+new InputRule({
+  find: SLASH_TRIGGER_REGEX,
+  handler: ({ chain, match, range }) => {
+    const skillName = match[1];
+    if (!skillNameSet.has(skillName)) return;  // Validate against store
+
+    // Use indexOf for precise range (handles leading whitespace)
+    const slashIndex = match[0].indexOf(`/${skillName}`);
+    const from = range.from + (slashIndex >= 0 ? slashIndex : 0);
+
+    chain()
+      .deleteRange({ from, to: range.to })
+      .insertContentAt(from, [{ type: 'inlineSlashNode', attrs: { slashName: skillName } }])
+      .run();
+  },
+});</code></pre>
+    </div>
+    <div class="commits">Related: <code>084f5372</code> <code>b32942b0</code></div>
   </div>
 
-  <!-- Concept 4: Download/Export Refactor -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">Download/Export System Refactoring<br><span style="color:var(--text-dim);font-size:0.9rem">下载导出系统重构</span></div>
-      <span class="badge badge-frontend">Frontend 前端</span>
-    </div>
-    <p>Consolidate scattered download logic into FolderWidgets/Download module: split handlers by file type (fromMarkdown, fromHtml, fromPptx), unify PDF export pipeline (Tiptap → HTML → PDF with TOC, ref-links, heading processing), and abstract URL-based download options.</p>
-    <p style="margin-top:0.5rem">将分散在各组件中的下载逻辑统一到 FolderWidgets/Download 模块：按文件类型拆分 handler（fromMarkdown、fromHtml、fromPptx）、统一 PDF 导出管线（Tiptap → HTML → PDF，含 TOC、ref-link、heading 处理）、URL-based 下载选项抽象。</p>
-    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
-    <div class="key-points">
-      <h4>Key Points 要点</h4>
-      <ul>
-        <li><strong>Pipeline architecture 管线架构:</strong> Markdown → Tiptap DOM → HTML string → PDF pages, with each step independently testable<br>Markdown → Tiptap DOM → HTML 字符串 → PDF 页面，每步可独立测试</li>
-        <li><strong>Heading with ID:</strong> HeadingWithId extension generates stable IDs for TOC navigation in exported PDFs<br>HeadingWithId 扩展生成稳定 ID 用于导出 PDF 中的目录导航</li>
-        <li><strong>Ref-link resolution:</strong> RefLinkMark resolves internal document references to proper URLs during export<br>RefLinkMark 在导出时将内部文档引用解析为正确的 URL</li>
-        <li><strong>Escape handling 转义处理:</strong> Special characters in headings must be escaped properly for PDF rendering<br>标题中的特殊字符必须正确转义以用于 PDF 渲染</li>
-      </ul>
-    </div>
-    <div class="commits">Related: <code>dbeba01f</code> <code>66b5711d</code> <code>7a1ac35e</code> <code>96411fd3</code></div>
-  </div>
+  <h2>Previously Learned (W12-W13) 已学概念回顾</h2>
+  <p class="subtitle" style="margin-bottom:1rem">These 5 concepts were learned in W12 and reviewed on Mar 28. Now at Stage 1.<br>这 5 个概念在 W12 学习，3月28日已复习。目前在阶段 1。</p>
 
-  <!-- Concept 5: Credit Dispute -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">Credit Dispute System<br><span style="color:var(--text-dim);font-size:0.9rem">积分争议系统</span></div>
-      <span class="badge badge-general">General 通用</span>
-    </div>
-    <p>Build a complete credit dispute workflow: DisputeDialog for submitting dispute reasons, API layer supporting dispute creation and status queries (pending/approved/rejected), Usage panel integration with status icons, and GA4 event tracking for user behavior analytics.</p>
-    <p style="margin-top:0.5rem">完整的用户积分争议处理流程：DisputeDialog 弹窗让用户提交争议原因、API 层支持 dispute 的创建和状态查询（pending/approved/rejected）、Usage 面板集成争议状态图标、GA4 埋点追踪用户行为。</p>
-    <button class="toggle-btn" onclick="toggleKeyPoints(this)">Key Points 要点 ▾</button>
-    <div class="key-points">
-      <h4>Key Points 要点</h4>
-      <ul>
-        <li><strong>API path migration 路径迁移:</strong> Migrated from /credits/dispute to /dispute — keep API paths clean and resource-oriented<br>从 /credits/dispute 迁移到 /dispute — 保持 API 路径干净且面向资源</li>
-        <li><strong>Status tracking 状态追踪:</strong> Three states (pending/approved/rejected) with visual icons in Usage panel<br>三种状态（pending/approved/rejected），在 Usage 面板中用可视图标展示</li>
-        <li><strong>Analytics integration 分析集成:</strong> GA4 custom events track dispute creation, resolution, and user flow for ads attribution<br>GA4 自定义事件追踪争议创建、解决和用户流程，用于广告归因</li>
-      </ul>
-    </div>
-    <div class="commits">Related: <code>0862515d</code> <code>9625b35f</code> <code>66ebf6a5</code></div>
+  <div class="card" style="border-color:rgba(6,182,212,0.3)">
+    <div class="card-title" style="font-size:1rem">Previously Covered Concepts (see W12 page for details):</div>
+    <ul style="padding-left:1.2rem;margin-top:0.5rem;font-size:0.9rem;color:var(--text-dim)">
+      <li>Virtual Scroll + Tree Flattening 虚拟滚动+树形扁平化</li>
+      <li>@dnd-kit Advanced Patterns 拖拽系统高级模式</li>
+      <li>Move Conflict Resolution & Rollback 文件移动冲突解决</li>
+      <li>Web Page Publish Workflow 网页发布流程</li>
+      <li>WebSocket Reconnect Safety WebSocket重连安全</li>
+    </ul>
+    <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--cyan)">Also covered in W13 (original): UIBlock Interactive Cards, Pipedream OAuth, Customize View Architecture, Download/Export Refactoring, Credit Dispute System</p>
   </div>
 </div>
 
 <!-- ==================== QUIZ ==================== -->
 <div id="quiz" class="page">
-  <h1>Quiz 测验</h1>
-  <p class="subtitle">Test your understanding 测试你的理解</p>
+  <h1>Scenario-Based Quiz 场景测验</h1>
+  <p class="subtitle">Decision-making questions — "Which pattern would you choose?" not "What is X?"<br>决策类题目 — 问"你会选哪种方案？"而非"X是什么？"</p>
 
-  <div class="quiz-card">
-    <div class="quiz-q">1. In the UIBlock pattern, how does the frontend communicate the user's selection back to the backend agent?<br><span style="color:var(--text-dim);font-size:0.9rem">在 UIBlock 模式中，前端如何将用户的选择传回后端 agent？</span></div>
+  <!-- Q1 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">1. You're building a "permanently delete selected bookmarks" feature. The operation is irreversible. Which pattern from the codebase should you follow?<br><span style="color:var(--text-dim)">你正在构建"永久删除选中书签"功能。操作不可逆。应该遵循代码库中的哪种模式？</span></div>
+    <div class="quiz-scenario">Context: Users select items from a list, click "Delete", confirm, items are gone forever. Similar to Trash batch delete.</div>
     <div class="quiz-options">
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. WebSocket message with selection data<br>WebSocket 消息携带选择数据</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. POST to ask_user/respond API with response_key and value<br>POST 到 ask_user/respond API 携带 response_key 和 value</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. Append selection to the next chat message<br>将选择追加到下一条聊天消息</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. Store in Zustand and let SSE pick it up<br>存入 Zustand 让 SSE 获取</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Finder delete pattern: optimistic update + UndoEntry for rollback</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Finder move pattern: per-item conflict dialog with overwrite/skip/rename</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Trash delete pattern: explicit confirmation dialog + idempotent API returning cleared_file_ids</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) No confirmation needed — just delete on click</div>
     </div>
-    <div class="quiz-explain">The UIBlock cards use a dedicated REST endpoint (ask_user/respond) with a response_key to match the response to the original question. This decouples the interactive flow from the chat stream.<br>UIBlock 卡片使用专用 REST 端点（ask_user/respond）配合 response_key 将响应匹配到原始问题。这将交互流程与聊天流解耦。</div>
+    <div class="quiz-explain">For irreversible operations, you need: (1) explicit confirmation (Radix Dialog, not just optimistic update), (2) idempotent API response so the frontend knows exactly what was deleted, (3) no undo support needed since there's nothing to undo. The Trash pattern was designed exactly for this.<br>对于不可逆操作：(1) 需要明确确认，(2) 幂等 API 响应让前端知道确切删除了什么，(3) 无需撤销支持。Trash 模式正是为此设计的。</div>
   </div>
 
-  <div class="quiz-card">
-    <div class="quiz-q">2. What critical security issue was discovered in the Pipedream Connect integration?<br><span style="color:var(--text-dim);font-size:0.9rem">在 Pipedream Connect 集成中发现了什么关键安全问题？</span></div>
+  <!-- Q2 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">2. You have an async function that fetches conversation history. A user switches conversations rapidly. How do you prevent the first conversation's late-arriving data from overwriting the second?<br><span style="color:var(--text-dim)">你有一个获取对话历史的异步函数。用户快速切换对话。如何防止第一个对话延迟到达的数据覆盖第二个？</span></div>
     <div class="quiz-options">
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. OAuth tokens were stored in localStorage<br>OAuth 令牌存储在 localStorage 中</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">B. connect_token had no expiry<br>connect_token 没有过期时间</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,true)">C. Wrong cookie key caused cross-user connector account leaks<br>错误的 cookie key 导致跨用户连接器账户泄漏</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. OAuth callback URL was not validated<br>OAuth 回调 URL 未经验证</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Boolean flag (isLoadingRef) to block concurrent loads</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Version counter — increment on each switch, check version at completion, discard if stale</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) AbortController to cancel the first fetch</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Debounce the conversation switch by 500ms</div>
     </div>
-    <div class="quiz-explain">Using the wrong cookie key to extract user ID meant connect_tokens could be generated for the wrong user, allowing one user to see another user's connected accounts. Fixed by using the correct session cookie key.<br>使用错误的 cookie key 提取用户 ID 意味着 connect_token 可能为错误的用户生成，导致一个用户能看到另一个用户的已连接账户。通过使用正确的 session cookie key 修复。</div>
+    <div class="quiz-explain">Version counter is the best fit: increment loadVersionRef on each switch, capture the version before await, check after — if it doesn't match, the result is stale and should be discarded. AbortController (C) could work too but doesn't guarantee the response won't arrive; boolean flag (A) would block legitimate loads; debounce (D) adds latency.<br>版本计数器最合适：每次切换时递增 loadVersionRef，await 前捕获版本号，完成后检查 — 如果不匹配则结果过时应丢弃。</div>
   </div>
 
-  <div class="quiz-card">
-    <div class="quiz-q">3. Why do the Customize View tabs use "lazy-mount" instead of rendering all tabs at once?<br><span style="color:var(--text-dim);font-size:0.9rem">为什么 Customize View 的标签页使用"懒挂载"而不是一次渲染所有标签页？</span></div>
+  <!-- Q3 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">3. A useEffect re-fires with the same sendToAgentPayload due to React batching. You need to prevent processing the same payload twice. What's the most robust approach?<br><span style="color:var(--text-dim)">由于 React 批处理，useEffect 用相同的 sendToAgentPayload 重新触发。你需要防止同一 payload 处理两次。</span></div>
     <div class="quiz-options">
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. To reduce bundle size with code splitting<br>通过代码分割减少包体积</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. To avoid initializing heavy Pipedream SDK and fetching data for hidden tabs<br>避免为隐藏的标签页初始化重量级 Pipedream SDK 和获取数据</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. Because Radix Tabs requires it<br>因为 Radix Tabs 要求这样做</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. To support server-side rendering<br>为了支持服务端渲染</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Dual guard: state null check + ref-based dedup via JSON.stringify key, clear BOTH in try/catch</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Just check if payload is null before processing</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Use useRef to track if effect already ran</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Add the payload to useEffect dependency array</div>
     </div>
-    <div class="quiz-explain">The Connectors tab initializes the Pipedream frontend client and fetches curated apps data. Lazy-mounting ensures this heavy work only happens when the user actually clicks the Connectors tab, improving initial page load.<br>Connectors 标签页会初始化 Pipedream 前端客户端并获取 curated apps 数据。懒挂载确保这些重量级操作仅在用户实际点击 Connectors 标签页时才发生，提升了首次页面加载速度。</div>
+    <div class="quiz-explain">The dual guard pattern is needed because: (1) null check alone doesn't prevent duplicate processing of the same non-null payload, (2) a simple "already ran" ref doesn't distinguish between different payloads, (3) the JSON.stringify key ensures each unique payload is processed exactly once, (4) clearing BOTH state AND ref in catch prevents the error-retry-duplicate bug that was fixed in commit 454210ba.<br>双重守卫：(1) 仅 null 检查不能防止同一非空 payload 的重复处理，(2) JSON.stringify key 确保每个唯一 payload 只处理一次，(3) catch 中同时清除 state 和 ref 防止错误重试重复。</div>
   </div>
 
-  <div class="quiz-card">
-    <div class="quiz-q">4. In the download/export refactoring, what is the PDF export pipeline order?<br><span style="color:var(--text-dim);font-size:0.9rem">在下载导出重构中，PDF 导出管线的顺序是什么？</span></div>
+  <!-- Q4 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">4. You need to create a Tiptap inline element that auto-triggers when the user types @mention followed by a space. Which approach matches the InlineSlashNode pattern?<br><span style="color:var(--text-dim)">你需要创建一个 Tiptap 内联元素，在用户输入 @mention 加空格后自动触发。哪种方案匹配 InlineSlashNode 模式？</span></div>
     <div class="quiz-options">
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. Markdown → PDF → TOC injection<br>Markdown → PDF → TOC 注入</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">B. HTML → Canvas → PDF pages<br>HTML → Canvas → PDF 页面</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,true)">C. Tiptap DOM → HTML string → PDF pages (with TOC, ref-links, heading processing)<br>Tiptap DOM → HTML 字符串 → PDF 页面（含 TOC、ref-link、heading 处理）</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. Markdown → AST → LaTeX → PDF<br>Markdown → AST → LaTeX → PDF</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Listen for keydown events and manually insert the node</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Use a Tiptap Suggestion plugin (like prosemirror-suggest)</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) InputRule with regex /@([^\s@]+)\s$/, validate against user list, then deleteRange + insertContentAt</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Use ReactNodeViewRenderer with an onChange handler</div>
     </div>
-    <div class="quiz-explain">The pipeline converts Tiptap's ProseMirror document to HTML, then processes headings (with IDs for TOC), resolves ref-links, escapes special characters, and renders to PDF pages. Each step is modular and testable.<br>管线将 Tiptap 的 ProseMirror 文档转换为 HTML，然后处理标题（含 ID 用于 TOC）、解析 ref-link、转义特殊字符，最后渲染为 PDF 页面。每一步都是模块化和可测试的。</div>
+    <div class="quiz-explain">The InlineSlashNode pattern: (1) InputRule with regex that includes trailing \s$ (because character is already inserted when rule fires), (2) validate the captured name against a known set, (3) use indexOf() for precise range calculation, (4) chain deleteRange + insertContentAt to replace text with atom node. This pattern works for any "type X + trigger char → convert to node" interaction.<br>InlineSlashNode 模式：(1) 包含尾随 \s$ 的 InputRule 正则，(2) 验证捕获的名称，(3) indexOf() 精确计算范围，(4) chain deleteRange + insertContentAt。</div>
   </div>
 
-  <div class="quiz-card">
-    <div class="quiz-q">5. Why was the dispute API path migrated from /credits/dispute to /dispute?<br><span style="color:var(--text-dim);font-size:0.9rem">为什么 dispute API 路径从 /credits/dispute 迁移到 /dispute？</span></div>
+  <!-- Q5 -->
+  <div class="quiz-card" data-answer="1">
+    <div class="quiz-q">5. After a drag-and-drop operation, the user's pointer-up event triggers a click that clears the selection. Your 200ms suppress timer already expired during the drag. What's the fix?<br><span style="color:var(--text-dim)">拖放操作后，用户的 pointer-up 事件触发了一个 click，清除了选区。你的 200ms 抑制定时器在拖拽期间已过期。怎么修？</span></div>
     <div class="quiz-options">
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">A. To fix a routing conflict with the credits endpoint<br>修复与 credits 端点的路由冲突</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,true)">B. To keep API paths clean and resource-oriented — disputes are their own resource<br>保持 API 路径干净且面向资源 — disputes 是独立资源</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">C. The backend team required a versioned API structure<br>后端团队要求版本化的 API 结构</div>
-      <div class="quiz-opt" onclick="checkQuiz(this,false)">D. To enable caching at the CDN level<br>为了在 CDN 层启用缓存</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Increase the suppress timer to 2000ms to cover all drag durations</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Re-arm the suppress timer in commitAndReset with a ≥ 300ms duration (longer than the click delay)</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Use e.stopPropagation() on the drag end event</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Check if items are selected in the click handler and skip if yes</div>
     </div>
-    <div class="quiz-explain">Disputes, while related to credits, are their own distinct resource with independent CRUD operations and status lifecycle. Nesting them under /credits implied they were a sub-operation rather than a first-class entity.<br>Disputes 虽然与 credits 相关，但它们是独立的资源，有自己的 CRUD 操作和状态生命周期。将它们嵌套在 /credits 下暗示它们是子操作而非一等实体。</div>
+    <div class="quiz-explain">The fix is to re-arm the suppress flag when the drag commits (commitAndReset), not just when it starts. The START timer (200ms) prevents clicks during very short drags. The END timer (300ms) prevents the post-drag click that arrives after commitAndReset. Both timers are needed. Making it too long (A) would suppress legitimate clicks.<br>修复方法：在拖拽提交时（commitAndReset）重新设置抑制标志，而非仅在开始时。START 定时器（200ms）防止极短拖拽时的点击。END 定时器（300ms）防止 commitAndReset 后的拖拽后点击。</div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-card" data-answer="0">
+    <div class="quiz-q">6. You're designing a "bulk restore from trash" feature. Restore can partially fail (some files' target folders were deleted). Which API response pattern should you use?<br><span style="color:var(--text-dim)">你在设计"从回收站批量恢复"功能。恢复可能部分失败（某些文件的目标文件夹已删除）。应该用哪种 API 响应模式？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Return both successfulIds AND failedIds arrays, like the Finder move pattern — frontend removes successes, shows errors for failures</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Return only cleared_file_ids like trash delete — simpler, let frontend figure out failures</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) All-or-nothing: if any fail, roll back all and return error</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Return just a boolean success/failure flag</div>
+    </div>
+    <div class="quiz-explain">When partial failure is expected (like restoring to potentially-deleted folders), you need the Finder move pattern: return both successfulIds and failedIds so the frontend can handle each case appropriately — remove restored items from trash list, show error messages for failures, and potentially offer "create missing folder?" for failed items. The trash delete pattern (B) works when partial failure is unexpected.<br>当部分失败可预期时，需要 Finder move 模式：返回 successfulIds 和 failedIds，前端分别处理 — 从回收站移除已恢复项，为失败项显示错误消息。</div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-card" data-answer="3">
+    <div class="quiz-q">7. You need to prevent a Pipedream connect button from being clicked multiple times while OAuth popup is open. Which pattern?<br><span style="color:var(--text-dim)">你需要防止 Pipedream 连接按钮在 OAuth 弹窗打开期间被多次点击。用哪种模式？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) Version counter pattern</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Dual guard with JSON.stringify dedup</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) Timer suppression</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) Boolean flag: connectingRef.current = true in try, false in finally</div>
+    </div>
+    <div class="quiz-explain">Boolean flag is simplest and most appropriate for preventing concurrent execution of the same async function. Set flag at start, clear in finally block. No need for version counters (not superseding), dedup (not same-payload issue), or timers (not event suppression). This is exactly what ConnectorsTab uses.<br>布尔标志最简单也最适合防止同一异步函数的并发执行。开始时设置，finally 中清除。</div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-card" data-answer="2">
+    <div class="quiz-q">8. Your Tiptap InputRule regex /\/([^\s]+)$/ doesn't trigger when user types "/skill " (with trailing space). Why?<br><span style="color:var(--text-dim)">你的 Tiptap InputRule 正则 /\/([^\s]+)$/ 在用户输入 "/skill "（带尾随空格）时不触发。为什么？</span></div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="checkAnswer(this,0)">A) The regex is missing the ^ anchor</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,1)">B) Tiptap InputRules only fire on Enter, not on Space</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,2)">C) InputRules fire AFTER character insertion — the space is already in the text, so $ doesn't match the position before the space</div>
+      <div class="quiz-opt" onclick="checkAnswer(this,3)">D) The [^\s]+ is too greedy</div>
+    </div>
+    <div class="quiz-explain">Tiptap InputRules run after the character is inserted into the document. When the user presses space, the text becomes "/skill " (with space) before the rule evaluates. The regex [^\s]+$ expects the match to end at the cursor with no whitespace, but there's now a space there. Fix: change to /\/([^\s]+)\s$/ to include the trailing space in the match.<br>Tiptap InputRules 在字符插入后运行。按空格时文本变为 "/skill "（含空格），然后规则才评估。[^\s]+$ 期望匹配在光标处结束且无空格，但现在有空格了。修复：改为包含尾随空格。</div>
+  </div>
+
+  <div id="quizScore" style="display:none;text-align:center;padding:2rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-top:2rem">
+    <div style="font-size:3rem;font-weight:700;color:var(--accent)" id="scoreNum">0</div>
+    <div style="font-size:0.9rem;color:var(--text-dim)">out of 8 correct / 8 题中答对</div>
+    <p style="margin-top:1rem;color:var(--text-dim)" id="scoreMsg"></p>
   </div>
 </div>
 
 <!-- ==================== FLASHCARDS ==================== -->
 <div id="flashcards" class="page">
   <h1>Flashcards 闪卡</h1>
-  <p class="subtitle">Click to flip, arrow keys to navigate 点击翻转，方向键导航</p>
+  <p class="subtitle">Focus on decision-making, not definitions — click to reveal the decision guide<br>关注决策而非定义 — 点击揭示决策指南</p>
 
   <div class="flashcard-container">
-    <div class="flashcard" onclick="flipCard(this)">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <h3>UIBlock Interactive Cards</h3>
-          <p style="color:var(--text-dim)">UIBlock 交互卡片模式</p>
-          <p class="hint">Click to reveal 点击翻转</p>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-inner" id="flashcardInner">
+        <div class="flashcard-front" id="flashcardFront">
+          <h3 id="fcTerm"></h3>
+          <p style="color:var(--text-dim)" id="fcHint"></p>
+          <div class="hint" style="font-size:0.8rem;color:var(--text-dim);margin-top:1rem">Click to reveal 点击揭示</div>
         </div>
-        <div class="flashcard-back">
-          <h4>Definition 定义</h4>
-          <p>SSE 流中的结构化 UI 指令被解析并渲染为交互卡片（AskUserCard、SuggestConnectorCard）。</p>
-          <p>User selections are submitted via ask_user/respond API with a response_key, enabling AI-agent-driven multi-step workflows without breaking the chat stream.</p>
-          <p>用户选择通过 ask_user/respond API 配合 response_key 提交，实现 AI agent 驱动的多步工作流而不中断聊天流。</p>
-        </div>
+        <div class="flashcard-back" id="flashcardBack"></div>
       </div>
     </div>
-
-    <div class="flashcard" onclick="flipCard(this)" style="display:none">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <h3>Pipedream Connect OAuth</h3>
-          <p style="color:var(--text-dim)">第三方 OAuth 集成</p>
-          <p class="hint">Click to reveal 点击翻转</p>
-        </div>
-        <div class="flashcard-back">
-          <h4>Definition 定义</h4>
-          <p>后端生成 connect_token（必须绑定真实用户 ID 防止跨用户泄漏）。</p>
-          <p>Frontend PipedreamProvider creates a singleton client; ConnectModal opens OAuth popup. Critical: wrong cookie key → cross-user account leaks.</p>
-          <p>前端 PipedreamProvider 创建单例客户端；ConnectModal 打开 OAuth 弹窗。关键：错误的 cookie key → 跨用户账户泄漏。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flashcard" onclick="flipCard(this)" style="display:none">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <h3>Customize View Architecture</h3>
-          <p style="color:var(--text-dim)">可定制化视图架构</p>
-          <p class="hint">Click to reveal 点击翻转</p>
-        </div>
-        <div class="flashcard-back">
-          <h4>Definition 定义</h4>
-          <p>Skills + Connectors 双标签页：SkillsTab 有 Official/Custom 过滤 + 文件树浏览器详情弹窗。</p>
-          <p>Lazy-mount tabs avoid initializing Pipedream SDK until user navigates to Connectors. Skeleton loading for perceived performance. Radix primitives for accessibility.</p>
-          <p>懒挂载标签页避免在用户导航到 Connectors 前初始化 Pipedream SDK。骨架屏用于感知性能。Radix 原语提升无障碍性。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flashcard" onclick="flipCard(this)" style="display:none">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <h3>Download/Export Pipeline</h3>
-          <p style="color:var(--text-dim)">下载导出管线</p>
-          <p class="hint">Click to reveal 点击翻转</p>
-        </div>
-        <div class="flashcard-back">
-          <h4>Definition 定义</h4>
-          <p>统一下载模块 FolderWidgets/Download：按文件类型拆分 handler（fromMarkdown、fromHtml、fromPptx）。</p>
-          <p>PDF pipeline: Tiptap DOM → HTML → PDF. HeadingWithId for TOC, RefLinkMark for internal links, proper character escaping for rendering.</p>
-          <p>PDF 管线：Tiptap DOM → HTML → PDF。HeadingWithId 生成目录，RefLinkMark 处理内部链接，正确的字符转义用于渲染。</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flashcard" onclick="flipCard(this)" style="display:none">
-      <div class="flashcard-inner">
-        <div class="flashcard-front">
-          <h3>Credit Dispute System</h3>
-          <p style="color:var(--text-dim)">积分争议系统</p>
-          <p class="hint">Click to reveal 点击翻转</p>
-        </div>
-        <div class="flashcard-back">
-          <h4>Definition 定义</h4>
-          <p>完整争议流程：DisputeDialog 提交原因 → API 创建/查询状态（pending/approved/rejected）→ Usage 面板状态图标。</p>
-          <p>API path migrated from /credits/dispute to /dispute — disputes are a first-class resource, not a credits sub-operation. GA4 events track the full funnel.</p>
-          <p>API 路径从 /credits/dispute 迁移到 /dispute — disputes 是一等资源而非 credits 的子操作。GA4 事件追踪完整漏斗。</p>
-        </div>
-      </div>
-    </div>
-
     <div class="flashcard-nav">
-      <button onclick="prevCard()">← Prev 上一张</button>
-      <span class="flashcard-counter">1 / 5</span>
-      <button onclick="nextCard()">Next 下一张 →</button>
+      <button onclick="prevCard()">← Prev</button>
+      <span class="flashcard-counter" id="fcCounter">1 / 8</span>
+      <button onclick="nextCard()">Next →</button>
     </div>
   </div>
 </div>
 
-<!-- ==================== REVIEW ==================== -->
-<div id="review" class="page">
+<!-- ==================== SCHEDULE ==================== -->
+<div id="schedule" class="page">
   <h1>Review Schedule 复习计划</h1>
-  <p class="subtitle">Based on Ebbinghaus forgetting curve 基于艾宾浩斯遗忘曲线</p>
+  <p class="subtitle">Ebbinghaus spaced repetition for all concepts<br>全部概念的艾宾浩斯间隔重复</p>
 
-  <h2>Overdue — W12 Concepts 逾期 — 第12周概念</h2>
-  <p style="color:var(--orange);margin-bottom:1rem">These 5 concepts from W12 were due Mar 23 but not yet reviewed. Review them today!<br>第12周的5个概念原定3月23日复习但尚未完成。今天复习它们！</p>
-  <div class="card" style="border-color:var(--orange)">
-    <ul style="padding-left:1.2rem;color:var(--text-dim);font-size:0.9rem">
-      <li><strong>Virtual Scroll with Tree Flattening</strong> 虚拟滚动 + 树形扁平化 — learned Mar 22</li>
-      <li><strong>@dnd-kit Advanced Patterns</strong> 拖拽系统高级模式 — learned Mar 22</li>
-      <li><strong>Move Conflict Resolution & Rollback</strong> 文件移动冲突解决与回滚 — learned Mar 22</li>
-      <li><strong>Web Page Publish Workflow</strong> 网页发布流程 — learned Mar 22</li>
-      <li><strong>WebSocket Reconnect Safety</strong> WebSocket 重连安全机制 — learned Mar 22</li>
-    </ul>
-  </div>
-
-  <h2>Upcoming Schedule 即将到来</h2>
   <div class="schedule-grid">
     <div class="schedule-day today">
       <div class="date">Mar 28 (Today 今天)</div>
-      <div class="items">
-        <ul>
-          <li>Review all 5 W12 concepts (overdue)<br>复习所有5个W12概念（逾期）</li>
-        </ul>
-      </div>
+      <div class="items"><ul>
+        <li>✅ W12 5 concepts reviewed (Stage 0→1)</li>
+        <li>🆕 3 new W13 concepts learned (Stage 0)</li>
+      </ul></div>
     </div>
     <div class="schedule-day">
-      <div class="date">Mar 29 (Sun 周日)</div>
-      <div class="items">
-        <ul>
-          <li>UIBlock Interactive Cards</li>
-          <li>Pipedream Connect OAuth</li>
-          <li>Customize View Architecture</li>
-          <li>Download/Export Refactoring</li>
-          <li>Credit Dispute System</li>
-        </ul>
-      </div>
+      <div class="date">Mar 29 (Tomorrow 明天)</div>
+      <div class="items"><ul>
+        <li>🔵 Batch Operations Design (Stage 1)</li>
+        <li>🔵 Race Condition Patterns (Stage 1)</li>
+        <li>🔵 Tiptap InputRule (Stage 1)</li>
+      </ul></div>
     </div>
     <div class="schedule-day">
-      <div class="date">Mar 31 (Tue 周二)</div>
-      <div class="items">
-        <ul>
-          <li>W12 concepts Stage 2<br>W12概念第2轮</li>
-        </ul>
-      </div>
+      <div class="date">Mar 31</div>
+      <div class="items"><ul>
+        <li>🔵 W12 all 5 concepts (Stage 1→2)</li>
+        <li>🔵 W13 original 5 concepts (Stage 1→2)</li>
+        <li>🔵 3 new concepts (Stage 1→2)</li>
+      </ul></div>
     </div>
     <div class="schedule-day">
-      <div class="date">Apr 1 (Wed 周三)</div>
-      <div class="items">
-        <ul>
-          <li>W13 concepts Stage 2<br>W13概念第2轮</li>
-        </ul>
-      </div>
+      <div class="date">Apr 4 (7 days)</div>
+      <div class="items"><ul><li>All 13 concepts: Stage 2→3</li></ul></div>
     </div>
     <div class="schedule-day">
-      <div class="date">Apr 5 (Sun 周日)</div>
-      <div class="items">
-        <ul>
-          <li>W13 concepts Stage 3<br>W13概念第3轮</li>
-        </ul>
-      </div>
+      <div class="date">Apr 11 (14 days)</div>
+      <div class="items"><ul><li>Stage 3→4</li></ul></div>
     </div>
+    <div class="schedule-day">
+      <div class="date">Apr 28 (30 days)</div>
+      <div class="items"><ul><li>Stage 4→5 (Mastered!)</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RECOMMENDATIONS ==================== -->
+<div id="recommend" class="page">
+  <h1>Next Steps 下一步学习推荐</h1>
+  <p class="subtitle">Based on this week's work and gaps identified during deep analysis<br>基于本周工作和深度分析中发现的薄弱点</p>
+
+  <div class="rec-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+      <h3 style="margin:0">React Concurrent Rendering & Race Conditions</h3>
+      <span class="priority priority-high">HIGH</span>
+    </div>
+    <p><strong>Why 为什么学：</strong> This week you fixed 4 race condition bugs using 5 different patterns, but the patterns were discovered ad-hoc during debugging. You need a systematic mental model for when React re-renders cause async overlap.</p>
+    <p style="margin-top:0.5rem">本周你用5种不同模式修复了4个竞态bug，但模式是调试过程中临时发现的。你需要一个系统化的心智模型来理解 React 重渲染何时导致异步重叠。</p>
+    <p style="margin-top:0.75rem"><strong>How to learn 怎么学：</strong></p>
+    <ul style="padding-left:1.2rem;font-size:0.9rem;color:var(--text-dim);margin-top:0.25rem">
+      <li><strong>Read source:</strong> Compare all 5 patterns side by side in your codebase — create a decision flowchart you can reference<br>对比代码库中的5种模式 — 创建可参考的决策流程图</li>
+      <li><strong>Experiment:</strong> In React DevTools, enable "Highlight updates" and rapidly switch conversations — observe which components re-render and when effects re-fire<br>在 React DevTools 中启用"高亮更新"并快速切换对话 — 观察哪些组件重渲染</li>
+      <li><strong>Docs:</strong> React docs "Synchronizing with Effects" → "Race conditions" section; Dan Abramov's "A Complete Guide to useEffect"</li>
+    </ul>
+    <p style="margin-top:0.75rem"><strong>Expected outcome 预期收获：</strong> Before writing any useEffect with async, you can predict which race condition pattern is needed in &lt;10 seconds.<br>写任何含异步的 useEffect 前，能在 10 秒内预测需要哪种竞态防护模式。</p>
+  </div>
+
+  <div class="rec-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+      <h3 style="margin:0">Tiptap/ProseMirror Plugin Architecture</h3>
+      <span class="priority priority-medium">MEDIUM</span>
+    </div>
+    <p><strong>Why 为什么学：</strong> You fixed an InputRule regex bug, but the fix was pattern-matching (indexOf vs endsWith). Understanding ProseMirror's transaction model would let you predict these timing issues instead of debugging them.</p>
+    <p style="margin-top:0.5rem">你修复了 InputRule 正则 bug，但修复是模式匹配。理解 ProseMirror 的事务模型能让你预测而非调试这些时序问题。</p>
+    <p style="margin-top:0.75rem"><strong>How to learn 怎么学：</strong></p>
+    <ul style="padding-left:1.2rem;font-size:0.9rem;color:var(--text-dim);margin-top:0.25rem">
+      <li><strong>Read source:</strong> ProseMirror inputrules package source (~200 lines) — understand when handler fires relative to transaction<br>阅读 ProseMirror inputrules 包源码（~200行）— 理解 handler 相对于 transaction 何时触发</li>
+      <li><strong>Experiment:</strong> Add console.log in your InlineSlashNode handler to print state.doc.textBetween(range.from, range.to) and compare with match[0]<br>在 InlineSlashNode handler 中添加 console.log 打印 state.doc.textBetween</li>
+      <li><strong>Docs:</strong> ProseMirror Guide → "Transactions" section; Tiptap docs → "Custom Extensions"</li>
+    </ul>
+    <p style="margin-top:0.75rem"><strong>Expected outcome 预期收获：</strong> Next time you write a Tiptap extension, you'll know the exact lifecycle: keypress → transaction → InputRule handler → state update.<br>下次写 Tiptap 扩展时，你会知道确切的生命周期。</p>
+  </div>
+
+  <div class="rec-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+      <h3 style="margin:0">Backend Batch Operation Patterns (Server-Side)</h3>
+      <span class="priority priority-medium">MEDIUM</span>
+    </div>
+    <p><strong>Why 为什么学：</strong> This week was entirely frontend-focused (8 frontend concepts, 0 backend). You designed trash delete's API contract but only touched the frontend. Understanding the backend side — database transactions, soft-delete vs hard-delete, bulk operation optimization — would make you a better API designer.</p>
+    <p style="margin-top:0.5rem">本周完全是前端（8个前端概念，0个后端）。你设计了 trash delete 的 API 契约但只触及前端。理解后端侧会让你成为更好的 API 设计者。</p>
+    <p style="margin-top:0.75rem"><strong>How to learn 怎么学：</strong></p>
+    <ul style="padding-left:1.2rem;font-size:0.9rem;color:var(--text-dim);margin-top:0.25rem">
+      <li><strong>Read source:</strong> Check how the trash delete endpoint is implemented server-side — is it a single SQL DELETE or a transaction?</li>
+      <li><strong>Experiment:</strong> What happens if you call /trash-bin/delete with 1000 file_ids? Does it hit a database timeout?</li>
+      <li><strong>Think about:</strong> soft-delete (trash_cleared_at timestamp) vs hard-delete (row removal) trade-offs for GDPR compliance</li>
+    </ul>
+    <p style="margin-top:0.75rem"><strong>Expected outcome 预期收获：</strong> When designing the next batch API, you can anticipate backend constraints (transaction size, timeout) and design accordingly.<br>设计下一个批量 API 时，能预见后端约束并相应设计。</p>
   </div>
 </div>
 
@@ -748,42 +636,60 @@ function showPage(id, el) {
   if (el) el.classList.add('active');
 }
 
-function toggleKeyPoints(btn) {
-  const kp = btn.nextElementSibling;
-  kp.classList.toggle('open');
-  btn.textContent = kp.classList.contains('open') ? 'Key Points 要点 ▴' : 'Key Points 要点 ▾';
+function toggleSection(btn, id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  btn.classList.toggle('active');
 }
 
-function checkQuiz(el, correct) {
+// Quiz
+let quizAnswered = 0, quizCorrect = 0;
+const totalQ = 8;
+function checkAnswer(el, idx) {
   const card = el.closest('.quiz-card');
-  if (card.dataset.answered) return;
-  card.dataset.answered = 'true';
-  if (correct) {
-    el.classList.add('correct');
-  } else {
-    el.classList.add('wrong');
-    card.querySelector('.quiz-opt:nth-child(' +
-      ([...card.querySelectorAll('.quiz-opt')].findIndex(o =>
-        o.getAttribute('onclick').includes('true')) + 1) + ')').classList.add('correct');
-  }
+  if (card.classList.contains('answered')) return;
+  card.classList.add('answered');
+  const correct = parseInt(card.dataset.answer);
+  card.querySelectorAll('.quiz-opt').forEach((o, i) => {
+    o.classList.add('disabled');
+    if (i === correct) o.classList.add('correct');
+    else if (i === idx && idx !== correct) o.classList.add('wrong');
+  });
   card.querySelector('.quiz-explain').style.display = 'block';
+  quizAnswered++;
+  if (idx === correct) quizCorrect++;
+  if (quizAnswered === totalQ) {
+    document.getElementById('quizScore').style.display = 'block';
+    document.getElementById('scoreNum').textContent = quizCorrect;
+    const pct = Math.round(quizCorrect / totalQ * 100);
+    document.getElementById('scoreMsg').textContent = pct >= 75 ? 'Strong decision-making skills! 决策能力很强！' : pct >= 50 ? 'Good foundation — review the decision trees. 基础不错 — 复习决策树。' : 'Spend time with the Deep Dive sections. 多看深度分析部分。';
+  }
 }
 
+// Flashcards
+const flashcards = [
+  { term: "Batch Operations: Trash vs Finder", hint: "批量操作：回收站 vs 文件管理器", back: "<h4>Decision Guide 决策指南</h4><ul><li><strong>Irreversible + no conflicts:</strong> Trash pattern — idempotent API, explicit dialog, no undo</li><li>不可逆 + 无冲突：Trash 模式</li><li><strong>Reversible + may conflict:</strong> Move pattern — per-item resolution, partial rollback</li><li>可逆 + 可能冲突：Move 模式</li><li><strong>Reversible + no conflicts:</strong> Delete pattern — optimistic + UndoEntry</li><li>可逆 + 无冲突：Delete 模式</li></ul><p style='margin-top:0.5rem;color:var(--accent)'>Key: Match the pattern to the operation's reversibility and failure mode.</p>" },
+  { term: "Race Condition: Version Counter", hint: "竞态防护：版本计数器", back: "<h4>When to use 何时使用</h4><p>Long-running async operations that can be <strong>superseded</strong> by newer operations.</p><p>长时间异步操作可被更新的操作<strong>取代</strong>时。</p><ul><li>Increment counter on new operation start</li><li>Capture version before await</li><li>Check after await — bail if stale</li></ul><p style='color:var(--accent)'>Example: loadConversationMessages — increment on createConversation.</p>" },
+  { term: "Race Condition: Dual Guard", hint: "竞态防护：双重守卫", back: "<h4>When to use 何时使用</h4><p>Effects that <strong>re-fire with the same props</strong> due to React batching.</p><p>由于 React 批处理而<strong>用相同 props 重新触发</strong>的 Effect。</p><ul><li>Guard 1: state null check (if !payload return)</li><li>Guard 2: ref dedup via JSON.stringify key</li><li><strong>Critical:</strong> Clear BOTH state AND ref in catch block!</li></ul><p style='color:var(--red)'>Bug lesson: clearing only ref in catch → state still non-null → effect re-fires → duplicate send.</p>" },
+  { term: "Race Condition: Boolean Flag vs AbortController", hint: "竞态：布尔标志 vs AbortController", back: "<h4>Boolean Flag 布尔标志</h4><p>Prevent <strong>concurrent execution</strong> of same function.</p><p>防止同一函数<strong>并发执行</strong>。</p><p>Example: connectingRef prevents double-click on OAuth button.</p><h4 style='margin-top:0.5rem'>AbortController</h4><p>Cancel <strong>in-flight network requests</strong>.</p><p>取消<strong>进行中的网络请求</strong>。</p><p>Example: abort SSE stream when user switches conversation.</p><p style='color:var(--accent)'>Key diff: Flag blocks new calls; AbortController cancels existing ones.</p>" },
+  { term: "Tiptap InputRule Timing", hint: "Tiptap InputRule 时序", back: "<h4>Critical Insight 关键洞察</h4><p>InputRules fire <strong>AFTER</strong> the character is inserted into the document.</p><p>InputRules 在字符<strong>插入后</strong>触发。</p><ul><li>/skill&lt;space&gt; → text is already '/skill ' when rule evaluates</li><li>Regex must include trailing \\s$ to match the space</li><li>Use indexOf() not endsWith() for range calculation (handles leading whitespace)</li></ul><p style='color:var(--accent)'>Remember: You're matching against the RESULT state, not the trigger action.</p>" },
+  { term: "Tiptap Node Types Decision", hint: "Tiptap 节点类型决策", back: "<h4>Decision Guide 决策指南</h4><ul><li><strong>Auto-trigger on typing:</strong> InputRule + Atom Node (InlineSlashNode)</li><li>打字自动触发：InputRule + 原子节点</li><li><strong>Interactive React UI:</strong> ReactNodeViewRenderer (TemplatePlaceholder)</li><li>交互式 React UI：ReactNodeViewRenderer</li><li><strong>Text formatting:</strong> Mark extension (CustomHighlight)</li><li>文本格式化：Mark 扩展</li><li><strong>Block media:</strong> Standard HTML rendering (CustomImage)</li><li>块级媒体：标准 HTML 渲染</li></ul>" },
+  { term: "Timer Suppression Pattern", hint: "定时器抑制模式", back: "<h4>The Bug 问题</h4><p>Drag starts → arm 200ms suppress timer → drag lasts >200ms → timer expires → drag ends → post-drag click fires → selection cleared!</p><h4 style='margin-top:0.5rem'>The Fix 修复</h4><p><strong>Re-arm</strong> suppress timer in commitAndReset with LONGER duration (300ms ≥ 200ms).</p><p>在 commitAndReset 中<strong>重新设置</strong>抑制定时器，持续时间更长（300ms ≥ 200ms）。</p><ul><li>START timer: prevents clicks during short drags</li><li>END timer: prevents post-drag click</li><li>Both needed, different purposes</li></ul>" },
+  { term: "Idempotent API Response Pattern", hint: "幂等 API 响应模式", back: "<h4>Pattern 模式</h4><p>Server returns <strong>cleared_file_ids</strong> (not just count or boolean).</p><p>服务端返回 <strong>cleared_file_ids</strong>（而非仅数量或布尔值）。</p><ul><li>Frontend filters items by returned IDs — no guessing</li><li>前端按返回的 ID 过滤 — 无需猜测</li><li>Safe to retry: same request returns same IDs</li><li>可安全重试：相同请求返回相同 ID</li><li>Contrast: Finder move returns successfulIds + failedIds (for partial failure)</li><li>对比：Finder move 返回 successfulIds + failedIds（部分失败）</li></ul><p style='color:var(--accent)'>Rule: Irreversible ops need idempotent responses. Partial-failure ops need success/fail split.</p>" }
+];
 let currentCard = 0;
-const cards = document.querySelectorAll('.flashcard');
-function showCard(i) {
-  cards.forEach(c => { c.style.display = 'none'; c.classList.remove('flipped'); });
-  cards[i].style.display = 'block';
-  document.querySelector('.flashcard-counter').textContent = (i+1) + ' / ' + cards.length;
+function renderCard() {
+  const fc = flashcards[currentCard];
+  document.getElementById('fcTerm').textContent = fc.term;
+  document.getElementById('fcHint').textContent = fc.hint;
+  document.getElementById('flashcardBack').innerHTML = fc.back;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fcCounter').textContent = `${currentCard + 1} / ${flashcards.length}`;
 }
-function flipCard(el) { el.classList.toggle('flipped'); }
-function nextCard() { currentCard = (currentCard + 1) % cards.length; showCard(currentCard); }
-function prevCard() { currentCard = (currentCard - 1 + cards.length) % cards.length; showCard(currentCard); }
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') nextCard();
-  if (e.key === 'ArrowLeft') prevCard();
-  if (e.key === ' ') { e.preventDefault(); cards[currentCard].classList.toggle('flipped'); }
-});
+function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+function nextCard() { currentCard = (currentCard + 1) % flashcards.length; renderCard(); }
+function prevCard() { currentCard = (currentCard - 1 + flashcards.length) % flashcards.length; renderCard(); }
+renderCard();
 </script>
 </body>
 </html>

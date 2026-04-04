@@ -3,805 +3,677 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Week 14 Learning Hub — SSE Streaming Architecture Deep Dive</title>
+<title>Week 14 Learning Hub — CRUD Architecture, IME Guards, Tiptap Suggestion & View State</title>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3a;
-    --text: #e4e4ef;
-    --text-dim: #8888a0;
-    --accent: #6c63ff;
-    --accent2: #00d4aa;
-    --accent3: #ff6b6b;
-    --code-bg: #1e1e2e;
-    --glow: rgba(108, 99, 255, 0.15);
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232736;
+    --border: #2d3148;
+    --text: #e4e7ef;
+    --text2: #9ca3b8;
+    --accent: #6c8aff;
+    --accent2: #4ecdc4;
+    --accent3: #ff6b9d;
+    --accent4: #ffd93d;
+    --success: #4ecdc4;
+    --code-bg: #161822;
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.3);
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
     min-height: 100vh;
   }
-  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
-
-  /* Navigation */
   nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(10,10,15,0.9); backdrop-filter: blur(12px);
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    padding: 0.75rem 0;
+    padding: 0 24px;
   }
-  nav .container { display: flex; gap: 1.5rem; align-items: center; padding: 0 1.5rem; }
+  nav ul {
+    display: flex; gap: 4px; list-style: none;
+    max-width: 1100px; margin: 0 auto;
+    overflow-x: auto;
+  }
   nav a {
-    color: var(--text-dim); text-decoration: none; font-size: 0.85rem;
-    padding: 0.3rem 0; border-bottom: 2px solid transparent;
-    transition: all 0.2s;
+    display: block; padding: 14px 16px;
+    color: var(--text2); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.2s;
   }
   nav a:hover, nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
-  nav .title { font-weight: 700; color: var(--text); font-size: 0.95rem; margin-right: auto; }
-
-  /* Sections */
-  section { padding: 3rem 0; }
-  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
-  h2 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent); }
-  h3 { font-size: 1.15rem; margin-bottom: 0.75rem; }
-  .subtitle { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 2rem; }
-
-  /* Cards */
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 600; margin: 32px 0 16px; color: var(--accent); }
+  h3 { font-size: 17px; font-weight: 600; margin: 20px 0 10px; }
+  .subtitle { color: var(--text2); font-size: 15px; margin-bottom: 32px; }
+  .section { display: none; }
+  .section.active { display: block; }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    transition: border-color 0.3s;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
   }
-  .card:hover { border-color: var(--accent); }
-  .card-label {
-    display: inline-block; font-size: 0.7rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    padding: 0.2rem 0.6rem; border-radius: 4px;
-    margin-bottom: 0.75rem;
+  .card-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
   }
-  .label-layer1 { background: rgba(108,99,255,0.15); color: var(--accent); }
-  .label-layer2 { background: rgba(0,212,170,0.15); color: var(--accent2); }
-  .label-layer3 { background: rgba(255,107,107,0.15); color: var(--accent3); }
-  .label-compare { background: rgba(255,200,50,0.15); color: #ffc832; }
-
-  /* Code blocks */
+  .card-badge {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-frontend { background: rgba(108,138,255,0.15); color: var(--accent); }
+  .badge-pattern { background: rgba(78,205,196,0.15); color: var(--accent2); }
+  .card-title { font-size: 18px; font-weight: 600; }
+  .cn { color: var(--text2); font-size: 14px; }
+  p, li { font-size: 15px; color: var(--text); }
   pre {
     background: var(--code-bg);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 16px;
     overflow-x: auto;
-    font-size: 0.82rem;
+    font-size: 13px;
     line-height: 1.6;
-    margin: 1rem 0;
+    margin: 12px 0;
   }
-  code { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
-  .inline-code {
-    background: var(--code-bg);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.85em;
+  code {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
   }
-
-  /* Flow diagram */
-  .flow-diagram {
+  :not(pre) > code {
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    margin: 1.5rem 0;
-    font-family: 'SF Mono', monospace;
-    font-size: 0.78rem;
-    line-height: 1.8;
-    overflow-x: auto;
-    white-space: pre;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
   }
-  .flow-highlight { color: var(--accent); font-weight: 600; }
-  .flow-green { color: var(--accent2); }
-  .flow-red { color: var(--accent3); }
-  .flow-dim { color: var(--text-dim); }
-
-  /* Comparison table */
-  .compare-table {
+  table {
     width: 100%;
     border-collapse: collapse;
-    margin: 1rem 0;
-    font-size: 0.85rem;
+    margin: 16px 0;
+    font-size: 14px;
   }
-  .compare-table th {
+  th {
     background: var(--surface2);
-    padding: 0.6rem 0.8rem;
     text-align: left;
-    border-bottom: 2px solid var(--accent);
+    padding: 10px 14px;
     font-weight: 600;
-    color: var(--accent);
+    border-bottom: 2px solid var(--border);
   }
-  .compare-table td {
-    padding: 0.6rem 0.8rem;
+  td {
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
   }
-  .compare-table tr:hover td { background: var(--surface); }
-
-  /* Tabs */
-  .tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid var(--border); }
-  .tab-btn {
-    background: none; border: none; color: var(--text-dim);
-    padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.85rem;
-    border-bottom: 2px solid transparent; transition: all 0.2s;
+  tr:hover td { background: rgba(108,138,255,0.04); }
+  .deep-dive {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
   }
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab-content { display: none; padding: 1rem 0; }
-  .tab-content.active { display: block; }
-
-  /* Quiz */
-  .quiz-option {
-    display: block; width: 100%;
+  .deep-dive summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent2);
+    font-size: 15px;
+    padding: 8px 0;
+    user-select: none;
+  }
+  .deep-dive summary:hover { color: var(--accent); }
+  .deep-dive[open] summary { margin-bottom: 12px; }
+  .decision-tree {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 0.8rem 1rem;
-    margin: 0.5rem 0;
-    color: var(--text);
-    cursor: pointer;
-    text-align: left;
-    font-size: 0.9rem;
-    transition: all 0.2s;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 2;
   }
-  .quiz-option:hover { border-color: var(--accent); background: var(--glow); }
-  .quiz-option.correct { border-color: var(--accent2); background: rgba(0,212,170,0.1); }
-  .quiz-option.wrong { border-color: var(--accent3); background: rgba(255,107,107,0.1); }
-  .quiz-feedback {
-    margin-top: 0.75rem; padding: 0.8rem 1rem;
-    border-radius: 8px; font-size: 0.85rem;
-    display: none;
-  }
-  .quiz-feedback.show { display: block; }
-  .quiz-feedback.correct-fb { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); }
-  .quiz-feedback.wrong-fb { background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); }
-
-  /* Flashcards */
-  .flashcard {
+  .decision-tree .arrow { color: var(--accent); font-weight: 600; }
+  .decision-tree .result { color: var(--accent2); font-weight: 600; }
+  .quiz-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 2rem;
-    min-height: 200px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    position: relative;
+    padding: 24px;
+    margin-bottom: 20px;
   }
-  .flashcard:hover { border-color: var(--accent); box-shadow: 0 0 20px var(--glow); }
-  .flashcard .front { font-size: 1.2rem; font-weight: 600; }
-  .flashcard .back { display: none; font-size: 0.9rem; line-height: 1.8; }
-  .flashcard.flipped .front { display: none; }
-  .flashcard.flipped .back { display: block; }
-  .flashcard .flip-hint {
-    position: absolute; bottom: 0.75rem; right: 1rem;
-    font-size: 0.7rem; color: var(--text-dim);
-  }
-  .fc-nav { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
-  .fc-nav button {
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); padding: 0.5rem 1.5rem; border-radius: 8px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .fc-nav button:hover { border-color: var(--accent); }
-
-  /* Decision tree */
-  .decision-tree {
+  .quiz-q { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    display: block;
+    padding: 12px 16px;
     background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-align: left;
+    color: var(--text);
+    width: 100%;
+  }
+  .quiz-opt:hover { border-color: var(--accent); background: rgba(108,138,255,0.08); }
+  .quiz-opt.correct { border-color: var(--success); background: rgba(78,205,196,0.12); color: var(--success); }
+  .quiz-opt.wrong { border-color: var(--accent3); background: rgba(255,107,157,0.12); color: var(--accent3); }
+  .quiz-opt.disabled { pointer-events: none; opacity: 0.7; }
+  .quiz-explain {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+  }
+  .quiz-explain.show { display: block; }
+  .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .flashcard {
+    perspective: 1000px;
+    height: 220px;
+    cursor: pointer;
+  }
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
     border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1rem 0;
-    font-size: 0.85rem;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid var(--border);
   }
-  .dt-node {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    border-left: 2px solid var(--border);
-    margin-left: 1rem;
+  .flashcard-front {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
   }
-  .dt-question { color: var(--accent); font-weight: 600; }
-  .dt-yes { color: var(--accent2); }
-  .dt-no { color: var(--accent3); }
-  .dt-answer {
-    background: var(--surface);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    display: inline-block;
-    margin-top: 0.3rem;
+  .flashcard-back {
+    background: linear-gradient(135deg, rgba(108,138,255,0.08) 0%, rgba(78,205,196,0.08) 100%);
+    transform: rotateY(180deg);
+    overflow-y: auto;
+    font-size: 14px;
   }
-
-  /* Bilingual */
-  .zh { color: var(--text-dim); font-size: 0.88em; }
-
-  /* Responsive */
-  @media (max-width: 640px) {
-    .container { padding: 1rem; }
-    h1 { font-size: 1.5rem; }
-    pre { font-size: 0.75rem; }
-    .flow-diagram { font-size: 0.65rem; padding: 1rem; }
+  .flashcard-front h4 { font-size: 18px; text-align: center; margin-bottom: 8px; }
+  .flashcard-front .hint { color: var(--text2); font-size: 13px; text-align: center; }
+  .review-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-date {
+    min-width: 90px;
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .review-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-overdue { background: var(--accent3); }
+  .status-today { background: var(--accent4); }
+  .status-upcoming { background: var(--accent2); }
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    h1 { font-size: 22px; }
+    .flashcard-grid { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    th, td { padding: 8px 10px; }
   }
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="container">
-    <span class="title">W14 Learning Hub</span>
-    <a href="#home" class="active">Home 首页</a>
-    <a href="#concept">Concept 概念</a>
-    <a href="#deep-dive">Deep Dive 深度分析</a>
-    <a href="#quiz">Quiz 测验</a>
-    <a href="#flashcards">Flashcards 闪卡</a>
-  </div>
+  <ul>
+    <li><a href="#home" class="nav-link active" onclick="showSection('home')">Home 首页</a></li>
+    <li><a href="#concepts" class="nav-link" onclick="showSection('concepts')">Concepts 概念</a></li>
+    <li><a href="#quiz" class="nav-link" onclick="showSection('quiz')">Quiz 测验</a></li>
+    <li><a href="#flashcards" class="nav-link" onclick="showSection('flashcards')">Flashcards 闪卡</a></li>
+    <li><a href="#review" class="nav-link" onclick="showSection('review')">Review 复习</a></li>
+  </ul>
 </nav>
 
+<div class="container">
+
 <!-- HOME -->
-<section id="home">
-<div class="container">
-  <h1>Week 14: SSE Streaming Architecture</h1>
-  <p class="subtitle">SSE 流式通信三层架构 — 2026-03-24 ~ 2026-03-30<br><span class="zh">本周深度：Chat Panel 的完整 SSE 数据流转管线</span></p>
+<div id="home" class="section active">
+  <h1>Week 14 Learning Hub</h1>
+  <p class="subtitle">2026-W14 (Mar 30 - Apr 5) | KUSE App V2 | Next.js + React + TypeScript<br>
+  W14 学习中心 — 定时任务架构、IME 防护、Tiptap Suggestion、视图状态模式</p>
 
   <div class="card">
-    <h3>This Week's Focus 本周重点</h3>
-    <p>Deep analysis of the Chat panel's SSE (Server-Sent Events) streaming pipeline — a 3-layer architecture handling real-time AI communication, multi-agent orchestration, tool execution, and robust error recovery.</p>
-    <p class="zh">深入分析 Chat 面板的 SSE 流式管线 — 三层架构处理实时 AI 通信、多 Agent 编排、Tool 执行和健壮的错误恢复。</p>
+    <h3>This Week's Commits 本周提交概览</h3>
+    <p>~70 commits across <strong>Scheduled Tasks</strong>, <strong>IME composition fixes</strong>, <strong>Slash Command menu</strong>, <strong>exclusive view state unification</strong>, Insurance landing page, folder tree sidebar, AttachMenu connectors, and more.</p>
+    <p style="margin-top:8px" class="cn">约 70 个提交，涉及定时任务 CRUD、IME 输入法修复、斜杠命令菜单、互斥视图状态统一、保险落地页、文件夹侧边树等模块。</p>
   </div>
 
-  <div class="card">
-    <h3>Commits Overview 提交概览</h3>
-    <p>70 commits this week, spanning: Scheduled Tasks UI, Folder Tree Side Panel, Slash Command Menu, Chat AttachMenu submenus (Skills/Connectors), and SSE architecture analysis.</p>
-    <p class="zh">本周 70 个 commit，涵盖：定时任务 UI、文件夹树侧面板、斜杠命令菜单、Chat 附件菜单子菜单（Skills/Connectors），以及 SSE 架构的深度分析。</p>
-  </div>
+  <h2>New Concepts This Week 本周新概念 (5)</h2>
 
-  <div class="card">
-    <h3>Review Reminders 复习提醒</h3>
-    <p><strong>Due tomorrow (Mar 31):</strong> W12 concepts (Stage 2) — Virtual Scroll, @dnd-kit, Move Conflicts, HTML Publish, WebSocket Reconnect</p>
-    <p><strong>Overdue:</strong> W13 concepts — Batch Operations, Race Conditions, Tiptap InputRule (Stage 1, due Mar 29)</p>
-    <p class="zh">明天复习 W12（第2阶段），W13 有 3 个概念已逾期需补复习。</p>
-  </div>
-</div>
-</section>
-
-<!-- CONCEPT -->
-<section id="concept">
-<div class="container">
-  <h2>SSE Streaming 3-Layer Architecture</h2>
-  <p class="zh">SSE 流式通信三层架构</p>
-
-  <div class="flow-diagram"><span class="flow-dim">User sends message</span>
-  <span class="flow-dim">      |</span>
-  <span class="flow-dim">      v</span>
-  <span class="flow-highlight">ChatInterface.InputArea</span> -> <span class="flow-highlight">useAIStream.sendMessage()</span>
-  <span class="flow-dim">      |</span>
-  <span class="flow-dim">      | 1. Create user Message object</span>
-  <span class="flow-dim">      | 2. Add to messages state</span>
-  <span class="flow-dim">      | 3. Call sendRequest()</span>
-  <span class="flow-dim">      v</span>
-  <span class="flow-highlight">processStreamEvents(endpoint, requestBody)</span>
-  <span class="flow-dim">      |</span>
-  <span class="flow-dim">      v</span>
-<span class="flow-green">Layer 1: StreamManager</span>  <span class="flow-dim">— Connection control</span>
-  <span class="flow-dim">      | startEventStream(url, body, headers)</span>
-  <span class="flow-dim">      | Generate Request-ID (UUID)</span>
-  <span class="flow-dim">      | Add Authorization header</span>
-  <span class="flow-dim">      | Returns { eventStream: AsyncGenerator, requestId }</span>
-  <span class="flow-dim">      v</span>
-  <span class="flow-dim">      fetchEventSource(url, { POST, headers, body })</span>
-  <span class="flow-dim">      | onopen   -> status = 'streaming'</span>
-  <span class="flow-dim">      | onmessage -> parse JSON -> push to eventQueue</span>
-  <span class="flow-dim">      | onerror  -> throw (stop internal retry)</span>
-  <span class="flow-dim">      | onclose  -> isComplete = true</span>
-  <span class="flow-dim">      v</span>
-<span class="flow-green">Layer 2: AIStreamProcessor</span>  <span class="flow-dim">— Event processing</span>
-  <span class="flow-dim">      | processEventStream(eventStream)</span>
-  <span class="flow-dim">      | for await (event of eventStream)</span>
-  <span class="flow-dim">      |   switch (event.type):</span>
-  <span class="flow-dim">      |     agent_start/end   -> Agent state machine</span>
-  <span class="flow-dim">      |     tool_call_start   -> Tool lifecycle</span>
-  <span class="flow-dim">      |     text/thinking     -> Content aggregation</span>
-  <span class="flow-dim">      |     tool_call_result  -> File streaming</span>
-  <span class="flow-dim">      |     ui_block          -> Interactive cards</span>
-  <span class="flow-dim">      |     stop              -> Stream complete</span>
-  <span class="flow-dim">      |   yield ProcessedEvent</span>
-  <span class="flow-dim">      v</span>
-<span class="flow-green">Layer 3: MessageBuilder</span>  <span class="flow-dim">— Incremental message construction</span>
-  <span class="flow-dim">      | appendText(content, type, eventId)</span>
-  <span class="flow-dim">      |   -> Merge if same eventId, else new Part</span>
-  <span class="flow-dim">      | appendToolCall(toolCallContent)</span>
-  <span class="flow-dim">      | appendUIBlock(content)</span>
-  <span class="flow-dim">      | appendAgentBlock(agentBlock)</span>
-  <span class="flow-dim">      | build() -> Message { parts[], metadata, status }</span>
-  <span class="flow-dim">      v</span>
-<span class="flow-highlight">useAIStream event handler</span>  <span class="flow-dim">— React state updates</span>
-  <span class="flow-dim">      | message_update    -> setMessages()</span>
-  <span class="flow-dim">      | agent_status      -> setAgentStates()</span>
-  <span class="flow-dim">      | tool_status       -> setToolStates()</span>
-  <span class="flow-dim">      | conversation_created -> setCurrentConversationUid()</span>
-  <span class="flow-dim">      | stream_complete   -> setStatus('completed')</span>
-  <span class="flow-dim">      v</span>
-  <span class="flow-highlight">React re-render</span> -> <span class="flow-dim">UI displays messages, agents, tools</span></div>
-
-  <!-- Layer 1 -->
-  <div class="card">
-    <span class="card-label label-layer1">Layer 1 — StreamManager</span>
-    <h3>Connection Control & Retry 连接控制与重试</h3>
-    <p>Manages the SSE connection lifecycle: creates/destroys connections, handles retry with exponential backoff, supports 3 retry strategies (AUTO/MANUAL/RELOAD), and provides visibility-based reconnection.</p>
-    <p class="zh">管理 SSE 连接生命周期：创建/销毁连接、指数退避重试、3 种重试策略（AUTO/MANUAL/RELOAD）、页面可见性恢复重连。</p>
-    <pre><code>// Key pattern: AsyncGenerator wrapping fetchEventSource
-// 核心模式：AsyncGenerator 封装 fetchEventSource
-
-private async *connectAndStream() {
-  const eventQueue: RawSSEEvent[] = [];
-  let resolveNext, isComplete = false;
-
-  fetchEventSource(url, {
-    onmessage: (event) => {
-      const parsed = this.parseSSEEvent(event);
-      if (resolveNext) {
-        resolveNext({ value: parsed, done: false });
-      } else {
-        eventQueue.push(parsed);
-      }
-    },
-    onclose: () => { isComplete = true; }
-  });
-
-  // Yield events as they arrive
-  while (!isComplete || eventQueue.length > 0) {
-    if (eventQueue.length > 0) {
-      yield eventQueue.shift()!;
-    } else {
-      yield await new Promise(resolve => { resolveNext = resolve; });
-    }
-  }
-}</code></pre>
-  </div>
-
-  <!-- Layer 2 -->
-  <div class="card">
-    <span class="card-label label-layer2">Layer 2 — AIStreamProcessor</span>
-    <h3>Event Processing & State Machine 事件处理与状态机</h3>
-    <p>Consumes the AsyncGenerator from Layer 1, classifies 20+ event types via switch, manages Agent/SubAgent hierarchy and Tool lifecycle, and yields ProcessedEvents to the hook layer.</p>
-    <p class="zh">消费 Layer 1 的 AsyncGenerator，通过 switch 分发 20+ 事件类型，管理 Agent/SubAgent 层级和 Tool 生命周期，向 hook 层 yield ProcessedEvent。</p>
-    <pre><code>// 20+ event types handled by processEvent()
-// processEvent() 处理的 20+ 种事件类型
-
-switch (event.type) {
-  case 'agent_start':     // Agent 开始 → 创建 AgentState
-  case 'agent_end':       // Agent 结束 → 完成 SubAgent 聚合
-  case 'conversation_created': // 新对话 → 返回 conversation_uid
-  case 'tool_call_start': // 工具开始 → 创建 ToolState + 初始化流式预览
-  case 'tool_call_end':   // 工具结束 → 完成文件写入
-  case 'tool_call_result':// 工具结果 → 更新 ToolCall Part
-  case 'text':            // 文本流 → MessageBuilder.appendText()
-  case 'thinking':        // 思考流 → MessageBuilder.appendText('thinking')
-  case 'coding':          // 代码流 → MessageBuilder.appendText('coding')
-  case 'image':           // 图片 → MessageBuilder.appendImage()
-  case 'table':           // 表格 → appendTableHeader/Row()
-  case 'ui_block':        // UI 交互 → appendUIBlock() (ask_user, suggest_connectors)
-  case 'file_added':      // 文件创建 → 更新 AgentBlock 文件卡片
-  case 'file_updated':    // 文件更新 → 同步预览
-  case 'stop':            // 流结束 → yield stream_complete
-  case 'error':           // 错误 → yield stream_error
-  case 'credits':         // 积分不足 → 打开升级弹窗
-  // + fuse_*, dir_added, parse_error, context_truncate...
-}</code></pre>
-  </div>
-
-  <!-- Layer 3 -->
-  <div class="card">
-    <span class="card-label label-layer3">Layer 3 — MessageBuilder</span>
-    <h3>Incremental Message Construction 增量消息构建</h3>
-    <p>Builds Message objects incrementally as events arrive. Merges consecutive text parts with the same eventId to avoid fragmentation. Supports 11 part types including tool_call with streaming content and ui_block for interactive cards.</p>
-    <p class="zh">随事件到达增量构建 Message 对象。基于 eventId 合并连续同类文本 Part 避免碎片化。支持 11 种 Part 类型，包含带流式内容的 tool_call 和交互卡片 ui_block。</p>
-    <pre><code>// Part types supported by MessageBuilder
-// MessageBuilder 支持的 Part 类型
-
-type MessagePart.type =
-  | 'text'              // 普通文本
-  | 'thinking'          // AI 思考过程
-  | 'coding'            // 代码块
-  | 'image'             // 图片
-  | 'table'             // 表格 (headers + rows)
-  | 'tool_call'         // 工具调用（含 streamingContent[]）
-  | 'selected_sources'  // 用户选中的文件/文件夹
-  | 'agent_block'       // SubAgent 聚合块
-  | 'editor_selection'  // 编辑器选区
-  | 'highlights'        // 引用高亮
-  | 'ui_block';         // 交互卡片 (ask_user, suggest_connectors)
-
-// Merge strategy: same eventId → concatenate content
-// 合并策略：相同 eventId → 拼接内容
-appendText(content, type, eventId) {
-  if (lastPart.type === type && lastPart.eventId === eventId) {
-    lastPart.content += content;  // Merge 合并
-  } else {
-    this.parts.push({ type, content, eventId }); // New part 新建
-  }
-}</code></pre>
-  </div>
-</div>
-</section>
-
-<!-- DEEP DIVE -->
-<section id="deep-dive">
-<div class="container">
-  <h2>Deep Dive: Comparison Analysis 深度分析</h2>
-  <p class="zh">项目中两套 SSE 方案的对比分析</p>
-
-  <div class="card">
-    <span class="card-label label-compare">Comparison 对比</span>
-    <h3>Simple SSE vs 3-Layer Architecture</h3>
-    <p class="zh">简单 SSE（htmlEditor/refine.ts） vs 三层架构（Chat 系统）</p>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab(this, 'tab-simple')">Simple SSE 简单方案</button>
-      <button class="tab-btn" onclick="switchTab(this, 'tab-3layer')">3-Layer Architecture 三层架构</button>
+  <div class="card" style="border-left: 3px solid var(--accent);">
+    <div class="card-header">
+      <span class="card-badge badge-frontend">Frontend</span>
+      <span class="card-title">1. Scheduled Tasks CRUD Architecture</span>
     </div>
+    <p class="cn">定时任务 CRUD 架构 — 从零构建完整的定时 AI 任务管理功能</p>
+    <p style="margin-top:8px">Full-stack CRUD: API class (PUT status + PATCH fields), Zustand store with optimistic updates, delta-diff edit, SchedulePicker cron conversion, FolderSelector reusing Chat's FolderPickerDialog, ScrollablePopoverContent for Radix scroll fix.</p>
+  </div>
 
-    <div id="tab-simple" class="tab-content active">
-      <p><strong>File 文件:</strong> <code class="inline-code">packages/htmlEditor/api/refine.ts</code></p>
-      <p><strong>Lines 代码量:</strong> ~50 lines</p>
-      <pre><code>// Direct @microsoft/fetch-event-source usage
-// 直接使用 @microsoft/fetch-event-source
+  <div class="card" style="border-left: 3px solid var(--accent2);">
+    <div class="card-header">
+      <span class="card-badge badge-pattern">Pattern</span>
+      <span class="card-title">2. IME Composition State Guard</span>
+    </div>
+    <p class="cn">IME 输入法组合状态防护 — useCompositionState hook 双重检查模式</p>
+    <p style="margin-top:8px">Dual-check (composingRef + nativeEvent.isComposing) prevents Enter key from submitting during CJK IME composition. Two patterns: local instantiation vs prop delegation for virtual lists.</p>
+  </div>
 
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+  <div class="card" style="border-left: 3px solid var(--accent3);">
+    <div class="card-header">
+      <span class="card-badge badge-frontend">Frontend</span>
+      <span class="card-title">3. Tiptap Suggestion Plugin (Slash Commands)</span>
+    </div>
+    <p class="cn">Tiptap Suggestion 插件 — Notion 风格的斜杠命令菜单</p>
+    <p style="margin-top:8px">ProseMirror Suggestion plugin lifecycle, ReactRenderer body portal, @floating-ui/dom cursor positioning, PluginKey state sharing for Enter key conflict resolution.</p>
+  </div>
 
-export async function refine(data, onMessage, onError) {
-  const controller = new AbortController();
-  const token = await getAccessToken();
+  <div class="card" style="border-left: 3px solid var(--accent4);">
+    <div class="card-header">
+      <span class="card-badge badge-pattern">Pattern</span>
+      <span class="card-title">4. Exclusive View State Pattern</span>
+    </div>
+    <p class="cn">互斥视图状态模式 — resetAllViews 集中清除 + auto-rename scroll-into-view</p>
+    <p style="margin-top:8px">6 boolean flags + atomic resetAllViews() enforcer. Store event-driven auto-rename: FOLDER_CREATED -> rAF -> select + setEditingPath -> deduped scroll.</p>
+  </div>
 
-  await fetchEventSource(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'X-Request-ID': uuidv4() },
-    body: JSON.stringify(data),
-    signal: controller.signal,
-    onmessage(msg) {
-      if (msg.event === 'error') { onError(msg.data); return; }
-      onMessage(msg.data); // Single callback, no parsing layers
-    },
-    onerror(err) { throw err; } // No retry, just throw
+  <div class="card" style="border-left: 3px solid var(--accent); opacity: 0.7;">
+    <div class="card-header">
+      <span class="card-badge badge-frontend">Frontend</span>
+      <span class="card-title">5. SSE Streaming 3-Layer Architecture (continued)</span>
+    </div>
+    <p class="cn">SSE 流式通信三层架构（上周延续）— StreamManager -> AIStreamProcessor -> MessageBuilder</p>
+  </div>
+</div>
+
+<!-- CONCEPTS -->
+<div id="concepts" class="section">
+  <h1>Concepts Deep Dive 概念深度分析</h1>
+  <p class="subtitle">Each concept includes comparison with existing implementations<br>每个概念都包含与项目中已有实现的对比</p>
+
+  <!-- CONCEPT 1 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-badge badge-frontend">Frontend</span>
+      <span class="card-title">Scheduled Tasks CRUD Architecture 定时任务 CRUD 架构</span>
+    </div>
+    <p><strong>This implementation 本次实现:</strong> Complete scheduled task management with API client class, Zustand store (optimistic updates + toast), TaskCreateDialog/EditDialog (delta-diff), SchedulePicker (cron bidirectional conversion), FolderSelector, TaskDetailPanel.</p>
+    <p class="cn">完整的定时任务管理：API 客户端类、Zustand store（乐观更新 + toast）、创建/编辑对话框（增量提交）、SchedulePicker（cron 双向转换）、文件夹选择器、任务详情面板。</p>
+
+    <h3>Store Pattern Comparison 店铺模式对比</h3>
+    <table>
+      <tr><th>Aspect 方面</th><th>TurboTasksStore (new)</th><th>TrashStore (mature)</th><th>AssetsStore (complex)</th></tr>
+      <tr><td>Middleware</td><td>Plain <code>create()</code></td><td><code>subscribeWithSelector</code></td><td><code>subscribeWithSelector + devtools</code></td></tr>
+      <tr><td>Event Bus</td><td>None</td><td><code>TRASH_UPDATED</code></td><td>Multiple events</td></tr>
+      <tr><td>AbortController</td><td>None</td><td>Module-scoped</td><td>Per-action</td></tr>
+      <tr><td>Error Recovery</td><td>Re-fetch list</td><td>Throws to caller</td><td>Backup + restore</td></tr>
+      <tr><td>Optimistic</td><td>Prepend/filter + re-fetch on fail</td><td>N/A</td><td>Fine-grained backup-restore</td></tr>
+    </table>
+
+    <details class="deep-dive">
+      <summary>Deep Dive 深度分析 — Decision Guide</summary>
+      <div class="decision-tree">
+        <strong>When to use which store pattern? 何时用哪种？</strong><br><br>
+        New feature MVP? <span class="arrow">-></span> <span class="result">Simple store</span> (plain create + optimistic + toast)<br>
+        Need cross-component reactivity? <span class="arrow">-></span> <span class="result">Add subscribeWithSelector + event bus</span><br>
+        Concurrent write risk? <span class="arrow">-></span> <span class="result">Add AbortController</span><br>
+        Need undo? <span class="arrow">-></span> <span class="result">Backup-restore pattern</span> (AssetsStore)<br>
+        Dialog with Popover inside? <span class="arrow">-></span> <span class="result">ScrollablePopoverContent</span>
+      </div>
+      <h3>Delta-diff Edit Pattern 增量编辑</h3>
+      <pre><code>// TaskEditDialog: only send changed fields 只发送变化字段
+const payload = {
+  title: title !== task.title ? title : undefined,
+  schedule: schedule !== task.schedule ? schedule : undefined,
+};</code></pre>
+      <h3>Notable Gap 缺陷</h3>
+      <p>FolderSelector.CreateFolderDialog does NOT call <code>registerExternalFolder()</code> after mkdir. New folders won't appear in tree until refresh.</p>
+      <p class="cn">FolderSelector 的 CreateFolderDialog 创建后未调用 registerExternalFolder()，新文件夹不会立即显示在树中。</p>
+    </details>
+  </div>
+
+  <!-- CONCEPT 2 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-badge badge-pattern">Pattern</span>
+      <span class="card-title">IME Composition State Guard IME 输入法防护</span>
+    </div>
+    <p><strong>Problem 问题:</strong> CJK user presses Enter to confirm IME candidate -> browser also fires keydown Enter -> accidentally submits rename form.</p>
+    <p class="cn">CJK 用户按 Enter 确认输入法候选词 -> 浏览器同时触发 keydown Enter -> 意外提交重命名。</p>
+
+    <h3>The Hook</h3>
+    <pre><code>// hooks/useCompositionState.ts — dual check 双重检查
+const composingRef = useRef(false); // ref, not state (no re-render)
+const isComposing = (e) =>
+  composingRef.current || e.nativeEvent.isComposing;
+// ref guards browser race; native flag guards missed events</code></pre>
+
+    <h3>5 IME Patterns in Project 项目中 5 种 IME 防护</h3>
+    <table>
+      <tr><th>Pattern</th><th>Where</th><th>Robustness</th></tr>
+      <tr><td><code>useCompositionState</code> (ref + native)</td><td>Rename inputs, search, modals</td><td>Highest</td></tr>
+      <tr><td>Native DOM + ref</td><td>PromptInput (Tiptap)</td><td>High (ProseMirror required)</td></tr>
+      <tr><td>Native DOM + ref + native</td><td>TemplatePlaceholderView</td><td>High (manual reimpl)</td></tr>
+      <tr><td><code>e.nativeEvent.isComposing</code> inline</td><td>WorkInFolder, PPTXOverlay</td><td>Medium</td></tr>
+      <tr><td><code>isComposing || keyCode === 229</code></td><td>AccountSettings</td><td>Legacy</td></tr>
+    </table>
+
+    <details class="deep-dive">
+      <summary>Deep Dive — Two Consumption Patterns 两种消费模式</summary>
+      <p><strong>A: Local instantiation 本地实例化</strong> — each component calls hook directly. Simple, one input per component.</p>
+      <p><strong>B: Prop delegation 父传子</strong> — hook in parent, callbacks as props to memoized child. For virtual lists (AssetsTree) where only one row edits at a time.</p>
+      <div class="decision-tree">
+        React input (rename, search)? <span class="arrow">-></span> <span class="result">useCompositionState hook</span><br>
+        Inside Tiptap? <span class="arrow">-></span> <span class="result">Native DOM listener + ref</span><br>
+        Low-risk input? <span class="arrow">-></span> <span class="result">Inline nativeEvent.isComposing</span><br>
+        Virtual list rows? <span class="arrow">-></span> <span class="result">Parent hook + props delegation</span>
+      </div>
+    </details>
+  </div>
+
+  <!-- CONCEPT 3 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-badge badge-frontend">Frontend</span>
+      <span class="card-title">Tiptap Suggestion Plugin 斜杠命令菜单</span>
+    </div>
+    <p><strong>What 功能:</strong> Type <code>/</code> in chat input -> Notion-style menu. Select skill -> insert inlineSlash node. Select "Add files" -> OS file picker.</p>
+    <p class="cn">在聊天框输入 / -> Notion 风格菜单。选技能 -> 插入 inlineSlash 节点。选"添加文件" -> 系统文件选择器。</p>
+
+    <h3>Data Flow 数据流</h3>
+    <pre><code>User types "/" -> Suggestion plugin detects trigger
+  -> getSlashItems(query) reads useSkillsStore.getState()
+  -> onStart: ReactRenderer mounts menu into body portal
+  -> @floating-ui positions above cursor (VirtualElement)
+
+Enter pressed -> editor checks SLASH_SUGGESTION_KEY.getState()
+  -> if menu active: let suggestion handle Enter
+  -> command(): deleteRange + insertInlineSlash or triggerUpload</code></pre>
+
+    <h3>Three Tiptap Extension Approaches 三种扩展方式</h3>
+    <table>
+      <tr><th>Approach</th><th>Mechanism</th><th>UI</th><th>Best For</th></tr>
+      <tr><td><strong>Suggestion</strong></td><td>Plugin monitors live typing</td><td>ReactRenderer portal</td><td>/ commands, @mentions</td></tr>
+      <tr><td><strong>InputRule</strong></td><td>Regex on completed text</td><td>None</td><td>Auto-format, shortcuts</td></tr>
+      <tr><td><strong>ReactNodeView</strong></td><td>React in document</td><td>NodeViewRenderer</td><td>Interactive widgets</td></tr>
+    </table>
+
+    <details class="deep-dive">
+      <summary>Deep Dive — React-ProseMirror Bridge</summary>
+      <table>
+        <tr><th>Pattern</th><th>Bridge</th><th>React Context</th></tr>
+        <tr><td>Suggestion</td><td>ReactRenderer (standalone root in body)</td><td>NOT inherited</td></tr>
+        <tr><td>InputRule</td><td>No React</td><td>N/A</td></tr>
+        <tr><td>ReactNodeView</td><td>ReactNodeViewRenderer + NodeViewWrapper</td><td>Inside editor DOM</td></tr>
+      </table>
+      <p style="margin-top:12px"><strong>Key:</strong> ReactRenderer = isolated React root. Zustand works (module singleton). React Context providers don't. Lingui macros work (compile-time).</p>
+      <p class="cn">ReactRenderer 创建独立 React root。Zustand 可用（模块单例）。React Context 不可用。Lingui 宏可用（编译时）。</p>
+      <h3>Enter Key Conflict Resolution</h3>
+      <pre><code>// PromptInput handleKeyDown
+const slashState = SLASH_SUGGESTION_KEY.getState(view.state);
+if (slashState?.active) return false; // Let menu handle Enter</code></pre>
+    </details>
+  </div>
+
+  <!-- CONCEPT 4 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-badge badge-pattern">Pattern</span>
+      <span class="card-title">Exclusive View State 互斥视图状态</span>
+    </div>
+    <p><strong>Pattern:</strong> 6 boolean flags made mutually exclusive via <code>resetAllViews()</code>. All enter*View() actions route through it.</p>
+    <p class="cn">6 个布尔标志通过 resetAllViews() 实现互斥。所有 enter*View() 操作都经过它。</p>
+
+    <pre><code>// store/ui/index.ts
+resetAllViews(merge?) {
+  if (!anyFlagActive && !merge) return; // Early exit optimization
+  set({
+    isTrashView: false, isSharedWithMeView: false,
+    isKuseClawView: false, isScheduledTasksView: false,
+    isCustomizeView: false, isNewTaskView: false,
+    ...merge  // Set new view atomically
   });
 }</code></pre>
-      <p><strong>Characteristics 特点:</strong></p>
-      <ul>
-        <li>Single callback — no event classification <span class="zh">单一回调，无事件分类</span></li>
-        <li>No retry mechanism <span class="zh">无重试机制</span></li>
-        <li>No Agent/Tool lifecycle <span class="zh">无 Agent/Tool 生命周期</span></li>
-        <li>Uses @microsoft/fetch-event-source directly <span class="zh">直接使用第三方库</span></li>
-      </ul>
-    </div>
 
-    <div id="tab-3layer" class="tab-content">
-      <p><strong>Files 文件:</strong> <code class="inline-code">streamManager.ts</code> + <code class="inline-code">streamProcessor.ts</code> + <code class="inline-code">messageBuilder.ts</code> + <code class="inline-code">types.ts</code> + <code class="inline-code">useAIStream.ts</code></p>
-      <p><strong>Lines 代码量:</strong> ~2500+ lines</p>
-      <pre><code>// Chain: StreamManager → AIStreamProcessor → MessageBuilder → React State
-// 链路：StreamManager → AIStreamProcessor → MessageBuilder → React State
+    <details class="deep-dive">
+      <summary>Deep Dive — Auto-Rename + Scroll-Into-View</summary>
+      <pre><code>// Phase 1: Store emits event after mkdir
+emitStoreEvent(FOLDER_CREATED, { path })
 
-// Layer 1: Connection
-const { eventStream, requestId } = streamManager.startEventStream(url, body);
+// Phase 2: FinderView subscribes (lines 269-278)
+subscribeToStoreEvent(FOLDER_CREATED, ({path}) => {
+  if (pathDirname(path) !== currentPath) return;
+  requestAnimationFrame(() => {
+    selectMultiple([path], { skipChatSync: true });
+    setEditingPath(path);
+  });
+})
 
-// Layer 2: Process
-for await (const event of processor.processEventStream(eventStream)) {
-  switch (event.type) {
-    case 'message_update': setMessages(prev => updateMessage(prev, event.message));
-    case 'agent_status': setAgentStates(prev => new Map(prev.set(id, state)));
-    case 'tool_status': setToolStates(...);
-    case 'stream_complete': setStatus('completed');
-    case 'stream_error': throw event.error;
-  }
-}</code></pre>
-      <p><strong>Characteristics 特点:</strong></p>
-      <ul>
-        <li>3 retry strategies: AUTO (exponential backoff), MANUAL (new Request-ID), RELOAD (TTL expired) <span class="zh">3 种重试策略</span></li>
-        <li>Multi-Agent hierarchy (main + sub-agents) <span class="zh">多 Agent 层级</span></li>
-        <li>Tool lifecycle with file streaming preview <span class="zh">工具生命周期 + 文件流式预览</span></li>
-        <li>Custom fetchEventSource with byte-level parsing <span class="zh">自定义 SSE 库（字节级解析）</span></li>
-        <li>Visibility-based reconnection <span class="zh">页面可见性恢复重连</span></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Comparison Table 对比表</h3>
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Dimension 维度</th>
-          <th>Simple SSE 简单方案</th>
-          <th>3-Layer Architecture 三层架构</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Code Size 代码量</strong></td>
-          <td>~50 lines</td>
-          <td>~2500 lines</td>
-        </tr>
-        <tr>
-          <td><strong>SSE Library</strong></td>
-          <td>@microsoft/fetch-event-source</td>
-          <td>Custom lib/fetchEventSource (byte-level parsing)</td>
-        </tr>
-        <tr>
-          <td><strong>Retry 重试</strong></td>
-          <td>None</td>
-          <td>AUTO + MANUAL + RELOAD + Visibility retry</td>
-        </tr>
-        <tr>
-          <td><strong>Agent Support</strong></td>
-          <td>None</td>
-          <td>Main Agent + SubAgent hierarchy with message aggregation</td>
-        </tr>
-        <tr>
-          <td><strong>Tool Lifecycle</strong></td>
-          <td>None</td>
-          <td>start → stream → result → end, with file preview streaming</td>
-        </tr>
-        <tr>
-          <td><strong>Message Model</strong></td>
-          <td>Raw string callback</td>
-          <td>Typed Message with 11 Part types, eventId-based merging</td>
-        </tr>
-        <tr>
-          <td><strong>Error Handling</strong></td>
-          <td>throw on error</td>
-          <td>Classified errors (connection/auth/credits/timeout) with recovery strategies</td>
-        </tr>
-        <tr>
-          <td><strong>State Management</strong></td>
-          <td>Caller manages</td>
-          <td>useAIStream hook: messages, agentStates, toolStates, retryState</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <h3>Decision Guide 决策指南</h3>
-    <div class="decision-tree">
-      <p class="dt-question">Does your SSE stream involve multiple agents or tool execution? 你的 SSE 流是否涉及多 Agent 或 Tool 执行?</p>
-      <div class="dt-node">
-        <p><span class="dt-yes">YES →</span> Does it need retry/reconnection support? 需要重试/重连?</p>
-        <div class="dt-node">
-          <p><span class="dt-yes">YES →</span> <span class="dt-answer">3-Layer Architecture (StreamManager + Processor + Builder)</span></p>
-          <p class="zh">三层架构：连接管理 + 事件处理 + 消息构建</p>
-        </div>
-        <div class="dt-node">
-          <p><span class="dt-no">NO →</span> <span class="dt-answer">2-Layer: StreamManager + simple processor (skip MessageBuilder complexity)</span></p>
-          <p class="zh">两层方案：StreamManager + 简单 processor（跳过 MessageBuilder）</p>
-        </div>
+// Phase 3: FinderListView scrolls (lines 379-392)
+// scrolledForRef dedup + visibility check + center align
+if (editingPath === scrolledForRef.current) return;
+el.scrollTop = targetTop - el.clientHeight / 2;</code></pre>
+      <div class="decision-tree">
+        <strong>Exclusive state choice 互斥状态选型</strong><br><br>
+        2 states, no metadata? <span class="arrow">-></span> <span class="result">Boolean</span><br>
+        3+ states, no metadata? <span class="arrow">-></span> <span class="result">String union enum</span> (ViewMode)<br>
+        3+ states, some with metadata? <span class="arrow">-></span> <span class="result">Booleans + resetAllViews</span><br>
+        Max type safety? <span class="arrow">-></span> <span class="result">Discriminated union</span> (higher migration cost)
       </div>
-      <div class="dt-node">
-        <p><span class="dt-no">NO →</span> Is it a one-shot AI request? 一次性 AI 请求?</p>
-        <div class="dt-node">
-          <p><span class="dt-yes">YES →</span> <span class="dt-answer">Simple SSE (direct fetchEventSource + single callback)</span></p>
-          <p class="zh">简单方案：直接 fetchEventSource + 单回调</p>
-        </div>
-        <div class="dt-node">
-          <p><span class="dt-no">NO →</span> <span class="dt-answer">Evaluate: if text-only stream with retry needs → just StreamManager wrapper</span></p>
-          <p class="zh">评估：如果只需文本流 + 重试 → 只用 StreamManager 封装</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Retry Strategy Detail 重试策略详解</h3>
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Strategy 策略</th>
-          <th>When 触发条件</th>
-          <th>Behavior 行为</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>AUTO</strong></td>
-          <td>Network error, server 5xx <span class="zh">网络错误/服务端 5xx</span></td>
-          <td>Exponential backoff (1s → 2s → 4s → 8s → 16s), max 5 retries. Reuses Request-ID + Last-Event-ID <span class="zh">指数退避，复用 ID 断点续传</span></td>
-        </tr>
-        <tr>
-          <td><strong>MANUAL</strong></td>
-          <td>User clicks retry, or 4xx errors <span class="zh">用户点击重试/客户端 4xx</span></td>
-          <td>New Request-ID, clear Last-Event-ID, create new user message <span class="zh">新 ID，重新发送</span></td>
-        </tr>
-        <tr>
-          <td><strong>RELOAD</strong></td>
-          <td>Disconnected > 10 min (TTL expired) <span class="zh">断连超过 10 分钟</span></td>
-          <td>Reload entire conversation history, server cache expired <span class="zh">重载整个对话</span></td>
-        </tr>
-        <tr>
-          <td><strong>Visibility</strong></td>
-          <td>Page becomes visible after being hidden <span class="zh">页面从隐藏变为可见</span></td>
-          <td>Auto-retry if network error exists, uses startAutoRetry() <span class="zh">自动重试网络错误</span></td>
-        </tr>
-      </tbody>
-    </table>
+    </details>
   </div>
 </div>
-</section>
 
 <!-- QUIZ -->
-<section id="quiz">
-<div class="container">
-  <h2>Quiz 测验</h2>
-  <p class="zh">基于场景的决策测验 — 不只考"是什么"，而是考"你会怎么选"</p>
+<div id="quiz" class="section">
+  <h1>Quiz 测验</h1>
+  <p class="subtitle">Scenario-based: which approach would you choose?<br>场景题：你会选哪种方案？</p>
 
-  <!-- Q1 -->
-  <div class="card" id="q1">
-    <h3>Q1: You're building a new AI "refine text" feature. The AI returns streaming text, no tool calls, no agents. The request takes ~3 seconds. Which SSE approach would you use?</h3>
-    <p class="zh">你在做一个新的 AI "润色文本"功能。AI 只返回流式文本，没有 Tool 调用，没有 Agent。请求约 3 秒。你会选哪种 SSE 方案?</p>
-    <button class="quiz-option" onclick="checkQuiz('q1', this, true)">A. Simple SSE — direct fetchEventSource with single onmessage callback<br><span class="zh">简单方案 — 直接 fetchEventSource + 单回调</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q1', this, false)">B. 3-Layer Architecture with StreamManager + AIStreamProcessor + MessageBuilder<br><span class="zh">三层架构 + StreamManager + AIStreamProcessor + MessageBuilder</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q1', this, false)">C. StreamManager only (for retry), skip processor and builder<br><span class="zh">只用 StreamManager（为了重试），跳过 processor 和 builder</span></button>
-    <div class="quiz-feedback correct-fb" id="q1-correct">Correct! For a simple, short-lived text stream with no agents or tools, the simple approach (like refine.ts) is sufficient. Adding 2500 lines of architecture for a 3-second text stream is overkill. <span class="zh">正确！对于简单的短时文本流，简单方案就够了。为 3 秒的文本流添加 2500 行架构是过度工程。</span></div>
-    <div class="quiz-feedback wrong-fb" id="q1-wrong"></div>
+  <div class="quiz-card">
+    <div class="quiz-q">Q1: Building a new "Favorites" feature — simple list, CRUD, no cross-component reactivity needed. Which store pattern?<br><span class="cn">新建"收藏"功能 — 简单列表、CRUD、无跨组件响应需求。选哪种 store？</span></div>
+    <div class="quiz-options" data-correct="0">
+      <button class="quiz-opt" onclick="checkQuiz(this,0)">A: Plain create() + optimistic + toast (TurboTasksStore pattern)</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,1)">B: subscribeWithSelector + event bus (TrashStore pattern)</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,2)">C: Full backup-restore + devtools (AssetsStore pattern)</button>
+    </div>
+    <div class="quiz-explain">Correct! MVP with no cross-component needs = simple store. Upgrade later if needed.<br><span class="cn">正确！无跨组件需求的 MVP 用简单 store，后续按需升级。</span></div>
   </div>
 
-  <!-- Q2 -->
-  <div class="card" id="q2">
-    <h3>Q2: The SSE stream receives a text event with the same eventId as the previous text event. What does MessageBuilder do?</h3>
-    <p class="zh">SSE 流收到一个与上一个 text 事件具有相同 eventId 的 text 事件。MessageBuilder 会怎么做?</p>
-    <button class="quiz-option" onclick="checkQuiz('q2', this, false)">A. Creates a new MessagePart and appends it to the parts array<br><span class="zh">创建新的 MessagePart 追加到 parts 数组</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q2', this, true)">B. Concatenates the content to the existing Part with the same eventId<br><span class="zh">将内容拼接到具有相同 eventId 的现有 Part</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q2', this, false)">C. Replaces the previous Part entirely with the new content<br><span class="zh">用新内容完全替换之前的 Part</span></button>
-    <div class="quiz-feedback correct-fb" id="q2-correct">Correct! MessageBuilder merges consecutive text events with the same eventId by concatenating content. This prevents message fragmentation — without it, each SSE chunk would create a separate Part. <span class="zh">正确！MessageBuilder 通过 eventId 合并连续的同类文本事件。这防止了消息碎片化。</span></div>
-    <div class="quiz-feedback wrong-fb" id="q2-wrong"></div>
+  <div class="quiz-card">
+    <div class="quiz-q">Q2: User typing Chinese in a Tiptap editor rename input presses Enter to confirm IME. How to prevent accidental submission?<br><span class="cn">用户在 Tiptap 编辑器中用中文输入法按 Enter 确认。如何防止意外提交？</span></div>
+    <div class="quiz-options" data-correct="1">
+      <button class="quiz-opt" onclick="checkQuiz(this,0)">A: useCompositionState hook (React synthetic events)</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,1)">B: Native DOM addEventListener + isComposingRef</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,2)">C: Inline e.nativeEvent.isComposing check</button>
+    </div>
+    <div class="quiz-explain">Correct! ProseMirror intercepts keyboard events before React. Must use native DOM listeners.<br><span class="cn">正确！ProseMirror 在 React 之前拦截键盘事件，必须用原生 DOM 监听器。</span></div>
   </div>
 
-  <!-- Q3 -->
-  <div class="card" id="q3">
-    <h3>Q3: The user's laptop goes to sleep for 12 minutes during a streaming response, then wakes up. What happens?</h3>
-    <p class="zh">用户的笔记本在流式响应过程中休眠了 12 分钟，然后醒来。会发生什么?</p>
-    <button class="quiz-option" onclick="checkQuiz('q3', this, false)">A. StreamManager automatically reconnects with Last-Event-ID for seamless resume<br><span class="zh">StreamManager 用 Last-Event-ID 自动重连无缝恢复</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q3', this, true)">B. StreamManager detects TTL expiry (>10 min), triggers RELOAD to reload the conversation<br><span class="zh">StreamManager 检测到 TTL 过期（>10 分钟），触发 RELOAD 重载对话</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q3', this, false)">C. The stream silently fails with no recovery<br><span class="zh">流静默失败，无恢复</span></button>
-    <div class="quiz-feedback correct-fb" id="q3-correct">Correct! ServerCacheTTL is 10 minutes. After 12 minutes of disconnection, the server cache has expired, so Last-Event-ID won't match anything. StreamManager calls onReloadRequired() to reload the entire conversation. <span class="zh">正确！服务端缓存 TTL 是 10 分钟。断连 12 分钟后服务端缓存过期，StreamManager 调用 onReloadRequired() 重载整个对话。</span></div>
-    <div class="quiz-feedback wrong-fb" id="q3-wrong"></div>
+  <div class="quiz-card">
+    <div class="quiz-q">Q3: Adding "Analytics" view to sidebar (alongside Trash, Shared, etc). No init data. How to wire it?<br><span class="cn">侧边栏新增 Analytics 视图。无初始化数据。如何接入？</span></div>
+    <div class="quiz-options" data-correct="2">
+      <button class="quiz-opt" onclick="checkQuiz(this,0)">A: Add boolean, enterAnalyticsView sets it directly</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,1)">B: Replace all booleans with ActiveView enum</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,2)">C: Add boolean + enterAnalyticsView calls resetAllViews({ isAnalyticsView: true })</button>
+    </div>
+    <div class="quiz-explain">Correct! Follow the pattern: route through resetAllViews for mutual exclusion. Direct set (A) allows two views active.<br><span class="cn">正确！遵循模式：通过 resetAllViews 路由。直接 set (A) 会导致两个视图同时激活。</span></div>
   </div>
 
-  <!-- Q4 -->
-  <div class="card" id="q4">
-    <h3>Q4: A SubAgent (e.g., "Word" agent) starts, creates files, and ends. Where are its messages stored during streaming?</h3>
-    <p class="zh">一个 SubAgent（如 "Word" agent）启动、创建文件、结束。流式传输期间它的消息存储在哪里?</p>
-    <button class="quiz-option" onclick="checkQuiz('q4', this, false)">A. Directly in the main message's parts array<br><span class="zh">直接在主消息的 parts 数组中</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q4', this, true)">B. In a separate subAgentMessages Map, then aggregated into an AgentBlock when the SubAgent ends<br><span class="zh">在独立的 subAgentMessages Map 中，SubAgent 结束时聚合为 AgentBlock</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q4', this, false)">C. In the main MessageBuilder, mixed with main agent content<br><span class="zh">在主 MessageBuilder 中，与主 Agent 内容混合</span></button>
-    <div class="quiz-feedback correct-fb" id="q4-correct">Correct! SubAgent messages are accumulated in subAgentMessages Map (keyed by agent_execution_id). When agent_end arrives, they're wrapped into an AgentBlock and placed into the main message via replaceAgentBlock(). <span class="zh">正确！SubAgent 消息累积在 subAgentMessages Map 中。agent_end 到达时，聚合为 AgentBlock 放入主消息。</span></div>
-    <div class="quiz-feedback wrong-fb" id="q4-wrong"></div>
+  <div class="quiz-card">
+    <div class="quiz-q">Q4: Need a discoverable command picker in Tiptap that filters as user types. Which extension?<br><span class="cn">需要 Tiptap 中随输入过滤的命令选择器。用哪种扩展？</span></div>
+    <div class="quiz-options" data-correct="0">
+      <button class="quiz-opt" onclick="checkQuiz(this,0)">A: Suggestion plugin + ReactRenderer</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,1)">B: InputRule with regex</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,2)">C: ReactNodeViewRenderer</button>
+    </div>
+    <div class="quiz-explain">Correct! Suggestion provides live-filtering lifecycle. InputRule has no UI. ReactNodeView is for persistent widgets.<br><span class="cn">正确！Suggestion 提供实时过滤生命周期。InputRule 无 UI。ReactNodeView 用于持久组件。</span></div>
   </div>
 
-  <!-- Q5 -->
-  <div class="card" id="q5">
-    <h3>Q5: After a network error during streaming, the user's page becomes visible again (within 5 minutes). What retry path is taken?</h3>
-    <p class="zh">流式传输中发生网络错误后，用户的页面在 5 分钟内重新可见。会走哪条重试路径?</p>
-    <button class="quiz-option" onclick="checkQuiz('q5', this, true)">A. Visibility retry → startAutoRetry() → reuses Request-ID + Last-Event-ID → resume from last event<br><span class="zh">可见性重试 → startAutoRetry() → 复用 ID → 从上次事件恢复</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q5', this, false)">B. Manual retry → new Request-ID → resend entire message<br><span class="zh">手动重试 → 新 ID → 重新发送整个消息</span></button>
-    <button class="quiz-option" onclick="checkQuiz('q5', this, false)">C. RELOAD → reload entire conversation history<br><span class="zh">RELOAD → 重载整个对话历史</span></button>
-    <div class="quiz-feedback correct-fb" id="q5-correct">Correct! Within TTL (10 min), visibility retry uses startAutoRetry() which reuses Request-ID and Last-Event-ID for seamless resume. The server matches the cache and sends only events after the last one received. <span class="zh">正确！TTL 内（10 分钟），可见性重试用 startAutoRetry() 复用 ID 实现断点续传。</span></div>
-    <div class="quiz-feedback wrong-fb" id="q5-wrong"></div>
+  <div class="quiz-card">
+    <div class="quiz-q">Q5: Your Suggestion menu (ReactRenderer) needs Zustand store data. Will useStore() work?<br><span class="cn">你的 Suggestion 菜单（ReactRenderer）需要 Zustand store 数据。useStore() 能用吗？</span></div>
+    <div class="quiz-options" data-correct="1">
+      <button class="quiz-opt" onclick="checkQuiz(this,0)">A: No — ReactRenderer is isolated, no store access</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,1)">B: Yes — Zustand is module-level, works without Context</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,2)">C: Only getState(), not hooks</button>
+    </div>
+    <div class="quiz-explain">Correct! Zustand stores are module singletons. useStore() hooks and getState() both work in isolated React roots. React Context providers (theme, auth) would NOT work.<br><span class="cn">正确！Zustand 是模块单例，useStore() 和 getState() 都能在独立 React root 中工作。React Context Provider 不行。</span></div>
   </div>
 </div>
-</section>
 
 <!-- FLASHCARDS -->
-<section id="flashcards">
-<div class="container">
-  <h2>Flashcards 闪卡</h2>
-  <p class="zh">点击卡片翻转 — 正面英文术语，背面中文解释 + 技术细节</p>
+<div id="flashcards" class="section">
+  <h1>Flashcards 闪卡</h1>
+  <p class="subtitle">Click to flip 点击翻转 | Front: English | Back: 中文 + insight</p>
 
-  <div class="flashcard" onclick="this.classList.toggle('flipped')" id="fc-current">
-    <div class="front" id="fc-front">StreamManager</div>
-    <div class="back" id="fc-back">
-      <strong>连接管理层</strong><br><br>
-      SSE 三层架构的第一层。封装 fetchEventSource 为 AsyncGenerator，管理：<br>
-      - Request-ID (UUID) 和 Last-Event-ID 用于断点续传<br>
-      - 3 种重试策略：AUTO（指数退避）、MANUAL（新 ID）、RELOAD（TTL 过期）<br>
-      - 页面可见性监听，隐藏→可见时自动重试网络错误<br>
-      - AbortController 支持用户取消和超时取消<br><br>
-      <em>Key file: components/Chat/utils/streamManager.ts (~983 lines)</em>
+  <div class="flashcard-grid">
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>resetAllViews()</h4><p class="hint">Exclusive view state enforcer</p></div>
+        <div class="flashcard-back"><p><strong>互斥视图状态执行者</strong></p><p style="margin-top:8px">原子清除所有 is*View 布尔，再设置新视图。早退优化：无活跃视图时跳过 set()。</p><p style="margin-top:8px;color:var(--accent2)">All enter*View() must route through this.</p></div>
+      </div>
     </div>
-    <span class="flip-hint">click to flip 点击翻转</span>
-  </div>
-  <div class="fc-nav">
-    <button onclick="prevCard()">Prev 上一张</button>
-    <span id="fc-counter">1 / 8</span>
-    <button onclick="nextCard()">Next 下一张</button>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>useCompositionState</h4><p class="hint">IME guard hook</p></div>
+        <div class="flashcard-back"><p><strong>IME 输入法防护 hook</strong></p><p style="margin-top:8px">双重检查：composingRef || nativeEvent.isComposing。ref 不用 state 避免重渲染。</p><p style="margin-top:8px;color:var(--accent2)">ref guards race; native flag guards missed events.</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>ReactRenderer</h4><p class="hint">Tiptap's React bridge</p></div>
+        <div class="flashcard-back"><p><strong>Tiptap React 桥接器</strong></p><p style="margin-top:8px">在 body 创建独立 React root。Zustand 可用（模块单例），Context 不可用（独立 root）。</p><p style="margin-top:8px;color:var(--accent2)">Lingui macros work (compile-time transform).</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>Delta-diff Edit</h4><p class="hint">Only send changed fields</p></div>
+        <div class="flashcard-back"><p><strong>增量编辑模式</strong></p><p style="margin-top:8px">title !== task.title ? title : undefined。需要 undefined（未改）vs null（清除）语义约定。</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>ScrollablePopoverContent</h4><p class="hint">Radix scroll fix</p></div>
+        <div class="flashcard-back"><p><strong>Radix Popover 滚动修复</strong></p><p style="margin-top:8px">移除 animation CSS（transform 阻塞 overflow scroll），加 overscrollBehavior: contain。</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>SLASH_SUGGESTION_KEY</h4><p class="hint">Plugin state sharing</p></div>
+        <div class="flashcard-back"><p><strong>ProseMirror 插件状态共享</strong></p><p style="margin-top:8px">PluginKey.getState(view.state) 读取 Suggestion 活跃状态。编辑器 Enter 让步给菜单 Enter。</p><p style="margin-top:8px;color:var(--accent2)">Extensions communicate via ProseMirror state, not React props.</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>Store Event Auto-Rename</h4><p class="hint">FOLDER_CREATED -> edit -> scroll</p></div>
+        <div class="flashcard-back"><p><strong>Store 事件驱动自动重命名</strong></p><p style="margin-top:8px">emit FOLDER_CREATED -> subscribe -> pathDirname guard -> rAF -> select + setEditingPath -> scrolledForRef 去重滚动</p><p style="margin-top:8px;color:var(--accent2)">rAF defers one frame so DOM item is painted before focus.</p></div>
+      </div>
+    </div>
+
+    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front"><h4>Suggestion vs InputRule</h4><p class="hint">Discovery vs power-user</p></div>
+        <div class="flashcard-back"><p><strong>发现入口 vs 快捷入口</strong></p><p style="margin-top:8px">Suggestion: 实时菜单，适合新手。InputRule: 正则匹配无 UI，适合 power user。两者互补，产生相同节点。</p><p style="margin-top:8px;color:var(--accent2)">Register both: Suggestion primary, InputRule fallback.</p></div>
+      </div>
+    </div>
   </div>
 </div>
-</section>
 
-<footer style="text-align:center; padding:2rem; color:var(--text-dim); font-size:0.8rem; border-top:1px solid var(--border); margin-top:2rem;">
-  Generated 2026-03-30 | KUSE App V2 — Chat SSE Architecture Analysis | Week 14 Learning Hub
-</footer>
+<!-- REVIEW -->
+<div id="review" class="section">
+  <h1>Review Schedule 复习计划</h1>
+  <p class="subtitle">Ebbinghaus forgetting curve 艾宾浩斯遗忘曲线</p>
+
+  <h2>Overdue 已过期</h2>
+  <div class="review-item"><span class="review-status status-overdue"></span><span class="review-date">Due Mar 31</span><span>W12 (5 concepts): Virtual Scroll, @dnd-kit, Move Conflict, HTML Publish, WS Reconnect — Stage 2</span></div>
+  <div class="review-item"><span class="review-status status-overdue"></span><span class="review-date">Due Mar 31</span><span>W13 (5): UIBlock, Pipedream, Customize, Download, Credit Dispute — Stage 2</span></div>
+  <div class="review-item"><span class="review-status status-overdue"></span><span class="review-date">Due Mar 29</span><span>W13 (3): Batch Ops, Race Conditions, Tiptap InputRule — Stage 1</span></div>
+  <div class="review-item"><span class="review-status status-overdue"></span><span class="review-date">Due Mar 31</span><span>W14 early: SSE Streaming Architecture — Stage 1</span></div>
+
+  <h2>Tomorrow 明天 (Apr 5)</h2>
+  <div class="review-item"><span class="review-status status-today"></span><span class="review-date">Apr 5</span><span>W14 new (4): Scheduled Tasks, IME Guard, Tiptap Suggestion, Exclusive View — Stage 1</span></div>
+
+  <h2>Next Week 下周</h2>
+  <div class="review-item"><span class="review-status status-upcoming"></span><span class="review-date">Apr 7</span><span>W12 + W13 concepts — Stage 2 (if reviewed today)</span></div>
+  <div class="review-item"><span class="review-status status-upcoming"></span><span class="review-date">Apr 8</span><span>W14 new concepts — Stage 2</span></div>
+
+  <h2 style="margin-top:40px">Learning Recommendations 学习推荐</h2>
+
+  <div class="card" style="border-left: 3px solid var(--accent3)">
+    <h3>1. Zustand Store Maturity Path (High 高)</h3>
+    <p><strong>Why:</strong> TurboTasksStore is simplest CRUD store. Need upgrade path to production-grade.</p>
+    <p class="cn">TurboTasksStore 是最简单的 CRUD store。需要了解升级到生产级的路径。</p>
+    <p style="margin-top:8px"><strong>How:</strong> Compare store/turboTasks (~130 lines) vs store/trash (~300 lines). Try adding subscribeWithSelector.</p>
+  </div>
+
+  <div class="card" style="border-left: 3px solid var(--accent4)">
+    <h3>2. ProseMirror Plugin State Communication (Medium 中)</h3>
+    <p><strong>Why:</strong> SLASH_SUGGESTION_KEY is how extensions communicate. Key for building complex Tiptap features.</p>
+    <p class="cn">PluginKey 是扩展间通信的方式。构建复杂 Tiptap 功能的关键。</p>
+    <p style="margin-top:8px"><strong>How:</strong> Read @tiptap/suggestion source (~200 lines). Log PluginKey states in handleKeyDown.</p>
+  </div>
+
+  <div class="card" style="border-left: 3px solid var(--accent2)">
+    <h3>3. Radix UI Nested Component Pitfalls (Medium 中)</h3>
+    <p><strong>Why:</strong> Dialog > Popover scroll issue needed ScrollablePopoverContent fix. Radix nesting has known issues.</p>
+    <p class="cn">Dialog 内 Popover 滚动问题需要 ScrollablePopoverContent 修复。Radix 嵌套有已知问题。</p>
+    <p style="margin-top:8px"><strong>How:</strong> Test: Dialog > Popover, Popover > Select, Dialog > AlertDialog. Check Radix issues tagged 'portal'.</p>
+  </div>
+</div>
+
+</div>
 
 <script>
-// Tab switching
-function switchTab(btn, tabId) {
-  const parent = btn.closest('.card');
-  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  parent.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(tabId).classList.add('active');
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+  document.querySelector(`a[href="#${id}"]`).classList.add('active');
 }
-
-// Quiz
-function checkQuiz(qId, btn, isCorrect) {
-  const card = document.getElementById(qId);
-  if (card.dataset.answered) return;
-  card.dataset.answered = 'true';
-
-  card.querySelectorAll('.quiz-option').forEach(o => o.style.pointerEvents = 'none');
-  btn.classList.add(isCorrect ? 'correct' : 'wrong');
-
-  const fb = document.getElementById(qId + (isCorrect ? '-correct' : '-wrong'));
-  fb.classList.add('show');
-
-  if (!isCorrect) {
-    const correctFb = document.getElementById(qId + '-correct');
-    correctFb.classList.add('show');
-    const wrongFb = document.getElementById(qId + '-wrong');
-    wrongFb.textContent = 'Not quite! 不完全正确 — See the correct answer below:';
-    wrongFb.classList.add('show');
-  }
-}
-
-// Flashcards
-const cards = [
-  { front: 'StreamManager', back: '<strong>连接管理层（Layer 1）</strong><br><br>SSE 三层架构的第一层。封装 fetchEventSource 为 AsyncGenerator，管理：<br>- Request-ID (UUID) 和 Last-Event-ID 用于断点续传<br>- 3 种重试策略：AUTO（指数退避）、MANUAL（新 ID）、RELOAD（TTL 过期）<br>- 页面可见性监听，隐藏→可见时自动重试网络错误<br>- AbortController 支持用户取消和超时取消<br><br><em>Key: streamManager.ts (~983 lines)</em>' },
-  { front: 'AIStreamProcessor', back: '<strong>事件处理层（Layer 2）</strong><br><br>消费 StreamManager 的 AsyncGenerator，通过 switch 分发 20+ 事件类型。核心职责：<br>- Agent/SubAgent 状态机管理（starting→executing→completed）<br>- Tool 生命周期追踪（start→stream→result→end）<br>- SubAgent 消息聚合到 AgentBlock<br>- 文件流式预览（markdown/html 实时写入编辑器）<br>- 历史消息回放（processConversationHistoryMessages）<br><br><em>Key: streamProcessor.ts (~2000+ lines)</em>' },
-  { front: 'MessageBuilder', back: '<strong>消息构建层（Layer 3）</strong><br><br>增量构建 Message 对象，核心策略是基于 eventId 合并连续同类 Part：<br>- 相同 eventId 的 text/thinking/coding → 拼接内容<br>- 不同 eventId → 新建 Part<br>- build() 时执行 optimizeParts() 最终合并<br>支持 11 种 Part 类型，包括 tool_call（含 streamingContent）和 ui_block（交互卡片）<br><br><em>Key: messageBuilder.ts (~432 lines)</em>' },
-  { front: 'RawSSEEvent → ProcessedEvent', back: '<strong>事件转换流程</strong><br><br>RawSSEEvent = { type, data, id, timestamp }<br>↓ AIStreamProcessor.processEvent()<br>ProcessedEvent = message_update | agent_status | tool_status | stream_complete | stream_error | conversation_created | file_added<br><br>关键：RawSSEEvent 是原始 SSE 数据，ProcessedEvent 是经过状态机处理后的语义事件。一个 RawSSEEvent 可能 yield 多个 ProcessedEvent（如 agent_end 同时产生 agent_status + message_update）' },
-  { front: 'Last-Event-ID & Request-ID', back: '<strong>断点续传的两个关键 ID</strong><br><br>Request-ID：每次请求生成的 UUID，标识一个完整的请求-响应周期。AUTO retry 复用、MANUAL retry 重新生成。<br><br>Last-Event-ID：SSE 协议标准字段，值来自 event.id。断连后放入请求头，服务端据此返回断点之后的事件。<br><br>TTL 过期（10 分钟）后两个 ID 都失效，降级为 RELOAD（重载整个对话）。' },
-  { front: 'SubAgent Message Aggregation', back: '<strong>SubAgent 消息聚合机制</strong><br><br>当 agent_start 携带 parent_execution_id 时，识别为 SubAgent：<br>1. 创建 subAgentMessages Map 条目<br>2. SubAgent 的 text/tool_call 等事件聚合到 Map 中<br>3. conversation_created 记录 SubAgent 的 conversation_uid<br>4. agent_end 时聚合所有消息为 AgentBlock<br>5. replaceAgentBlock() 替换主消息中的临时 AgentBlock<br><br>目的：SubAgent 的复杂工具链在主对话中显示为一个折叠的 AgentBlock 卡片' },
-  { front: 'Tool Lifecycle Events', back: '<strong>工具生命周期事件序列</strong><br><br>tool_call_start → { id, tool_name, agent_execution_id }<br>  → 创建 ToolExecutionState (status: starting)<br>  → 初始化流式文件预览 (initStreamingFile)<br><br>text/coding (with tool_call_id) → 流式内容<br>  → handleToolStreamingContent() → applyStreamOp()<br><br>tool_call_result → { type: "markdown_generate", data: { file_id, content } }<br>  → 完成文件预览 (completeStreamingFile)<br><br>tool_call_end → { dismiss: boolean }<br>  → dismiss=true: 移除工具卡片; dismiss=false: 保留' },
-  { front: 'eventQueue Pattern', back: '<strong>AsyncGenerator + Promise Queue 模式</strong><br><br>StreamManager 用 eventQueue + resolveNext 实现 push → pull 转换：<br><br>Push（fetchEventSource 回调）→ eventQueue.push(event)<br>Pull（for-await 消费者）→ yield eventQueue.shift()<br><br>如果消费者比生产者快 → 等 Promise（resolveNext）<br>如果生产者比消费者快 → 事件入队<br><br>注意：当前无 backpressure 上限，极端情况下可能内存溢出。' },
-];
-
-let currentCard = 0;
-function showCard(i) {
-  currentCard = i;
-  const fc = document.getElementById('fc-current');
-  fc.classList.remove('flipped');
-  document.getElementById('fc-front').textContent = cards[i].front;
-  document.getElementById('fc-back').innerHTML = cards[i].back;
-  document.getElementById('fc-counter').textContent = `${i + 1} / ${cards.length}`;
-}
-function nextCard() { showCard((currentCard + 1) % cards.length); }
-function prevCard() { showCard((currentCard - 1 + cards.length) % cards.length); }
-
-// Nav active state
-document.querySelectorAll('nav a').forEach(a => {
-  a.addEventListener('click', () => {
-    document.querySelectorAll('nav a').forEach(n => n.classList.remove('active'));
-    a.classList.add('active');
+function checkQuiz(btn, idx) {
+  const card = btn.closest('.quiz-card');
+  const correct = parseInt(card.querySelector('.quiz-options').dataset.correct);
+  card.querySelectorAll('.quiz-opt').forEach((o, i) => {
+    o.classList.add('disabled');
+    if (i === correct) o.classList.add('correct');
+    else if (i === idx && idx !== correct) o.classList.add('wrong');
   });
-});
-
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', (e) => {
-    e.preventDefault();
-    document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-  });
-});
+  card.querySelector('.quiz-explain').classList.add('show');
+}
 </script>
 </body>
 </html>
