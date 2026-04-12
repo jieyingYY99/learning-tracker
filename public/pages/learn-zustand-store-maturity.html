@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zustand Store Maturity — Middleware Composition & Upgrade Patterns</title>
+<style>
+:root{--bg:#faf9f7;--card:#fff;--text:#1a1a1a;--muted:#6b6b6b;--accent:#6a4040;--accent-l:#f3ebe8;--border:#e8e4e0;--code-bg:#f5f2ef;--ok:#2e7d5b;--warn:#c77a1a;--info:#3b6ea5;--t1:#e8f5e9;--t1t:#1b5e20;--t2:#fff8e1;--t2t:#e65100;--t3:#e3f2fd;--t3t:#0d47a1;--t4:#fce4ec;--t4t:#880e4f}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px}
+nav ul{display:flex;gap:0;list-style:none;max-width:1200px;margin:0 auto;overflow-x:auto}
+nav li a{display:block;padding:14px 16px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+nav li a:hover,nav li a.active{color:var(--accent);border-bottom-color:var(--accent)}
+.container{max-width:1200px;margin:0 auto;padding:32px 24px}
+h1{font-size:28px;font-weight:700;margin-bottom:8px}
+h2{font-size:20px;font-weight:600;margin:24px 0 12px;color:var(--accent)}
+h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+.section{display:none}.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.t1{background:var(--t1);color:var(--t1t)}.t2{background:var(--t2);color:var(--t2t)}.t3{background:var(--t3);color:var(--t3t)}.t4{background:var(--t4);color:var(--t4t)}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px}
+pre{background:#2d2d2d;color:#f8f8f2;padding:16px;border-radius:8px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;overflow-x:auto;white-space:pre;line-height:1.5;margin:8px 0}
+.kw{color:#66d9ef}.fn{color:#a6e22e}.str{color:#e6db74}.cm{color:#75715e}.num{color:#ae81ff}.tp{color:#f92672}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12.5px}
+th{background:var(--accent-l);color:var(--accent);padding:8px 10px;text-align:left;font-weight:600;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.chk{color:var(--ok);font-weight:700}.nochk{color:#ccc}
+.toggle-btn{background:var(--accent-l);color:var(--accent);border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:background .2s;width:100%;text-align:left}
+.toggle-btn:hover{background:#ecddd8}
+.toggle-content{display:none;margin-top:10px;padding:14px;background:var(--code-bg);border-radius:8px;font-size:13px}
+.toggle-content.open{display:block}
+.dt{background:#f0f7f4;border:1px solid #c6e0d4;border-radius:8px;padding:14px;margin:12px 0;font-size:13px}
+.dt-title{font-weight:600;color:var(--ok);margin-bottom:6px}
+.dt ul{list-style:none;padding-left:0}.dt li{padding:3px 0;padding-left:18px;position:relative}.dt li::before{content:'→';position:absolute;left:0;color:var(--ok);font-weight:700}
+.stats{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.stat{flex:1;min-width:120px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-n{font-size:26px;font-weight:700;color:var(--accent)}.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+.quiz-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.quiz-q{font-weight:600;margin-bottom:14px;font-size:14px}
+.quiz-opts{display:flex;flex-direction:column;gap:6px}
+.quiz-opt{display:block;padding:10px 14px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;transition:all .2s;background:var(--card);text-align:left;width:100%}
+.quiz-opt:hover{border-color:var(--accent);background:var(--accent-l)}
+.quiz-opt.correct{border-color:var(--ok);background:#e8f5e9}.quiz-opt.wrong{border-color:#d32f2f;background:#ffebee}
+.quiz-explain{display:none;margin-top:10px;padding:10px;background:var(--code-bg);border-radius:8px;font-size:12.5px}
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.fc-card{perspective:800px;height:200px;cursor:pointer}
+.fc-inner{width:100%;height:100%;position:relative;transition:transform .5s;transform-style:preserve-3d}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1px solid var(--border)}
+.fc-front{background:var(--card)}.fc-front h3{font-size:16px;color:var(--accent)}.fc-front p{font-size:11px;color:var(--muted);margin-top:6px}
+.fc-back{background:var(--accent-l);transform:rotateY(180deg);font-size:13px;line-height:1.5}
+.tier-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;margin-right:6px}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s}
+.checklist{list-style:none;padding:0;font-size:13px}
+.checklist li{padding:6px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.checklist li:last-child{border-bottom:none}
+.checklist input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+@media(max-width:768px){.container{padding:16px}nav li a{padding:12px 10px;font-size:12px}.fc-grid{grid-template-columns:1fr}.stats{flex-direction:column}table{font-size:11px}}
+</style>
+</head>
+<body>
+
+<nav>
+<ul>
+<li><a href="#overview" class="active" onclick="go('overview')">Overview 概览</a></li>
+<li><a href="#tiers" onclick="go('tiers')">4 Tiers 四层</a></li>
+<li><a href="#patterns" onclick="go('patterns')">Patterns 模式</a></li>
+<li><a href="#matrix" onclick="go('matrix')">Matrix 矩阵</a></li>
+<li><a href="#upgrade" onclick="go('upgrade')">Upgrade Guide 升级指南</a></li>
+<li><a href="#quiz" onclick="go('quiz')">Quiz 测验</a></li>
+<li><a href="#flashcards" onclick="go('flashcards')">Flashcards 闪卡</a></li>
+<li><a href="#checklist" onclick="go('checklist')">Checklist 清单</a></li>
+</ul>
+</nav>
+
+<div class="container">
+
+<!-- OVERVIEW -->
+<div id="overview" class="section active">
+<h1>Zustand Store Maturity Model</h1>
+<p class="sub">A systematic upgrade path from MVP store to production store, based on 16 real stores in KUSE App V2<br>
+基于 KUSE App V2 中 16 个真实 store 的系统性升级路径</p>
+
+<div class="stats">
+<div class="stat"><div class="stat-n">16</div><div class="stat-l">Stores Analyzed<br>分析的 Store 数</div></div>
+<div class="stat"><div class="stat-n">4</div><div class="stat-l">Maturity Tiers<br>成熟度层级</div></div>
+<div class="stat"><div class="stat-n">6</div><div class="stat-l">Key Patterns<br>核心模式</div></div>
+<div class="stat"><div class="stat-n">2837</div><div class="stat-l">Max Lines (Assets)<br>最大行数</div></div>
+</div>
+
+<h2>Core Insight 核心洞察</h2>
+<div class="card">
+<p>Every store in this codebase started as a simple <code>create()</code> call. The pattern is not "choose the right middleware upfront" — it's <strong>"start simple, add middleware when pain appears."</strong></p>
+<p style="margin-top:8px;color:var(--muted)">项目中每个 store 都从简单的 <code>create()</code> 调用开始。模式不是"提前选对中间件"，而是<strong>"从简单开始，在痛点出现时添加中间件"</strong>。</p>
+</div>
+
+<h2>The 4 Tiers 四个层级</h2>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">
+<div class="card" style="border-left:3px solid var(--t1t)">
+<div><span class="tier-badge t1">Tier 1</span><strong>Minimal</strong></div>
+<p style="font-size:13px;color:var(--muted);margin-top:6px">Plain create(), no middleware<br>&lt; 150 lines | pro, undo, outOfCredits</p>
+</div>
+<div class="card" style="border-left:3px solid var(--t2t)">
+<div><span class="tier-badge t2">Tier 2</span><strong>Growth</strong></div>
+<p style="font-size:13px;color:var(--muted);margin-top:6px">+subscribeWithSelector OR optimistic<br>150-300 lines | skills, connectors</p>
+</div>
+<div class="card" style="border-left:3px solid var(--t3t)">
+<div><span class="tier-badge t3">Tier 3</span><strong>Mature</strong></div>
+<p style="font-size:13px;color:var(--muted);margin-top:6px">+event bus +AbortController +named selectors<br>300-500 lines | trash, turboTasks, chat</p>
+</div>
+<div class="card" style="border-left:3px solid var(--t4t)">
+<div><span class="tier-badge t4">Tier 4</span><strong>Enterprise</strong></div>
+<p style="font-size:13px;color:var(--muted);margin-top:6px">+devtools +backup/restore +complex trees<br>500-2800+ lines | assets, canvas, ui</p>
+</div>
+</div>
+</div>
+
+<!-- TIERS -->
+<div id="tiers" class="section">
+<h1>The 4 Maturity Tiers 四层成熟度</h1>
+<p class="sub">Each tier represents a natural evolution point in store complexity<br>每层代表 store 复杂度的自然演进点</p>
+
+<!-- Tier 1 -->
+<div class="card" style="border-left:4px solid var(--t1t)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+<span class="tier-badge t1">Tier 1</span>
+<h3 style="margin:0">Minimal — Plain create() 最简模式</h3>
+</div>
+<p style="font-size:13px">No middleware. State + setters. Perfect for UI flags, simple data holders.</p>
+<p style="font-size:13px;color:var(--muted)">无中间件。状态+setter。适合 UI 标志位和简单数据容器。</p>
+<p style="font-size:13px;margin-top:8px"><strong>Examples 例子：</strong> <code>useProStore</code> (100 lines), <code>useUndoStore</code> (77 lines), <code>useOutOfCreditsStore</code></p>
+<button class="toggle-btn" onclick="tog(this)">▶ Code Example 代码示例</button>
+<div class="toggle-content">
+<pre><span class="cm">// store/pro/index.ts — Tier 1: No middleware</span>
+<span class="cm">// store/pro/index.ts — 第一层：无中间件</span>
+
+<span class="kw">export const</span> useProStore = <span class="fn">create</span>&lt;ProPlanState&gt;((<span class="fn">set</span>, <span class="fn">get</span>) => ({
+  subscription: <span class="kw">null</span>,
+  isLoading: <span class="kw">false</span>,
+
+  <span class="fn">setSubscription</span>: (sub) => <span class="fn">set</span>({ subscription: sub }),
+  <span class="fn">fetchSubscription</span>: <span class="kw">async</span> () => {
+    <span class="fn">set</span>({ isLoading: <span class="kw">true</span> });
+    <span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">getSubscription</span>();
+    <span class="fn">set</span>({ subscription: data, isLoading: <span class="kw">false</span> });
+  },
+}));</pre>
+<div class="dt">
+<div class="dt-title">When to stay at Tier 1 何时保持第一层</div>
+<ul>
+<li>Only 1-2 components consume this store 只有 1-2 个组件消费</li>
+<li>No cross-store communication needed 不需要跨 store 通信</li>
+<li>No async race conditions 无异步竞态</li>
+<li>State is simple flags/objects 状态是简单标志/对象</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Tier 2 -->
+<div class="card" style="border-left:4px solid var(--t2t)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+<span class="tier-badge t2">Tier 2</span>
+<h3 style="margin:0">Growth — +subscribeWithSelector OR +Optimistic 成长模式</h3>
+</div>
+<p style="font-size:13px">First middleware or advanced pattern appears. Driven by re-render pain or UX needs.</p>
+<p style="font-size:13px;color:var(--muted)">出现第一个中间件或高级模式。由重渲染痛点或 UX 需求驱动。</p>
+<p style="font-size:13px;margin-top:8px"><strong>Examples 例子：</strong> <code>useSkillsStore</code> (365 lines), <code>useConnectorsStore</code> (239 lines)</p>
+<button class="toggle-btn" onclick="tog(this)">▶ Code Example 代码示例</button>
+<div class="toggle-content">
+<pre><span class="cm">// store/skills/index.ts — Tier 2: Optimistic + per-item loading</span>
+<span class="cm">// 第二层：乐观更新 + 逐项加载状态</span>
+
+<span class="kw">export const</span> useSkillsStore = <span class="fn">create</span>&lt;SkillsState&gt;((<span class="fn">set</span>, <span class="fn">get</span>) => ({
+  skills: [],
+  skillUpdating: {} <span class="kw">as</span> Record&lt;<span class="kw">string</span>, <span class="kw">boolean</span>&gt;,  <span class="cm">// per-item loading</span>
+  skillErrors: {} <span class="kw">as</span> Record&lt;<span class="kw">string</span>, <span class="kw">string</span> | <span class="kw">null</span>&gt;,
+
+  <span class="fn">toggleSkill</span>: <span class="kw">async</span> (skillId, enabled) => {
+    <span class="cm">// 1. Optimistic update 乐观更新</span>
+    <span class="fn">set</span>({ skills: updateSkillInList(skillId, enabled) });
+
+    <span class="kw">try</span> {
+      <span class="kw">await</span> api.<span class="fn">updateSkill</span>(skillId, { enabled });
+    } <span class="kw">catch</span> {
+      <span class="cm">// 2. Revert on failure 失败时回滚</span>
+      <span class="fn">set</span>({ skills: updateSkillInList(skillId, !enabled) });
+    }
+  },
+}));</pre>
+<div class="dt">
+<div class="dt-title">Upgrade triggers from Tier 1 → Tier 2 升级触发条件</div>
+<ul>
+<li>Components re-render too often (add subscribeWithSelector) 组件重渲染过多</li>
+<li>User actions feel slow (add optimistic updates) 操作感觉慢</li>
+<li>Need per-item loading states 需要逐项加载状态</li>
+<li>Toggle/enable/disable patterns 切换启用/禁用模式</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Tier 3 -->
+<div class="card" style="border-left:4px solid var(--t3t)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+<span class="tier-badge t3">Tier 3</span>
+<h3 style="margin:0">Mature — +Event Bus +AbortController +Named Selectors 成熟模式</h3>
+</div>
+<p style="font-size:13px">Cross-component communication, request cancellation, fine-grained subscriptions.</p>
+<p style="font-size:13px;color:var(--muted)">跨组件通信、请求取消、细粒度订阅。</p>
+<p style="font-size:13px;margin-top:8px"><strong>Examples 例子：</strong> <code>useTrashStore</code> (379 lines), <code>useTurboTasksStore</code> (217 lines)</p>
+<button class="toggle-btn" onclick="tog(this)">▶ Code Example 代码示例</button>
+<div class="toggle-content">
+<pre><span class="cm">// store/trash/index.ts — Tier 3: Full middleware + patterns</span>
+
+<span class="kw">import</span> { subscribeWithSelector } <span class="kw">from</span> <span class="str">'zustand/middleware'</span>;
+
+<span class="kw">let</span> _loadAbortController: AbortController | <span class="kw">null</span> = <span class="kw">null</span>;
+
+<span class="kw">const</span> <span class="fn">getInitialState</span> = () => ({
+  items: [] <span class="kw">as</span> TrashEntry[],
+  isLoading: <span class="kw">false</span>,
+  selectedIds: <span class="kw">new</span> Set&lt;<span class="kw">number</span>&gt;(),
+  <span class="cm">// ... all initial values</span>
+});
+
+<span class="kw">export const</span> useTrashStore = <span class="fn">create</span>&lt;TrashState&gt;()(
+  <span class="fn">subscribeWithSelector</span>((<span class="fn">set</span>, <span class="fn">get</span>) => ({
+    ...<span class="fn">getInitialState</span>(),
+
+    <span class="fn">loadItems</span>: <span class="kw">async</span> () => {
+      <span class="cm">// AbortController — cancel stale requests</span>
+      <span class="kw">if</span> (_loadAbortController) _loadAbortController.<span class="fn">abort</span>();
+      <span class="kw">const</span> ctrl = <span class="kw">new</span> AbortController();
+      _loadAbortController = ctrl;
+
+      <span class="kw">const</span> items = <span class="kw">await</span> trashAPI.<span class="fn">listTrash</span>({ signal: ctrl.signal });
+      <span class="kw">if</span> (ctrl.signal.aborted) <span class="kw">return</span>; <span class="cm">// ignore stale</span>
+      <span class="fn">set</span>({ items });
+    },
+
+    <span class="fn">reset</span>: () => <span class="fn">set</span>(<span class="fn">getInitialState</span>()),
+  }))
+);
+
+<span class="cm">// Named selector exports — fine-grained subscriptions</span>
+<span class="kw">export const</span> useTrashItems = () => useTrashStore(s => s.items);
+<span class="kw">export const</span> useTrashLoading = () => useTrashStore(s => s.isLoading);
+<span class="kw">export const</span> useTrashSelectedIds = () => useTrashStore(s => s.selectedIds);
+
+<span class="cm">// Event bus — cross-store communication</span>
+<span class="fn">subscribeToStoreEvent</span>(STORE_EVENTS.ITEMS_MOVED_TO_TRASH, () => {
+  <span class="kw">if</span> (useUIStore.<span class="fn">getState</span>().isTrashView) {
+    useTrashStore.<span class="fn">getState</span>().<span class="fn">loadItems</span>();
+  }
+});</pre>
+<div class="dt">
+<div class="dt-title">Upgrade triggers from Tier 2 → Tier 3 升级触发条件</div>
+<ul>
+<li>Other stores need to react to this store's changes (add event bus) 其他 store 需要响应变化</li>
+<li>Rapid navigation causes stale data (add AbortController) 快速导航导致过期数据</li>
+<li>Many components subscribe but only use 1 field (add named selectors) 组件只用 1 个字段</li>
+<li>Need clean reset for view switches (add getInitialState) 视图切换需要清洁重置</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- Tier 4 -->
+<div class="card" style="border-left:4px solid var(--t4t)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+<span class="tier-badge t4">Tier 4</span>
+<h3 style="margin:0">Enterprise — +devtools +Backup/Restore +Complex Trees 企业模式</h3>
+</div>
+<p style="font-size:13px">Multiple middleware layers, tree data structures, backup/restore for mode switching.</p>
+<p style="font-size:13px;color:var(--muted)">多层中间件、树形数据结构、模式切换的备份/恢复。</p>
+<p style="font-size:13px;margin-top:8px"><strong>Examples 例子：</strong> <code>useAssetsStore</code> (2837 lines), <code>useCanvasStore</code> (1173 lines)</p>
+<button class="toggle-btn" onclick="tog(this)">▶ Code Example 代码示例</button>
+<div class="toggle-content">
+<pre><span class="cm">// store/assets/index.ts — Tier 4: Enterprise patterns</span>
+
+<span class="kw">export const</span> useAssetsStore = <span class="fn">create</span>&lt;AssetsState&gt;()(
+  <span class="fn">subscribeWithSelector</span>(
+    <span class="fn">devtools</span>((<span class="fn">set</span>, <span class="fn">get</span>) => ({
+      nodesByPath: {} <span class="kw">as</span> Record&lt;<span class="kw">string</span>, Node&gt;,
+      childrenByPath: {} <span class="kw">as</span> Record&lt;<span class="kw">string</span>, <span class="kw">string</span>[]&gt;,
+      onboardingBackup: <span class="kw">null</span> <span class="kw">as</span> OnboardingBackup | <span class="kw">null</span>,
+
+      <span class="cm">// Backup/Restore for onboarding mode</span>
+      <span class="fn">enterOnboardingMockProject</span>: <span class="kw">async</span> () => {
+        <span class="kw">const</span> backup = {
+          nodesByPath: <span class="fn">cloneNodesMap</span>(<span class="fn">get</span>().nodesByPath),
+          childrenByPath: <span class="fn">cloneChildrenMap</span>(<span class="fn">get</span>().childrenByPath),
+        };
+        <span class="fn">set</span>({ onboardingBackup: backup, <span class="cm">/* load mock data */</span> });
+      },
+
+      <span class="fn">exitOnboardingMode</span>: () => {
+        <span class="kw">const</span> { onboardingBackup } = <span class="fn">get</span>();
+        <span class="kw">if</span> (onboardingBackup) {
+          <span class="fn">set</span>({ ...onboardingBackup, isOnboardingMode: <span class="kw">false</span> });
+        }
+      },
+    }), { name: <span class="str">'AssetsStore'</span> })
+  )
+);</pre>
+<div class="dt">
+<div class="dt-title">Upgrade triggers from Tier 3 → Tier 4 升级触发条件</div>
+<ul>
+<li>Need Redux DevTools for debugging complex state (add devtools) 需要 DevTools 调试</li>
+<li>Mode switching that must preserve/restore state (add backup/restore) 模式切换需保存恢复</li>
+<li>Tree/graph data structures with parent-child relationships 树/图数据结构</li>
+<li>Store exceeds 500 lines with multiple interconnected actions 超过 500 行</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PATTERNS -->
+<div id="patterns" class="section">
+<h1>6 Key Patterns 六个核心模式</h1>
+<p class="sub">Each pattern solves a specific pain point. Learn when to add each one.<br>每个模式解决一个特定痛点。学习何时添加。</p>
+
+<div class="card">
+<h3>1. subscribeWithSelector <span class="tag t2">Tier 2+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> Components re-render on ANY store change, even fields they don't use.</p>
+<p style="font-size:13px;color:var(--muted)">组件在任何 store 变化时重渲染，即使不使用相关字段。</p>
+<pre><span class="cm">// Without: component re-renders when ANY field changes</span>
+<span class="kw">const</span> { items } = useStore(); <span class="cm">// re-renders on isLoading change too!</span>
+
+<span class="cm">// With subscribeWithSelector: only re-renders when items change</span>
+<span class="kw">const</span> items = useStore(s => s.items); <span class="cm">// uses Object.is comparison</span>
+
+<span class="cm">// External subscription (non-React code):</span>
+useStore.<span class="fn">subscribe</span>(
+  s => s.items.length,           <span class="cm">// selector</span>
+  (len) => console.log(<span class="str">`${len} items`</span>), <span class="cm">// listener</span>
+  { equalityFn: shallow }        <span class="cm">// optional comparator</span>
+);</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 13/16 stores (81%) — the most common middleware.</p>
+</div>
+
+<div class="card">
+<h3>2. Event Bus (StoreEventManager) <span class="tag t3">Tier 3+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> Store A changes → Store B needs to react, but direct import creates circular deps.</p>
+<p style="font-size:13px;color:var(--muted)">Store A 变化 → Store B 需要响应，但直接 import 会造成循环依赖。</p>
+<pre><span class="cm">// Emitter (assets store):</span>
+<span class="fn">emitStoreEvent</span>(STORE_EVENTS.ITEMS_MOVED_TO_TRASH, { ids });
+
+<span class="cm">// Listener (trash store):</span>
+<span class="fn">subscribeToStoreEvent</span>(STORE_EVENTS.ITEMS_MOVED_TO_TRASH, () => {
+  <span class="kw">if</span> (useUIStore.<span class="fn">getState</span>().isTrashView) {
+    useTrashStore.<span class="fn">getState</span>().<span class="fn">loadItems</span>();
+  }
+});</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 12/16 stores (75%) — replaces Redux-style middleware.</p>
+</div>
+
+<div class="card">
+<h3>3. AbortController <span class="tag t3">Tier 3+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> Rapid navigation/switching triggers multiple requests; stale response overwrites fresh data.</p>
+<p style="font-size:13px;color:var(--muted)">快速导航触发多个请求；过期响应覆盖新数据。</p>
+<pre><span class="kw">let</span> _ctrl: AbortController | <span class="kw">null</span> = <span class="kw">null</span>;
+
+<span class="fn">loadItems</span>: <span class="kw">async</span> () => {
+  <span class="kw">if</span> (_ctrl) _ctrl.<span class="fn">abort</span>();         <span class="cm">// cancel previous 取消前一个</span>
+  _ctrl = <span class="kw">new</span> AbortController();
+
+  <span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">fetch</span>({ signal: _ctrl.signal });
+  <span class="kw">if</span> (_ctrl.signal.aborted) <span class="kw">return</span>; <span class="cm">// discard stale 丢弃过期</span>
+  <span class="fn">set</span>({ items: data });
+}</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 2/16 stores (trash, assets) — only where rapid switching is common.</p>
+</div>
+
+<div class="card">
+<h3>4. Named Selector Exports <span class="tag t3">Tier 3+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> Components manually write selectors; inconsistent field access; easy to forget <code>subscribeWithSelector</code>.</p>
+<pre><span class="cm">// Without: every component writes its own selector</span>
+<span class="kw">const</span> items = useTrashStore(s => s.items);
+
+<span class="cm">// With named exports: standardized, discoverable</span>
+<span class="kw">export const</span> useTrashItems = () => useTrashStore(s => s.items);
+<span class="kw">export const</span> useTrashLoading = () => useTrashStore(s => s.isLoading);
+
+<span class="cm">// Consumer: clean and simple</span>
+<span class="kw">const</span> items = <span class="fn">useTrashItems</span>();</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 8/16 stores — trash (8 exports), filePreview, kuseClaw.</p>
+</div>
+
+<div class="card">
+<h3>5. getInitialState / Reset <span class="tag t3">Tier 3+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> View switch needs clean state, but manual reset misses fields. New fields added to store but not to reset logic.</p>
+<pre><span class="kw">const</span> <span class="fn">getInitialState</span> = () => ({
+  items: [],
+  isLoading: <span class="kw">false</span>,
+  error: <span class="kw">null</span>,
+  selectedIds: <span class="kw">new</span> Set(),
+});
+
+<span class="cm">// Reset preserving user preferences:</span>
+<span class="fn">reset</span>: () => {
+  <span class="kw">const</span> { sortBy, sortOrder } = <span class="fn">get</span>(); <span class="cm">// preserve 保留</span>
+  <span class="fn">set</span>({ ...<span class="fn">getInitialState</span>(), sortBy, sortOrder });
+}</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 4/16 stores — trash, share, onboarding, assets.</p>
+</div>
+
+<div class="card">
+<h3>6. Optimistic Update + Revert <span class="tag t2">Tier 2+</span></h3>
+<p style="font-size:13px"><strong>Pain solved 解决的痛点：</strong> API latency makes UI feel sluggish. User clicks toggle → waits 200ms+ → sees change.</p>
+<pre><span class="fn">toggleSkill</span>: <span class="kw">async</span> (id, enabled) => {
+  <span class="cm">// 1. Optimistic: update UI immediately 即时更新 UI</span>
+  <span class="fn">set</span>({ skills: <span class="fn">updateInList</span>(id, enabled) });
+
+  <span class="kw">try</span> {
+    <span class="kw">await</span> api.<span class="fn">update</span>(id, { enabled });
+  } <span class="kw">catch</span> {
+    <span class="cm">// 2. Revert on failure 失败时回滚</span>
+    <span class="fn">set</span>({ skills: <span class="fn">updateInList</span>(id, !enabled) });
+    toast.error(<span class="str">'Failed to update'</span>);
+  }
+}</pre>
+<p style="font-size:13px;margin-top:8px"><strong>Adoption 采用情况：</strong> 6/16 stores. <strong>Exception 例外：</strong> billing stores NEVER use optimistic — money operations always wait for server confirmation.</p>
+</div>
+</div>
+
+<!-- MATRIX -->
+<div id="matrix" class="section">
+<h1>Store Comparison Matrix 对比矩阵</h1>
+<p class="sub">All 16 stores at a glance. Sort by any column mentally.<br>16 个 store 一览。</p>
+<div style="overflow-x:auto">
+<table>
+<tr>
+<th>Store</th><th>Lines</th><th>Tier</th><th>subWithSel</th><th>devtools</th><th>Event Bus</th><th>Abort</th><th>Named Sel.</th><th>getInit</th><th>Optimistic</th><th>Error</th>
+</tr>
+<tr><td><code>pro</code></td><td>100</td><td><span class="tag t1">T1</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>silent</td></tr>
+<tr><td><code>undo</code></td><td>77</td><td><span class="tag t1">T1</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>console</td></tr>
+<tr><td><code>onboarding</code></td><td>209</td><td><span class="tag t1">T1</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td>tracking</td></tr>
+<tr><td><code>connectors</code></td><td>239</td><td><span class="tag t2">T2</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td>silent</td></tr>
+<tr><td><code>skills</code></td><td>365</td><td><span class="tag t2">T2</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td>throw</td></tr>
+<tr><td><code>share</code></td><td>134</td><td><span class="tag t2">T2</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td>console</td></tr>
+<tr><td><code>turboTasks</code></td><td>217</td><td><span class="tag t3">T3</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td>toast</td></tr>
+<tr><td><code>trash</code></td><td>379</td><td><span class="tag t3">T3</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓ (8)</td><td class="chk">✓</td><td class="nochk">-</td><td>silent</td></tr>
+<tr><td><code>chat</code></td><td>470</td><td><span class="tag t3">T3</span></td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>throw</td></tr>
+<tr><td><code>filePreview</code></td><td>93</td><td><span class="tag t3">T3</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td>throw</td></tr>
+<tr><td><code>kuseClaw</code></td><td>400</td><td><span class="tag t3">T3</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td>console</td></tr>
+<tr><td><code>ui</code></td><td>779</td><td><span class="tag t4">T4</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>localStorage</td></tr>
+<tr><td><code>canvas</code></td><td>1173</td><td><span class="tag t4">T4</span></td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>console</td></tr>
+<tr><td><code>dataStore</code></td><td>100+</td><td><span class="tag t4">T4</span></td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td class="nochk">-</td><td>event</td></tr>
+<tr><td><code>assets</code></td><td>2837</td><td><span class="tag t4">T4</span></td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓</td><td class="nochk">-</td><td class="chk">✓</td><td class="nochk">-</td><td>alert event</td></tr>
+</table>
+</div>
+</div>
+
+<!-- UPGRADE GUIDE -->
+<div id="upgrade" class="section">
+<h1>Upgrade Decision Flowchart 升级决策流程</h1>
+<p class="sub">When you feel pain, follow this flowchart to decide what to add.<br>当你感到痛点时，按此流程决定添加什么。</p>
+
+<div class="card">
+<h3>Flowchart 流程图</h3>
+<pre style="background:var(--code-bg);color:var(--text);font-size:12px;line-height:2">
+  ┌─────────────────────────────┐
+  │  Components re-render too   │──Yes──▶ Add <strong>subscribeWithSelector</strong>
+  │  often on unrelated changes?│         组件因无关变化重渲染？
+  └────────────┬────────────────┘
+               No
+  ┌────────────▼────────────────┐
+  │  User actions feel slow     │──Yes──▶ Add <strong>Optimistic Updates</strong>
+  │  waiting for API?           │         用户等待 API 感觉慢？
+  └────────────┬────────────────┘         (Exception: money ops 金钱操作例外)
+               No
+  ┌────────────▼────────────────┐
+  │  Other stores need to react │──Yes──▶ Add <strong>Event Bus</strong>
+  │  to this store's changes?   │         其他 store 需要响应？
+  └────────────┬────────────────┘
+               No
+  ┌────────────▼────────────────┐
+  │  Rapid navigation causes    │──Yes──▶ Add <strong>AbortController</strong>
+  │  stale data overwrites?     │         快速导航导致过期数据？
+  └────────────┬────────────────┘
+               No
+  ┌────────────▼────────────────┐
+  │  Many components use only   │──Yes──▶ Add <strong>Named Selectors</strong>
+  │  1-2 fields from store?     │         组件只用 1-2 个字段？
+  └────────────┬────────────────┘
+               No
+  ┌────────────▼────────────────┐
+  │  View switching needs       │──Yes──▶ Add <strong>getInitialState</strong>
+  │  clean reset?               │         视图切换需要重置？
+  └────────────┬────────────────┘
+               No
+  ┌────────────▼────────────────┐
+  │  State is complex, hard to  │──Yes──▶ Add <strong>devtools</strong>
+  │  debug in console?          │         状态复杂难以调试？
+  └────────────┘
+</pre>
+</div>
+
+<div class="card">
+<h3>Real Example: turboTasks Upgrade Path 真实案例：turboTasks 升级路径</h3>
+<div class="progress-bar"><div class="progress-fill" style="width:45%;background:var(--info)"></div></div>
+<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Currently at Tier 3 (subscribeWithSelector + event bus + optimistic). Missing: AbortController, named selectors, getInitialState.</p>
+<table>
+<tr><th>Pain Point 痛点</th><th>Pattern to Add 添加的模式</th><th>Priority 优先级</th></tr>
+<tr><td>Rapid task switching → stale run history overwrites</td><td>AbortController on fetchTaskRuns</td><td style="color:var(--warn);font-weight:600">Medium</td></tr>
+<tr><td>TaskList, TaskCard, TaskDetail all subscribe to full store</td><td>Named selectors: useTaskList, useCurrentTask, useTaskRuns</td><td style="color:var(--muted)">Low</td></tr>
+<tr><td>Switching away from ScheduledTasks view → old data persists</td><td>getInitialState with reset()</td><td style="color:var(--muted)">Low</td></tr>
+</table>
+</div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="section">
+<h1>Quiz 测验</h1>
+<p class="sub">Scenario-based questions to test your upgrade judgment<br>基于场景的题目，测试你的升级判断力</p>
+
+<div class="quiz-card">
+<div class="quiz-q">1. You have a simple toggle store (50 lines). 3 components use it, but only 1 field each. Components re-render on every toggle even when their field didn't change. What do you add?<br>
+<span style="color:var(--muted)">你有一个简单的 toggle store（50 行）。3 个组件使用它，每个只用 1 个字段。任何 toggle 都导致所有组件重渲染。添加什么？</span></div>
+<div class="quiz-opts">
+<button class="quiz-opt" onclick="q(this,'correct')">A. subscribeWithSelector middleware</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">B. Event bus (StoreEventManager)</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">C. AbortController</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">D. devtools middleware</button>
+</div>
+<div class="quiz-explain"><strong>subscribeWithSelector</strong> enables selector-based subscriptions so each component only re-renders when its specific field changes. Event bus is for cross-store communication. AbortController is for request cancellation.<br>
+<span style="color:var(--muted)">subscribeWithSelector 启用基于选择器的订阅，每个组件只在其字段变化时重渲染。</span></div>
+</div>
+
+<div class="quiz-card">
+<div class="quiz-q">2. Your store handles file listing. Users rapidly click between folders, and sometimes old folder data appears after new folder data loaded. What pattern fixes this?<br>
+<span style="color:var(--muted)">你的 store 处理文件列表。用户快速点击文件夹，有时旧文件夹数据在新数据加载后出现。什么模式解决？</span></div>
+<div class="quiz-opts">
+<button class="quiz-opt" onclick="q(this,'wrong')">A. Optimistic updates</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">B. getInitialState reset</button>
+<button class="quiz-opt" onclick="q(this,'correct')">C. AbortController — cancel previous request, ignore stale responses</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">D. subscribeWithSelector</button>
+</div>
+<div class="quiz-explain">AbortController cancels the in-flight request and the <code>if (ctrl.signal.aborted) return</code> guard discards stale responses. This is exactly the pattern in <code>useTrashStore.loadItems()</code>.<br>
+<span style="color:var(--muted)">AbortController 取消进行中的请求，<code>signal.aborted</code> 检查丢弃过期响应。这正是 useTrashStore.loadItems() 的模式。</span></div>
+</div>
+
+<div class="quiz-card">
+<div class="quiz-q">3. You're building a billing downgrade feature. User clicks "Downgrade" and you need to update the UI. Should you use optimistic updates?<br>
+<span style="color:var(--muted)">你在构建降级功能。用户点击"降级"后需要更新 UI。是否使用乐观更新？</span></div>
+<div class="quiz-opts">
+<button class="quiz-opt" onclick="q(this,'wrong')">A. Yes — optimistic update, revert on failure</button>
+<button class="quiz-opt" onclick="q(this,'correct')">B. No — wait for server confirmation (scheduled_change === true)</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">C. Yes — with PendingPaymentKey lock</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">D. Depends on the API latency</button>
+</div>
+<div class="quiz-explain"><strong>Never use optimistic updates for money operations.</strong> The server is the source of truth for billing state. Use a <code>pendingPaymentKey</code> lock to prevent double-submit, but always wait for <code>scheduled_change === true</code> from the server before updating UI.<br>
+<span style="color:var(--muted)"><strong>金钱操作绝不使用乐观更新。</strong>服务器是计费状态的唯一真相来源。</span></div>
+</div>
+
+<div class="quiz-card">
+<div class="quiz-q">4. Assets store (2837 lines) deletes a file. Trash store needs to refresh its list. How should they communicate?<br>
+<span style="color:var(--muted)">Assets store（2837 行）删除文件。Trash store 需要刷新列表。它们如何通信？</span></div>
+<div class="quiz-opts">
+<button class="quiz-opt" onclick="q(this,'wrong')">A. Import useTrashStore in assets store and call loadItems directly</button>
+<button class="quiz-opt" onclick="q(this,'correct')">B. Event bus: assets emits ITEMS_MOVED_TO_TRASH, trash subscribes and refreshes</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">C. React Context wrapping both stores</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">D. Zustand middleware that syncs stores</button>
+</div>
+<div class="quiz-explain">The event bus (StoreEventManager) provides loose coupling between stores. Direct imports create circular dependencies. This is exactly how the project handles it: <code>emitStoreEvent(STORE_EVENTS.ITEMS_MOVED_TO_TRASH)</code> in assets → <code>subscribeToStoreEvent</code> in trash.<br>
+<span style="color:var(--muted)">事件总线（StoreEventManager）提供 store 间的松耦合。直接 import 会造成循环依赖。</span></div>
+</div>
+
+<div class="quiz-card">
+<div class="quiz-q">5. You have a store at Tier 2 (optimistic updates, 200 lines). It works fine with 2 consuming components. A PM asks you to add subscribeWithSelector, event bus, and AbortController "for best practices." What do you do?<br>
+<span style="color:var(--muted)">你有一个 Tier 2 store（乐观更新，200 行）。2 个消费组件工作良好。PM 要求加 subscribeWithSelector、event bus 和 AbortController"按最佳实践"。你怎么做？</span></div>
+<div class="quiz-opts">
+<button class="quiz-opt" onclick="q(this,'wrong')">A. Add all three — best practices prevent future problems</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">B. Add subscribeWithSelector only — it's the most common</button>
+<button class="quiz-opt" onclick="q(this,'correct')">C. Push back — add middleware only when specific pain points appear</button>
+<button class="quiz-opt" onclick="q(this,'wrong')">D. Refactor to Redux for better middleware support</button>
+</div>
+<div class="quiz-explain"><strong>Don't add middleware preemptively.</strong> The maturity model is descriptive, not prescriptive. Add patterns only when real pain points emerge (re-renders, stale data, cross-store needs). Premature middleware adds complexity without benefit. "Start simple, add when pain appears."<br>
+<span style="color:var(--muted)"><strong>不要预防性添加中间件。</strong>成熟度模型是描述性的，不是规定性的。只在真实痛点出现时添加。</span></div>
+</div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="flashcards" class="section">
+<h1>Flashcards 闪卡</h1>
+<p class="sub">Click to flip. English front, Chinese back.<br>点击翻转。正面英文，背面中文。</p>
+<div class="fc-grid">
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>subscribeWithSelector</h3><p>When to add this middleware?</p></div>
+<div class="fc-back">当组件因无关字段变化而重渲染时添加。启用 <code>useStore(s => s.field)</code> 的精准订阅 + 外部 <code>subscribe(selector, listener)</code>。项目中 13/16 store 使用，是最常见的中间件。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>StoreEventManager</h3><p>Custom event bus for cross-store communication</p></div>
+<div class="fc-back">自定义事件总线，替代 Redux 中间件进行跨 store 通信。<code>emitStoreEvent()</code> 发送，<code>subscribeToStoreEvent()</code> 监听。避免直接 import 导致循环依赖。12/16 store 集成。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>AbortController<br>in Zustand</h3><p>Request cancellation pattern</p></div>
+<div class="fc-back">防止快速切换导致过期数据覆盖。模式：模块级 <code>let _ctrl</code> → 每次请求前 abort 旧的 → 创建新 controller → 请求完成后检查 <code>signal.aborted</code>。只有 trash 和 assets 使用——仅在快速切换常见时添加。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>Named Selector<br>Exports</h3><p>useTrashItems(), useTrashLoading()</p></div>
+<div class="fc-back">标准化的字段访问函数导出。好处：(1) 消费者代码更简洁；(2) IDE 自动补全可发现；(3) 确保使用 subscribeWithSelector。需要先添加 subscribeWithSelector 中间件。trash 有 8 个导出。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>getInitialState()</h3><p>Clean reset pattern</p></div>
+<div class="fc-back">将所有初始值提取到函数中。<code>reset: () => set({ ...getInitialState(), sortBy })</code> — 可选择保留用户偏好。新增字段时自动包含在 reset 中，防止遗漏。4/16 store 使用。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>Optimistic Update<br>Exception</h3><p>When NOT to use optimistic?</p></div>
+<div class="fc-back"><strong>金钱/订阅操作绝不使用乐观更新。</strong>服务器是唯一真相来源。用 <code>pendingPaymentKey</code> 锁 UI 防止双重提交，但始终等服务端确认 <code>scheduled_change === true</code>。6/16 store 使用乐观更新，但 billing 例外。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>Middleware<br>Composition Order</h3><p>subscribeWithSelector(devtools(...))</p></div>
+<div class="fc-back">Zustand 中间件从外到内包裹：<code>subscribeWithSelector(devtools(fn))</code>。subscribeWithSelector 在最外层才能对所有 state 变化生效。devtools 在内层提供 Redux DevTools 集成。项目中只有 assets 和 dataStore 使用双层组合。</div>
+</div></div>
+<div class="fc-card" onclick="this.classList.toggle('flipped')"><div class="fc-inner">
+<div class="fc-front"><h3>Start Simple<br>Add When Pain Appears</h3><p>The #1 principle of store maturity</p></div>
+<div class="fc-back">不要预防性添加中间件。成熟度模型是描述性的，不是规定性的。pro store 100 行无中间件完全够用；assets store 2837 行需要全套。添加时机：真实痛点出现时（重渲染、过期数据、跨 store 需求）。</div>
+</div></div>
+</div>
+</div>
+
+<!-- CHECKLIST -->
+<div id="checklist" class="section">
+<h1>Store Upgrade Checklist 升级清单</h1>
+<p class="sub">Use this when evaluating whether a store needs upgrading. Check only if the pain point exists.<br>评估 store 是否需要升级时使用此清单。仅在痛点存在时勾选。</p>
+
+<div class="card">
+<h3>Before Adding Any Middleware 添加任何中间件之前</h3>
+<ul class="checklist">
+<li><input type="checkbox"> Is there a real, observed problem? (not hypothetical) 是否有真实观察到的问题？</li>
+<li><input type="checkbox"> Does the store have > 2 consuming components? 是否有 > 2 个消费组件？</li>
+<li><input type="checkbox"> Is the store > 100 lines? 是否超过 100 行？</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>subscribeWithSelector Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> Components re-render on unrelated field changes 组件因无关字段重渲染</li>
+<li><input type="checkbox"> > 3 components subscribe to the store > 3 个组件订阅</li>
+<li><input type="checkbox"> External (non-React) code needs to subscribe 非 React 代码需要订阅</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Event Bus Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> Another store needs to react to this store's actions 其他 store 需要响应</li>
+<li><input type="checkbox"> Direct import would create circular dependency 直接 import 会循环依赖</li>
+<li><input type="checkbox"> Multiple unrelated UI areas respond to the same event 多个无关 UI 区域响应同一事件</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>AbortController Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> Users rapidly trigger the same async action (navigation, search) 用户快速触发同一异步操作</li>
+<li><input type="checkbox"> Stale responses have been observed overwriting fresh data 过期响应覆盖新数据已被观察到</li>
+<li><input type="checkbox"> The async operation takes > 200ms on average 异步操作平均 > 200ms</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Named Selectors Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> subscribeWithSelector is already added 已添加 subscribeWithSelector</li>
+<li><input type="checkbox"> > 5 components each write their own inline selector > 5 个组件各自写内联 selector</li>
+<li><input type="checkbox"> Team members frequently ask "which field do I subscribe to?" 团队经常问"订阅哪个字段？"</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>getInitialState Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> View switch/unmount needs clean state reset 视图切换需要干净重置</li>
+<li><input type="checkbox"> Manual reset has missed fields before (bug history) 手动重置曾遗漏字段</li>
+<li><input type="checkbox"> Store has > 5 state fields 状态字段 > 5 个</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>devtools Checklist</h3>
+<ul class="checklist">
+<li><input type="checkbox"> State is complex (nested objects, trees, maps) 状态复杂（嵌套对象、树、映射）</li>
+<li><input type="checkbox"> Debugging requires inspecting state history 调试需要检查状态历史</li>
+<li><input type="checkbox"> Store has > 500 lines 超过 500 行</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<script>
+function go(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));document.querySelector(`nav a[href="#${id}"]`).classList.add('active');window.scrollTo(0,0)}
+function tog(b){const c=b.nextElementSibling;c.classList.toggle('open');b.textContent=c.classList.contains('open')?'▼ Code Example 代码示例':'▶ Code Example 代码示例'}
+function q(b,r){const c=b.closest('.quiz-card');if(c.dataset.a)return;c.dataset.a='1';b.classList.add(r);if(r==='wrong'){const opts=c.querySelectorAll('.quiz-opt');opts.forEach(o=>{if(o.onclick.toString().includes("'correct'"))o.classList.add('correct')})}c.querySelector('.quiz-explain').style.display='block'}
+</script>
+</body>
+</html>

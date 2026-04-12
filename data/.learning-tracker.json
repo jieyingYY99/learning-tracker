@@ -11,7 +11,10 @@
         "ffdca971 feat(list-view): add FlatTreeItem type and useFlattenedTree hook"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -27,7 +30,10 @@
         "e8d4b107 fix: resolve drag-drop issues in FinderListView"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -42,7 +48,10 @@
         "3fc278cc feat(list-view): add move conflict resolution dialog and breadcrumb collapse"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -58,7 +67,10 @@
         "dfa34ba6 feat(publish): PublishButton uses CustomPathDialog"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -73,7 +85,10 @@
         "a7882c84 fix: harden KuseClaw WebSocket with reconnect safety, offline detection, and retry UI"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -91,7 +106,10 @@
         "8a657b9c feat: redesign AskUserCard — vertical list, custom input, skip"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -111,7 +129,10 @@
         "33624a03 fix: connector UX — auto-close modal, fix disconnect, refetch accounts"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -133,7 +154,10 @@
         "f7f9683d refactor: replace raw buttons with Button component, use Radix primitives"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -153,7 +177,10 @@
         "4b3486c9 escape"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -170,7 +197,10 @@
         "66ebf6a5 refactor: migrate dispute API paths from /credits/dispute to /dispute"
       ],
       "reviews": [
-        { "date": "2026-03-28", "completed": true }
+        {
+          "date": "2026-03-28",
+          "completed": true
+        }
       ],
       "next_review": "2026-04-07",
       "review_stage": 1
@@ -496,9 +526,156 @@
       "reviews": [],
       "next_review": "2026-04-05",
       "review_stage": 0
+    },
+    {
+      "id": "subscription-downgrade-state-machine",
+      "name": "订阅降级状态机（Subscription Downgrade State Machine）",
+      "category": "frontend",
+      "description": "完整的订阅降级生命周期管理：2 层状态架构（subscription 级 scheduled_change + component 级 pendingPaymentKey 锁）、scheduled/restore/current 渲染状态、结构化错误分类（DowngradeErrorKind）、GA4 漏斗埋点、团队 vs 个人差异化处理（feature flag + tenant 检查）",
+      "learned_date": "2026-04-12",
+      "source_commits": [
+        "6bfb85f9 feat(pricing): add scheduled downgrade and restore plan UX",
+        "ed880fa2 feat(billing): add downgrade API contracts and shared downgrade utils",
+        "82e86123 feat(downgrade): enhance downgrade messaging and error handling",
+        "b108c611 feat(billing): add team scheduled downgrade flow behind feature flag",
+        "89f8aebc fix(billing): unify keep current plan wording for downgrade restore"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "apis/pages.ts (PublishStatus)",
+            "approach": "文件发布状态：2 态（published/unpublished）+ dirty flag（has_changes），无调度器，变更即时生效",
+            "key_code_pattern": "{ is_published: boolean, has_changes: boolean } — 单 API 调用 publish/unpublish"
+          },
+          {
+            "location": "store/turboTasks/index.ts (TurboTask.status)",
+            "approach": "定时任务状态：active/paused/deleted，PUT 端点切换状态，乐观更新 + toast 反馈",
+            "key_code_pattern": "updateTaskStatus(id, status) → optimistic set → API PUT → rollback on error"
+          },
+          {
+            "location": "components/Views/CreditsPlan/PricingCardContext.tsx",
+            "approach": "PendingPaymentKey 锁模式：scoped key 防止双重提交，多选下拉兼容",
+            "key_code_pattern": "setPendingPaymentKey(`personal:${priceLevel}:${billingPeriod}`) → await API → setPendingPaymentKey(null)"
+          }
+        ],
+        "comparison": "项目中有三种生命周期模式：(1) 即时切换（Publish：变更立即生效，无 pending 状态）；(2) 乐观切换（TurboTask：先更新 UI 再等 API）；(3) 延迟调度（Downgrade：变更在账单周期结束时生效，期间可取消）。Downgrade 是唯一真正的“计划性状态转换”，核心区别在于引入了 effective_at 时间维度和 restore 回退路径。",
+        "trade_offs": "即时切换：简单、反馈快，但不可逆。乐观切换：用户体验好，但需要 rollback 逻辑。延迟调度：安全（用户有反悔窗口），但 UI 复杂度高（需展示当前态 + 未来态 + 生效时间 + 取消按钮），错误处理更复杂（需要 error_code 分类）。",
+        "decision_guide": "变更即时生效 + 可逆 → 乐观切换（如 task status toggle）。变更即时 + 不可逆 → 确认弹窗 + 即时切换（如 publish）。变更延迟生效 + 可取消 → 调度状态机（如 downgrade），需要额外的 scheduled 状态、effective_at 时间、restore 端点。涉及金钱/订阅 → 无乐观更新，全部等服务端确认。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-13",
+      "review_stage": 0
+    },
+    {
+      "id": "sse-event-driven-file-refresh",
+      "name": "SSE 事件驱动文件树刷新（SSE Event-Driven File Tree Refresh）",
+      "category": "frontend",
+      "description": "SSE 流中的 deliverables/turn_end 事件通过 streamProcessor → mutationAdapter → refreshScheduler 管线触发文件树增量更新：即时 mutation（create/delete/rename 直接操作 nodesByPath）+ 延迟批量刷新（refreshScheduler 800ms 防抖 + seq 去重），Skills 列表通过 setTimeout 800ms 防抖自动刷新",
+      "learned_date": "2026-04-12",
+      "source_commits": [
+        "8c18b535 fix: handle deliverables SSE event for turbo-created files in file tree",
+        "30cbaacf feat(skills): auto-refresh skills list when skill files are created via chat",
+        "6f36abe0 fix(assets): refresh file view after agent creates files"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/utils/fuse/refreshScheduler.ts",
+            "approach": "批量防抖刷新：per-folder 800ms debounce + seq 序号去重，超时后校验 seq 未变化才执行 listDir()",
+            "key_code_pattern": "schedule(path) { seq[path]++; clearTimeout(timers[path]); timers[path] = setTimeout(() => { if (seq[path] === currentSeq) listDir(path); }, 800); }"
+          },
+          {
+            "location": "components/Chat/utils/fuse/mutationAdapter.ts",
+            "approach": "即时 mutation：Fuse 文件事件直接操作 assets store 的 nodesByPath/childrenByPath，增量 treeVersion",
+            "key_code_pattern": "ingestCreateFile(fileInfo) → nodesByPath[path] = node; childrenByPath[parent].push(path); treeVersion++"
+          },
+          {
+            "location": "components/Chat/utils/streamProcessor.ts (line 1693)",
+            "approach": "Skills 防抖刷新：全局 skillsRefreshTimer，800ms setTimeout，多次触发时 clearTimeout 合并为单次 loadSkills()",
+            "key_code_pattern": "clearTimeout(skillsRefreshTimer); skillsRefreshTimer = setTimeout(() => loadSkills(), 800);"
+          }
+        ],
+        "comparison": "项目中 SSE 副作用有三种模式：(1) 直接 store 更新（文件树 mutation：即时、无防抖，保证一致性）；(2) 防抖异步回调（Skills 刷新：800ms setTimeout 合并多次触发）；(3) 事件总线广播（STORE_EVENTS + emitStoreEvent：松耦合 UI 状态变更）。refreshScheduler 不走事件总线，而是直接依赖注入到 fuse handler。",
+        "trade_offs": "即时 mutation：保证数据一致性，但每次 Fuse 事件都触发 React 重渲染。防抖批量刷新：减少 API 调用和渲染次数，但有 800ms 延迟。事件总线：松耦合但事件流难追踪。混合方案（本项目）：mutation 即时可见 + 刷新延迟批量，兼顾即时反馈和性能。",
+        "decision_guide": "文件增删（必须即时可见）→ 直接 mutation（nodesByPath 操作）。文件夹内容列表刷新（可容忍延迟）→ refreshScheduler 防抖。第三方列表刷新（如 Skills）→ setTimeout 防抖。UI 状态变更（面板/选择）→ 事件总线。关键决策：delete 操作只做即时 mutation 不触发父目录刷新，避免删除后刷新导致已删文件闪现的竞态。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-13",
+      "review_stage": 0
+    },
+    {
+      "id": "cron-schedule-polling-architecture",
+      "name": "Cron 调度与轮询架构（Cron Schedule & Polling Architecture）",
+      "category": "frontend",
+      "description": "SchedulePicker 的 cron 表达式双向转换（parseCron/buildCron 支持 6 种频率类型含 every-N-minutes 和 hourly interval）、多层自适应轮询（TaskList 10s/30s 按运行状态切换、TaskDetailPanel 5s/15s 按任务状态切换）、optimistic run 插入（合成 run_id: optimistic-{timestamp}）、变更检测跳过无效重渲染",
+      "learned_date": "2026-04-12",
+      "source_commits": [
+        "06db98e4 feat: add hourly interval & every-N-minutes schedule types, improve task polling",
+        "0dc4a1ea feat: improve scheduled tasks UX — optimistic runs, dedup status labels, cleanup",
+        "d647136b feat: task runs API, real-time polling, and output display",
+        "dfd5c093 ux(scheduled-tasks): add sticky Run History header and load more",
+        "bfed7e97 fix: parse Unix timestamp (seconds) from backend for next_run"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/utils/streamManager.ts",
+            "approach": "SSE 长连接 + 指数退避重试：AsyncGenerator 封装，支持 AUTO/MANUAL/RELOAD 重试策略",
+            "key_code_pattern": "async *streamWithRetry() { while(true) { yield* connectAndStream(); await sleep(backoff); } }"
+          },
+          {
+            "location": "store/assets/index.ts (pollForChanges)",
+            "approach": "文件树增量轮询：比较 treeVersion 决定是否重新 listDir，无自适应间隔",
+            "key_code_pattern": "setInterval(() => { if (treeVersion !== lastVersion) listDir(); }, interval)"
+          },
+          {
+            "location": "components/ScheduledTasks/TaskList.tsx",
+            "approach": "自适应间隔轮询：根据任务列表中是否有 running 状态切换 10s/30s 间隔",
+            "key_code_pattern": "const interval = tasks.some(t => t.status === 'running') ? 10000 : 30000; setInterval(fetchTasks, interval)"
+          }
+        ],
+        "comparison": "项目中有三种实时数据获取模式：(1) SSE 长连接（Chat：服务端推送，最实时但最重）；(2) 固定间隔轮询（Assets：简单但浪费带宽）；(3) 自适应轮询（ScheduledTasks：按状态调整间隔）。Cron 双向转换是项目中唯一的时间表达式与UI转换层。",
+        "trade_offs": "SSE：最实时（毫秒级），但需要维护连接、处理断线重连。固定轮询：最简单，但在空闲时浪费带宽。自适应轮询：按需调整频率，但需要状态检测逻辑。Optimistic run：即时反馈，但需要 run_id 前缀去重。",
+        "decision_guide": "服务端支持 SSE/WebSocket → 优先长连接。服务端只提供 REST API + 需要实时反馈 → 自适应轮询。服务端只提供 REST + 低实时要求 → 固定间隔轮询。用户触发的操作需要即时反馈 → optimistic 插入 + 去重。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-13",
+      "review_stage": 0
+    },
+    {
+      "id": "upload-replace-skill-crud",
+      "name": "技能上传替换 CRUD（Upload/Replace Skill CRUD）",
+      "category": "frontend",
+      "description": "完整的文件上传到冲突检测到替换流程：UploadSkillDialog 支持拖拽/选择上传（.md/.zip/.skill）、客户端校验（类型+大小<10MB）、409 冲突检测（服务端返回已存在技能名）然后确认替换弹窗、forceReplace prop 跳过冲突确认、上传后 loadSkills() 全量刷新",
+      "learned_date": "2026-04-12",
+      "source_commits": [
+        "e3c1600c feat: add upload skill feature (API, store, dialog, wiring)",
+        "6cef35ea feat: add replace skill, improve upload dialog, remove write instruction",
+        "5d25adfe fix: polish upload skill dialog and replace icon"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/Chat/utils/fileUpload.ts + utils/uploader.ts",
+            "approach": "Chat 文件上传：多文件并行、临时占位符即时显示（optimistic）、uploadFilesUnified 带 lifecycle 回调（onProgress/onError）、部分失败处理、GA4 埋点、tempId到realId 映射",
+            "key_code_pattern": "files.map(f => ({ tempId, name: timestamp_name })) → optimistic insert → parallel upload → map tempId to response"
+          },
+          {
+            "location": "components/FinderView/FinderView.tsx (drag-and-drop upload)",
+            "approach": "Finder 列表拖拽上传：onDrop → filterValidFiles → uploadFilesUnified → assets store refresh",
+            "key_code_pattern": "onDrop(files) → uploadFilesUnified(files, folderId) → listDir(currentPath)"
+          }
+        ],
+        "comparison": "Chat 上传是最复杂的（多文件并行、临时占位、进度追踪、部分失败粒度化处理）。Skills 上传是最简单的（单文件、无进度、全量刷新）。Finder 拖拽上传介于两者之间。核心差异：Chat 上传需要即时反馈（用户在聊天中等待），Skills 上传容忍全量刷新延迟。",
+        "trade_offs": "单文件全量刷新（Skills）：代码最少（~50 行 API + dialog），但上传后 UI 有短暂空白。多文件 optimistic（Chat）：用户体验最好但代码量 10 倍以上。409 冲突检测模式：服务端驱动的冲突解决，比前端预检查更可靠但多一次 round-trip。",
+        "decision_guide": "单文件上传 + 容忍短暂延迟 → 简单模式（API + loadAll 刷新）。多文件 + 需要即时反馈 → optimistic 模式（tempId + parallel upload + 映射）。有名称冲突可能 → 409 冲突检测 + 确认弹窗 + force 参数。大文件/需要进度 → uploadFilesUnified + onProgress 回调。"
+      },
+      "reviews": [],
+      "next_review": "2026-04-13",
+      "review_stage": 0
     }
   ],
-  "last_updated": "2026-04-04",
+  "last_updated": "2026-04-12",
   "weeks": [
     {
       "week": "2026-W12",
@@ -584,6 +761,37 @@
           "priority": "low"
         }
       ]
+    },
+    {
+      "week": "2026-W15",
+      "summary": "订阅降级状态机、SSE 事件驱动文件树刷新、Cron 调度与轮询架构、技能上传替换 CRUD",
+      "concepts_learned": [
+        "subscription-downgrade-state-machine",
+        "sse-event-driven-file-refresh",
+        "cron-schedule-polling-architecture",
+        "upload-replace-skill-crud"
+      ],
+      "commits_analyzed": 105,
+      "learning_recommendations": [
+        {
+          "topic": "Zustand 中间件组合与 Store 成熟度升级",
+          "why": "W14 已识别 turboTasksStore 是最简 store，W15 新增 4 个 store 交互场景，需要建立从 MVP 到 production store 的系统性升级路径",
+          "how": "读源码：对比 store/pro/index.ts 和 store/turboTasks/index.ts 的中间件差异；做实验：给 turboTasksStore 添加 subscribeWithSelector + event bus；看文档：Zustand v4 middleware composition docs",
+          "priority": "high"
+        },
+        {
+          "topic": "前端计费系统的设计模式",
+          "why": "本周实现完整 downgrade 流程但对 Stripe/支付后端理解有限。pending/scheduled/active 状态机模式在 SaaS 计费中是通用的",
+          "how": "读 Stripe 文档：Subscription Schedules API 和 Proration 章节；对比项目 API 的 scheduled_change_effective_at 与 Stripe 的 schedule.phases",
+          "priority": "medium"
+        },
+        {
+          "topic": "SSE 断点续传与重连策略的系统对比",
+          "why": "项目中 SSE 三层架构和 deliverables 事件刷新都依赖可靠的 SSE 连接，但 Last-Event-ID 重连、visibility change 重连、TTL 降级的细节理解不够深",
+          "how": "读源码：lib/fetchEventSource/index.ts 和 streamManager.ts 的重连逻辑；做实验：Chrome DevTools 模拟网络断开到恢复，观察 Last-Event-ID 传递；看 MDN：EventSource reconnection 规范",
+          "priority": "medium"
+        }
+      ]
     }
   ],
   "pages": [
@@ -592,28 +800,72 @@
       "title": "Week 12 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-22",
-      "concepts": ["virtual-scroll-tree-flatten", "dnd-kit-advanced-patterns", "move-conflict-resolution-rollback", "html-publish-workflow", "websocket-reconnect-safety"]
+      "concepts": [
+        "virtual-scroll-tree-flatten",
+        "dnd-kit-advanced-patterns",
+        "move-conflict-resolution-rollback",
+        "html-publish-workflow",
+        "websocket-reconnect-safety"
+      ]
     },
     {
       "filename": "week-2026-W13.html",
       "title": "Week 13 Learning Hub",
       "type": "weekly",
       "generated_date": "2026-03-28",
-      "concepts": ["uiblock-interactive-cards", "pipedream-connect-oauth", "customize-view-architecture", "download-export-refactor", "credit-dispute-system", "batch-operations-design", "race-condition-prevention-patterns", "tiptap-inputrule-slash-commands"]
+      "concepts": [
+        "uiblock-interactive-cards",
+        "pipedream-connect-oauth",
+        "customize-view-architecture",
+        "download-export-refactor",
+        "credit-dispute-system",
+        "batch-operations-design",
+        "race-condition-prevention-patterns",
+        "tiptap-inputrule-slash-commands"
+      ]
     },
     {
       "filename": "learn-react-race-conditions.html",
       "title": "React Race Conditions: Systematic Mental Model",
       "type": "topic",
       "generated_date": "2026-03-28",
-      "concepts": ["race-condition-prevention-patterns"]
+      "concepts": [
+        "race-condition-prevention-patterns"
+      ]
     },
     {
       "filename": "week-2026-W14.html",
       "title": "Week 14 Learning Hub — CRUD Architecture, IME Guards, Tiptap Suggestion & View State Patterns",
       "type": "weekly",
       "generated_date": "2026-04-04",
-      "concepts": ["sse-streaming-architecture", "scheduled-tasks-crud-architecture", "ime-composition-state-guard", "tiptap-suggestion-plugin", "exclusive-view-state-pattern"]
+      "concepts": [
+        "sse-streaming-architecture",
+        "scheduled-tasks-crud-architecture",
+        "ime-composition-state-guard",
+        "tiptap-suggestion-plugin",
+        "exclusive-view-state-pattern"
+      ]
+    },
+    {
+      "filename": "week-2026-W15.html",
+      "title": "Week 15 Learning Hub — Downgrade State Machine, SSE Refresh, Cron Polling & Skill Upload",
+      "type": "weekly",
+      "generated_date": "2026-04-12",
+      "concepts": [
+        "subscription-downgrade-state-machine",
+        "sse-event-driven-file-refresh",
+        "cron-schedule-polling-architecture",
+        "upload-replace-skill-crud"
+      ]
+    },
+    {
+      "filename": "learn-zustand-store-maturity.html",
+      "title": "Zustand Store Maturity — Middleware Composition & Upgrade Patterns",
+      "type": "topic",
+      "generated_date": "2026-04-12",
+      "concepts": [
+        "scheduled-tasks-crud-architecture"
+      ]
     }
   ]
 }

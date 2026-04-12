@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 15 Learning Hub — Downgrade State Machine, SSE Refresh, Cron Polling & Skill Upload</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --card-bg: #fff;
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --accent: #6a4040;
+    --accent-light: #f3ebe8;
+    --border: #e8e4e0;
+    --code-bg: #f5f2ef;
+    --success: #2e7d5b;
+    --warning: #c77a1a;
+    --info: #3b6ea5;
+    --tag-frontend: #dbeafe;
+    --tag-frontend-text: #1e40af;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* Navigation */
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 0 24px; }
+  nav ul { display: flex; gap: 0; list-style: none; max-width: 1100px; margin: 0 auto; overflow-x: auto; }
+  nav li a { display: block; padding: 14px 18px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  nav li a:hover, nav li a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Layout */
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+  h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: 32px; }
+
+  /* Sections */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; transition: box-shadow 0.2s; }
+  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .card-title { font-size: 17px; font-weight: 600; }
+  .card-title-sub { font-size: 13px; color: var(--text-muted); }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; background: var(--tag-frontend); color: var(--tag-frontend-text); }
+
+  /* Deep Dive Toggle */
+  .deep-dive { margin-top: 16px; }
+  .deep-dive-toggle { background: var(--accent-light); color: var(--accent); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; width: 100%; text-align: left; }
+  .deep-dive-toggle:hover { background: #ecddd8; }
+  .deep-dive-content { display: none; margin-top: 12px; padding: 16px; background: var(--code-bg); border-radius: 8px; font-size: 14px; }
+  .deep-dive-content.open { display: block; }
+
+  /* Comparison Table */
+  .cmp-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .cmp-table th { background: var(--accent-light); color: var(--accent); padding: 8px 12px; text-align: left; font-weight: 600; }
+  .cmp-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .cmp-table tr:last-child td { border-bottom: none; }
+
+  /* Decision Tree */
+  .decision-tree { background: #f0f7f4; border: 1px solid #c6e0d4; border-radius: 8px; padding: 16px; margin: 12px 0; font-size: 13px; }
+  .decision-tree .dt-title { font-weight: 600; color: var(--success); margin-bottom: 8px; }
+  .decision-tree ul { list-style: none; padding-left: 0; }
+  .decision-tree li { padding: 4px 0; padding-left: 20px; position: relative; }
+  .decision-tree li::before { content: '→'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+
+  /* Code Block */
+  .code-block { background: #2d2d2d; color: #f8f8f2; padding: 16px; border-radius: 8px; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12.5px; overflow-x: auto; margin: 8px 0; white-space: pre; line-height: 1.5; }
+  .code-inline { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+
+  /* Quiz */
+  .quiz-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .quiz-q { font-weight: 600; margin-bottom: 16px; font-size: 15px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt { display: block; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; background: var(--card-bg); text-align: left; width: 100%; }
+  .quiz-opt:hover { border-color: var(--accent); background: var(--accent-light); }
+  .quiz-opt.correct { border-color: var(--success); background: #e8f5e9; }
+  .quiz-opt.wrong { border-color: #d32f2f; background: #ffebee; }
+  .quiz-explain { display: none; margin-top: 12px; padding: 12px; background: var(--code-bg); border-radius: 8px; font-size: 13px; }
+
+  /* Flashcards */
+  .fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .fc-card { perspective: 800px; height: 220px; cursor: pointer; }
+  .fc-inner { width: 100%; height: 100%; position: relative; transition: transform 0.5s; transform-style: preserve-3d; }
+  .fc-card.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-front, .fc-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 1px solid var(--border); }
+  .fc-front { background: var(--card-bg); }
+  .fc-front h3 { font-size: 18px; color: var(--accent); }
+  .fc-front p { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+  .fc-back { background: var(--accent-light); transform: rotateY(180deg); font-size: 14px; line-height: 1.5; }
+
+  /* Review Calendar */
+  .review-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 16px 0; }
+  .review-day { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; min-height: 80px; font-size: 12px; }
+  .review-day .day-label { font-weight: 600; color: var(--text-muted); font-size: 11px; margin-bottom: 4px; }
+  .review-day .day-num { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .review-day.has-review { border-color: var(--accent); background: var(--accent-light); }
+  .review-item { margin-top: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(106,64,64,0.1); font-size: 10px; color: var(--accent); }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-box { flex: 1; min-width: 140px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  /* Recommendations */
+  .rec-card { border-left: 3px solid var(--accent); padding-left: 16px; margin-bottom: 16px; }
+  .rec-priority { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .rec-priority.high { background: #fde8e8; color: #c0392b; }
+  .rec-priority.medium { background: #fef3e2; color: #c77a1a; }
+
+  @media (max-width: 768px) {
+    .container { padding: 16px; }
+    nav li a { padding: 12px 12px; font-size: 13px; }
+    .fc-grid { grid-template-columns: 1fr; }
+    .review-grid { grid-template-columns: repeat(4, 1fr); }
+    .stats-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#home" class="active" onclick="showSection('home')">Home 首页</a></li>
+    <li><a href="#concepts" onclick="showSection('concepts')">Concepts 概念</a></li>
+    <li><a href="#quiz" onclick="showSection('quiz')">Quiz 测验</a></li>
+    <li><a href="#flashcards" onclick="showSection('flashcards')">Flashcards 闪卡</a></li>
+    <li><a href="#review" onclick="showSection('review')">Review 复习</a></li>
+    <li><a href="#recommend" onclick="showSection('recommend')">Next Steps 推荐</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+<!-- HOME -->
+<div id="home" class="section active">
+  <h1>Week 15 Learning Hub</h1>
+  <p class="subtitle">2026-W15 (Apr 6-12) &mdash; KUSE App V2 &mdash; Next.js / React / Zustand<br>
+  第 15 周学习中心 &mdash; 订阅降级、SSE 刷新、Cron 轮询、技能上传</p>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num">105</div><div class="stat-label">Commits 提交数</div></div>
+    <div class="stat-box"><div class="stat-num">4</div><div class="stat-label">New Concepts 新概念</div></div>
+    <div class="stat-box"><div class="stat-num">19</div><div class="stat-label">Total Concepts 累计概念</div></div>
+    <div class="stat-box"><div class="stat-num">W4</div><div class="stat-label">Streak 连续周数</div></div>
+  </div>
+
+  <h2>This Week's Concepts 本周概念</h2>
+  <div class="card" style="cursor:pointer" onclick="showSection('concepts')">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fde8e8">💰</div>
+      <div><div class="card-title">Subscription Downgrade State Machine</div><div class="card-title-sub">订阅降级状态机 &mdash; Scheduled state, restore, feature flags, error classification</div></div>
+      <span class="tag">frontend</span>
+    </div>
+  </div>
+  <div class="card" style="cursor:pointer" onclick="showSection('concepts')">
+    <div class="card-header">
+      <div class="card-icon" style="background:#dbeafe">📡</div>
+      <div><div class="card-title">SSE Event-Driven File Tree Refresh</div><div class="card-title-sub">SSE 事件驱动文件树刷新 &mdash; Deliverables pipeline, debounced refresh, mutation adapter</div></div>
+      <span class="tag">frontend</span>
+    </div>
+  </div>
+  <div class="card" style="cursor:pointer" onclick="showSection('concepts')">
+    <div class="card-header">
+      <div class="card-icon" style="background:#e8f5e9">⏰</div>
+      <div><div class="card-title">Cron Schedule & Polling Architecture</div><div class="card-title-sub">Cron 调度与轮询架构 &mdash; Bidirectional cron conversion, adaptive polling, optimistic runs</div></div>
+      <span class="tag">frontend</span>
+    </div>
+  </div>
+  <div class="card" style="cursor:pointer" onclick="showSection('concepts')">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fef3e2">📤</div>
+      <div><div class="card-title">Upload/Replace Skill CRUD</div><div class="card-title-sub">技能上传替换 CRUD &mdash; 409 conflict detection, force replace, upload pattern comparison</div></div>
+      <span class="tag">frontend</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONCEPTS -->
+<div id="concepts" class="section">
+  <h1>Concepts 概念详解</h1>
+  <p class="subtitle">Deep analysis of each concept with code comparisons<br>每个概念的深度分析与代码对比</p>
+
+  <!-- Concept 1: Downgrade -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fde8e8">💰</div>
+      <div><div class="card-title">Subscription Downgrade State Machine 订阅降级状态机</div></div>
+    </div>
+    <p>A complete lifecycle for managing subscription downgrades: 2-layer state architecture (subscription-level <code class="code-inline">scheduled_change</code> + component-level <code class="code-inline">pendingPaymentKey</code> lock), structured error classification (<code class="code-inline">DowngradeErrorKind</code>), and GA4 funnel tracking.</p>
+    <p style="margin-top:8px;color:var(--text-muted)">完整的订阅降级生命周期管理：2 层状态架构、结构化错误分类、GA4 漏斗埋点、团队 vs 个人差异化处理。</p>
+
+    <div class="deep-dive">
+      <button class="deep-dive-toggle" onclick="toggleDeepDive(this)">▶ Deep Dive 深度分析</button>
+      <div class="deep-dive-content">
+        <h3>State Model 状态模型</h3>
+        <div class="code-block">// Subscription level (from store/pro/index.ts)
+scheduled_change: boolean          // Is a downgrade scheduled? 是否已安排降级？
+scheduled_change_price_id: string  // Target plan 目标计划
+scheduled_change_effective_at: string // When it takes effect 生效时间
+cancel_at_period_end: boolean      // Legacy flag 遗留标志
+
+// Rendered states: current | scheduled | restore | downgrade | upgrade
+// 渲染状态：当前 | 已安排 | 恢复 | 降级 | 升级</div>
+
+        <h3 style="margin-top:16px">Comparison with Existing Patterns 与现有模式对比</h3>
+        <table class="cmp-table">
+          <tr><th>Pattern 模式</th><th>Location 位置</th><th>States 状态</th><th>Reversible? 可逆？</th></tr>
+          <tr><td>Publish 发布</td><td>apis/pages.ts</td><td>published / unpublished + dirty</td><td>Yes, immediate 即时</td></tr>
+          <tr><td>Task Status 任务状态</td><td>store/turboTasks</td><td>active / paused / deleted</td><td>Yes, optimistic 乐观</td></tr>
+          <tr><td><strong>Downgrade 降级</strong></td><td>utils/billing/downgrade.ts</td><td>current → scheduled → effective</td><td>Yes, but deferred 延迟</td></tr>
+        </table>
+
+        <div class="decision-tree">
+          <div class="dt-title">Decision Guide 决策指南</div>
+          <ul>
+            <li>Instant + reversible 即时+可逆 → Optimistic toggle (task status) 乐观切换</li>
+            <li>Instant + irreversible 即时+不可逆 → Confirm dialog + immediate (publish) 确认弹窗</li>
+            <li>Deferred + cancellable 延迟+可取消 → State machine (downgrade) 状态机</li>
+            <li>Involves money 涉及金钱 → Never optimistic, always wait for server 绝不乐观更新</li>
+          </ul>
+        </div>
+
+        <h3 style="margin-top:16px">Key Pattern: PendingPaymentKey Lock 支付锁模式</h3>
+        <div class="code-block">// Prevents double-submit with scoped key 用作用域 key 防止双重提交
+const activePaymentKey = `personal:${priceLevel}:${billingPeriod}`;
+setPendingPaymentKey(activePaymentKey);  // Lock UI 锁定 UI
+try {
+  await downgradeSubscription({ price_id });
+  // Server confirms scheduled_change === true
+} finally {
+  setPendingPaymentKey(null);  // Unlock 解锁
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 2: SSE Refresh -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#dbeafe">📡</div>
+      <div><div class="card-title">SSE Event-Driven File Tree Refresh SSE 事件驱动文件树刷新</div></div>
+    </div>
+    <p>How SSE <code class="code-inline">deliverables</code> and <code class="code-inline">turn_end</code> events flow through streamProcessor → mutationAdapter → refreshScheduler to update the file tree. Combines immediate mutations with debounced batch refreshes.</p>
+    <p style="margin-top:8px;color:var(--text-muted)">SSE 事件如何通过三层管线触发文件树增量更新：即时 mutation + 延迟批量防抖刷新。</p>
+
+    <div class="deep-dive">
+      <button class="deep-dive-toggle" onclick="toggleDeepDive(this)">▶ Deep Dive 深度分析</button>
+      <div class="deep-dive-content">
+        <h3>Data Flow Pipeline 数据流管线</h3>
+        <div class="code-block">SSE Event (deliverables/turn_end)
+  ↓ streamProcessor.ts — extract files, normalize to ExistingFileInfo
+  ↓ mutationAdapter.ts — immediate: nodesByPath[path] = node; treeVersion++
+  ↓ refreshScheduler.ts — debounced: 800ms per-folder, seq dedup
+  ↓ listDir() — batch refresh folder listing from API</div>
+
+        <h3 style="margin-top:16px">Three Side-Effect Patterns 三种副作用模式</h3>
+        <table class="cmp-table">
+          <tr><th>Pattern 模式</th><th>When 何时使用</th><th>Latency 延迟</th></tr>
+          <tr><td>Direct mutation 直接变更</td><td>File create/delete (must be instant) 文件增删</td><td>0ms</td></tr>
+          <tr><td>Debounced callback 防抖回调</td><td>Skills refresh, folder listing 技能刷新</td><td>800ms</td></tr>
+          <tr><td>Event bus 事件总线</td><td>UI state (panels, selections) UI 状态</td><td>~0ms</td></tr>
+        </table>
+
+        <div class="decision-tree">
+          <div class="dt-title">Decision Guide 决策指南</div>
+          <ul>
+            <li>Must be visible immediately 必须即时可见 → Direct store mutation</li>
+            <li>Can tolerate 800ms delay 可容忍延迟 → refreshScheduler debounce</li>
+            <li>Third-party list refresh 第三方列表 → setTimeout debounce</li>
+            <li>Delete: ONLY mutation, NO parent refresh 删除：仅 mutation，不刷新父目录（避免已删文件闪现）</li>
+          </ul>
+        </div>
+
+        <h3 style="margin-top:16px">RefreshScheduler: Sequence Dedup 序号去重</h3>
+        <div class="code-block">// Per-folder debounce with stale-check 每文件夹防抖 + 过期检查
+schedule(path) {
+  const mySeq = ++seq[path];
+  clearTimeout(timers[path]);
+  timers[path] = setTimeout(() => {
+    if (seq[path] === mySeq) listDir(path); // Only run if no newer event
+  }, 800);
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 3: Cron Polling -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#e8f5e9">⏰</div>
+      <div><div class="card-title">Cron Schedule & Polling Architecture Cron 调度与轮询架构</div></div>
+    </div>
+    <p>Bidirectional cron expression ↔ UI conversion supporting 6 frequency types (every-N-minutes, hourly, daily, weekly, monthly, once). Multi-layer adaptive polling that adjusts interval based on task running state.</p>
+    <p style="margin-top:8px;color:var(--text-muted)">Cron 表达式双向转换 + 多层自适应轮询（根据运行状态动态调整间隔）+ optimistic run 插入。</p>
+
+    <div class="deep-dive">
+      <button class="deep-dive-toggle" onclick="toggleDeepDive(this)">▶ Deep Dive 深度分析</button>
+      <div class="deep-dive-content">
+        <h3>Cron ↔ UI Conversion 双向转换</h3>
+        <div class="code-block">// parseCron(): string → UI state
+"*/30 * * * *"     → { frequency: 'every_minutes', intervalMinutes: 30 }
+"0 * * * *"        → { frequency: 'hourly', minute: 0 }
+"0 9/2 * * *"      → { frequency: 'hourly', hour: 9, intervalHours: 2 }
+"30 14 * * 1"      → { frequency: 'weekly', minute: 30, hour: 14, weekday: 1 }
+"0 8 15 * *"       → { frequency: 'monthly', minute: 0, hour: 8, dayOfMonth: 15 }
+"0 10 25 4 *"      → { frequency: 'once', with calendar date picker }
+
+// buildCron(): UI state → string (reverse of above)</div>
+
+        <h3 style="margin-top:16px">Adaptive Polling 自适应轮询</h3>
+        <table class="cmp-table">
+          <tr><th>Layer 层级</th><th>Interval 间隔</th><th>Condition 条件</th></tr>
+          <tr><td>TaskList</td><td>10s / 30s</td><td>Any task running? 有任务运行中？</td></tr>
+          <tr><td>TaskDetailPanel</td><td>5s / 15s</td><td>Current task running? 当前任务运行中？</td></tr>
+          <tr><td>Change detection</td><td>skip render</td><td>run_id + status arrays unchanged 未变化则跳过</td></tr>
+        </table>
+
+        <h3 style="margin-top:16px">Real-Time Data Patterns Comparison 实时数据模式对比</h3>
+        <table class="cmp-table">
+          <tr><th>Pattern 模式</th><th>Example 例子</th><th>Pros 优点</th><th>Cons 缺点</th></tr>
+          <tr><td>SSE long connection</td><td>Chat streaming</td><td>Most real-time 最实时</td><td>Connection overhead 连接开销大</td></tr>
+          <tr><td>Fixed polling 固定轮询</td><td>Assets treeVersion</td><td>Simplest 最简单</td><td>Wastes bandwidth 浪费带宽</td></tr>
+          <tr><td>Adaptive polling 自适应</td><td>ScheduledTasks</td><td>Balanced 平衡</td><td>Complex logic 逻辑复杂</td></tr>
+        </table>
+
+        <div class="decision-tree">
+          <div class="dt-title">Decision Guide 决策指南</div>
+          <ul>
+            <li>Server supports SSE/WS 服务端支持推送 → Long connection 长连接</li>
+            <li>REST only + need real-time 仅 REST + 需实时 → Adaptive polling 自适应轮询</li>
+            <li>REST only + low urgency 低实时要求 → Fixed interval 固定轮询</li>
+            <li>User-triggered action 用户触发操作 → Optimistic insert + dedup 乐观插入+去重</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 4: Upload/Replace -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:#fef3e2">📤</div>
+      <div><div class="card-title">Upload/Replace Skill CRUD 技能上传替换 CRUD</div></div>
+    </div>
+    <p>Complete upload → conflict detection → replace flow: client-side validation, server-driven 409 conflict detection, <code class="code-inline">forceReplace</code> prop to bypass confirmation, and post-upload full refresh via <code class="code-inline">loadSkills()</code>.</p>
+    <p style="margin-top:8px;color:var(--text-muted)">完整的文件上传→冲突检测→替换流程：客户端校验、服务端 409 冲突、force 参数跳过确认、上传后全量刷新。</p>
+
+    <div class="deep-dive">
+      <button class="deep-dive-toggle" onclick="toggleDeepDive(this)">▶ Deep Dive 深度分析</button>
+      <div class="deep-dive-content">
+        <h3>Upload Patterns Comparison 上传模式对比</h3>
+        <table class="cmp-table">
+          <tr><th>Pattern 模式</th><th>Location 位置</th><th>Files 文件数</th><th>Progress 进度</th><th>Conflict 冲突</th></tr>
+          <tr><td>Chat upload</td><td>fileUpload.ts</td><td>Multi 多文件</td><td>Yes (optimistic + tempId)</td><td>N/A</td></tr>
+          <tr><td>Finder drag-drop</td><td>FinderView.tsx</td><td>Multi 多文件</td><td>No (full refresh)</td><td>N/A</td></tr>
+          <tr><td><strong>Skill upload</strong></td><td>UploadSkillDialog</td><td>Single 单文件</td><td>No (full refresh)</td><td>409 → confirm</td></tr>
+        </table>
+
+        <div class="code-block">// Skill upload flow 技能上传流程
+1. File drop/select → client validate (.md/.zip/.skill, < 10MB)
+2. POST /api/folder/v1/skills/upload (force=false)
+3. If 409 → show "Skill exists, replace?" dialog
+4. If confirmed → POST again with force=true
+5. On success → loadSkills() full refresh</div>
+
+        <div class="decision-tree">
+          <div class="dt-title">Decision Guide 决策指南</div>
+          <ul>
+            <li>Single file + tolerate delay 单文件+容忍延迟 → Simple mode (API + loadAll)</li>
+            <li>Multi files + instant feedback 多文件+即时反馈 → Optimistic (tempId + parallel)</li>
+            <li>Name conflicts possible 可能冲突 → 409 detection + confirm + force param</li>
+            <li>Large files / need progress 大文件/需进度 → uploadFilesUnified + onProgress</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="section">
+  <h1>Quiz 测验</h1>
+  <p class="subtitle">Test your understanding of this week's concepts<br>测试你对本周概念的理解</p>
+
+  <div class="quiz-card">
+    <div class="quiz-q">1. You're building a "cancel membership" feature where cancellation takes effect at the end of the billing period. Which pattern should you use?<br>
+    <span style="color:var(--text-muted)">你在构建一个"取消会员"功能，取消在账单周期结束时生效。应该使用哪种模式？</span></div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">A. Optimistic toggle with UndoEntry rollback 乐观切换+撤销</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'correct')">B. Scheduled state machine with server-confirmed effective_at 延迟调度状态机</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">C. Immediate publish/unpublish toggle 即时发布切换</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">D. Boolean flag with confirm dialog 布尔标志+确认弹窗</button>
+    </div>
+    <div class="quiz-explain">Deferred + cancellable transitions involving money should use a state machine pattern. The server determines effective_at and the user can restore/cancel before that date. Never use optimistic updates for financial operations.<br>
+    <span style="color:var(--text-muted)">涉及金钱的延迟可取消转换应使用状态机模式。服务端确定生效时间，用户可在生效前取消。金融操作绝不使用乐观更新。</span></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">2. An AI agent creates 5 files rapidly via SSE. How does the file tree handle this without excessive API calls?<br>
+    <span style="color:var(--text-muted)">AI agent 通过 SSE 快速创建了 5 个文件。文件树如何在不过度调用 API 的情况下处理？</span></div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">A. Queue all 5 events and process them sequentially 队列化 5 个事件依次处理</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">B. Ignore intermediate events and only process the last one 忽略中间事件只处理最后一个</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'correct')">C. Immediate mutation for each file + single debounced folder refresh 每个文件即时 mutation + 单次防抖文件夹刷新</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">D. Batch all files and send a single API request 批量发送单次 API 请求</button>
+    </div>
+    <div class="quiz-explain">The hybrid approach: each file gets an immediate store mutation (nodesByPath update) so it appears instantly. The refreshScheduler debounces folder listing to 800ms, so all 5 files result in just one listDir() call. The seq dedup ensures stale refreshes don't execute.<br>
+    <span style="color:var(--text-muted)">混合方案：每个文件即时 store mutation 让它立即显示。refreshScheduler 将文件夹列表防抖到 800ms，5 个文件只触发一次 listDir()。seq 去重确保过期刷新不执行。</span></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">3. A scheduled task runs every 2 hours starting at 9 AM. What cron expression does buildCron() generate?<br>
+    <span style="color:var(--text-muted)">一个定时任务从早上 9 点开始每 2 小时运行一次。buildCron() 生成什么 cron 表达式？</span></div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">A. <code>0 */2 * * *</code></button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'correct')">B. <code>0 9/2 * * *</code></button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">C. <code>0 9,11,13,15,17 * * *</code></button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">D. <code>*/120 * * * *</code></button>
+    </div>
+    <div class="quiz-explain"><code>0 9/2 * * *</code> means "at minute 0, starting at hour 9 and every 2 hours after." This is the standard cron step notation for hourly intervals with a start offset. <code>*/2</code> would start from 0, not 9.<br>
+    <span style="color:var(--text-muted)"><code>0 9/2 * * *</code> 表示"在第 0 分钟，从第 9 小时开始每 2 小时"。这是带偏移的标准 cron 步进表示法。<code>*/2</code> 从 0 开始而非 9。</span></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">4. You upload a skill file and the server returns HTTP 409. What happens in the UploadSkillDialog?<br>
+    <span style="color:var(--text-muted)">上传技能文件时服务端返回 HTTP 409。UploadSkillDialog 中会发生什么？</span></div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">A. Upload is retried automatically with force=true 自动以 force=true 重试</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'correct')">B. A confirmation dialog asks if the user wants to replace the existing skill 确认弹窗询问是否替换</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">C. The file is renamed with a suffix and uploaded 文件被加后缀重命名后上传</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">D. An error toast is shown and upload stops 显示错误 toast 并停止上传</button>
+    </div>
+    <div class="quiz-explain">409 means the skill already exists. The dialog shows a confirmation asking if the user wants to replace it. If confirmed, the upload is retried with <code>force=true</code>. The forceReplace prop from the SkillCard menu skips this confirmation entirely.<br>
+    <span style="color:var(--text-muted)">409 表示技能已存在。弹窗询问用户是否替换。确认后以 force=true 重新上传。从 SkillCard 菜单的 forceReplace prop 会跳过此确认。</span></div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">5. The TaskList polls at 30s intervals. A user clicks "Run Now" and the task starts running. What changes?<br>
+    <span style="color:var(--text-muted)">TaskList 以 30s 间隔轮询。用户点击"立即运行"后任务开始运行。有什么变化？</span></div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">A. Nothing — polling interval stays at 30s 无变化，保持 30s</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">B. Polling stops and waits for WebSocket push 轮询停止等待 WebSocket</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'correct')">C. An optimistic run is inserted immediately, and polling interval drops to 10s 即时插入乐观 run，轮询降至 10s</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,'wrong')">D. A one-time fetch is triggered, then back to 30s 触发一次拉取后回到 30s</button>
+    </div>
+    <div class="quiz-explain">Two things happen: (1) An optimistic run with <code>run_id: "optimistic-{timestamp}"</code> is inserted at the head of the runs list for immediate feedback. (2) The presence of a "running" task causes the interval to switch from 30s to 10s for faster status updates.<br>
+    <span style="color:var(--text-muted)">两件事：(1) 插入 optimistic run 提供即时反馈；(2) 有"running"任务导致轮询从 30s 切换到 10s。</span></div>
+  </div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="flashcards" class="section">
+  <h1>Flashcards 闪卡</h1>
+  <p class="subtitle">Click to flip. Front: English term. Back: Chinese explanation + key details<br>点击翻转。正面：英文术语。背面：中文解释 + 关键细节</p>
+
+  <div class="fc-grid">
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>Scheduled State Machine</h3><p>Deferred state transition pattern</p></div>
+        <div class="fc-back">延迟调度状态机：变更在未来时间点生效（如账单周期结束），期间可取消（restore）。关键：涉及金钱时绝不乐观更新，全部等服务端确认 scheduled_change === true。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>PendingPaymentKey Lock</h3><p>Scoped double-submit prevention</p></div>
+        <div class="fc-back">支付锁模式：用作用域 key（如 personal:pro:monthly）锁定 UI 防止双重提交。比全局 loading 更精确——只锁定对应的按钮，其他 plan 卡片仍可交互。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>RefreshScheduler<br>Sequence Dedup</h3><p>Per-folder debounce + stale check</p></div>
+        <div class="fc-back">防抖刷新调度器：每个文件夹维护 seq 序号，每次 schedule() 递增。800ms 后检查 seq 是否匹配——如果有更新的事件，旧的刷新被自动丢弃。避免 N 个文件创建触发 N 次 listDir()。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>Mutation + Refresh<br>Hybrid Pattern</h3><p>Immediate visibility + batched API calls</p></div>
+        <div class="fc-back">混合副作用模式：文件增删即时写入 nodesByPath（0ms 可见），文件夹列表延迟 800ms 批量刷新。Delete 特殊：只做 mutation 不刷新父目录，防止已删文件闪现。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>Adaptive Polling</h3><p>State-dependent interval switching</p></div>
+        <div class="fc-back">自适应轮询：根据数据状态动态调整间隔。TaskList：running → 10s, idle → 30s。TaskDetail：running → 5s, else → 15s。配合 change detection 跳过无变化的重渲染。比 SSE 简单，比固定轮询省带宽。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>Cron Step Notation</h3><p>start/step in cron expressions</p></div>
+        <div class="fc-back">Cron 步进表示法：<code>9/2</code> = 从 9 开始每 2 步（9,11,13,15...）。<code>*/30</code> = 从 0 开始每 30 步。parseCron ↔ buildCron 双向转换，支持 6 种频率类型。once 模式需要 disabled-time 校验（禁选过去时间）。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>409 Conflict Detection</h3><p>Server-driven conflict resolution</p></div>
+        <div class="fc-back">409 冲突检测模式：服务端判断名称冲突比前端预检查更可靠（无竞态），但多一次 round-trip。流程：upload(force=false) → 409 → confirm → upload(force=true)。forceReplace prop 可跳过确认步骤。</div>
+      </div>
+    </div>
+    <div class="fc-card" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><h3>Optimistic Run Insert</h3><p>Synthetic run_id for instant feedback</p></div>
+        <div class="fc-back">乐观运行插入：点击"立即运行"时生成合成 run（run_id: "optimistic-{timestamp}"），插入列表头部。服务端返回真实 run 后，通过 run_id 前缀匹配去重替换。提供即时反馈同时保持数据一致性。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW -->
+<div id="review" class="section">
+  <h1>Review Schedule 复习计划</h1>
+  <p class="subtitle">Based on Ebbinghaus forgetting curve. Today: 2026-04-12<br>基于艾宾浩斯遗忘曲线。今天：2026-04-12</p>
+
+  <h2>Overdue Reviews 逾期复习</h2>
+  <div class="card" style="border-left: 3px solid #c0392b;">
+    <h3>Stage 2 — Due April 7 (5 days overdue) 逾期 5 天</h3>
+    <p>These W12 concepts need Stage 2 review (3-day interval):<br>这些 W12 概念需要第 2 阶段复习：</p>
+    <ul style="margin-top:8px; padding-left:20px; font-size:14px;">
+      <li>虚拟滚动 + 树形扁平化 (Virtual Scroll with Tree Flattening)</li>
+      <li>拖拽系统高级模式 (@dnd-kit Advanced Patterns)</li>
+      <li>文件移动冲突解决与失败回滚 (Move Conflict Resolution)</li>
+      <li>网页发布流程设计 (Web Page Publish Workflow)</li>
+      <li>WebSocket 重连安全机制 (WebSocket Reconnect Safety)</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border-left: 3px solid #e67e22;">
+    <h3>Stage 1 — Due April 5 (7 days overdue) 逾期 7 天</h3>
+    <p>These W13-W14 concepts need Stage 1 review:<br>这些 W13-W14 概念需要第 1 阶段复习：</p>
+    <ul style="margin-top:8px; padding-left:20px; font-size:14px;">
+      <li>UIBlock 交互卡片模式 / Pipedream OAuth / Customize View / 下载导出重构</li>
+      <li>积分争议系统 / 批量操作模式 / 竞态条件防护 / Tiptap InputRule</li>
+      <li>SSE 三层架构 / 定时任务 CRUD / IME 防护 / Tiptap Suggestion / 互斥视图状态</li>
+    </ul>
+  </div>
+
+  <h2 style="margin-top:24px">This Week's Plan 本周复习计划</h2>
+  <div class="review-grid">
+    <div class="review-day has-review">
+      <div class="day-label">Sun 周日</div><div class="day-num">12</div>
+      <div class="review-item">W12 × 5 (Stage 2)</div>
+      <div class="review-item">W13-14 × 13 (Stage 1)</div>
+    </div>
+    <div class="review-day has-review">
+      <div class="day-label">Mon 周一</div><div class="day-num">13</div>
+      <div class="review-item">W15 × 4 (Stage 1)</div>
+    </div>
+    <div class="review-day">
+      <div class="day-label">Tue 周二</div><div class="day-num">14</div>
+    </div>
+    <div class="review-day has-review">
+      <div class="day-label">Wed 周三</div><div class="day-num">15</div>
+      <div class="review-item">W15 × 4 (Stage 2)</div>
+      <div class="review-item">W12 × 5 (Stage 3)</div>
+    </div>
+    <div class="review-day">
+      <div class="day-label">Thu 周四</div><div class="day-num">16</div>
+    </div>
+    <div class="review-day">
+      <div class="day-label">Fri 周五</div><div class="day-num">17</div>
+    </div>
+    <div class="review-day has-review">
+      <div class="day-label">Sat 周六</div><div class="day-num">18</div>
+      <div class="review-item">W13-14 × 13 (Stage 2)</div>
+    </div>
+  </div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div id="recommend" class="section">
+  <h1>Next Steps 下一步推荐</h1>
+  <p class="subtitle">Learning recommendations based on this week's work<br>基于本周工作的学习推荐</p>
+
+  <div class="rec-card">
+    <h3>1. Zustand Middleware Composition & Store Maturity Upgrade <span class="rec-priority high">high</span></h3>
+    <p style="font-size:13px;color:var(--text-muted)">Zustand 中间件组合与 Store 成熟度升级</p>
+    <p style="margin-top:8px"><strong>Why 为什么学：</strong>W14 identified turboTasksStore as the simplest store. W15 added 4 more store interaction scenarios (downgrade PricingCardContext, skills store, connectors store). Need a systematic upgrade path from MVP to production store.</p>
+    <p style="margin-top:8px"><strong>How 怎么学：</strong></p>
+    <ul style="padding-left:20px; font-size:14px;">
+      <li>Read source: Compare <code class="code-inline">store/pro/index.ts</code> vs <code class="code-inline">store/turboTasks/index.ts</code> middleware differences</li>
+      <li>Experiment: Add subscribeWithSelector + event bus to turboTasksStore, observe cross-component reactivity improvement</li>
+      <li>Docs: Zustand v4 middleware composition documentation</li>
+    </ul>
+    <p style="margin-top:8px"><strong>Expected outcome 预期收获：</strong>Establish a checklist for when a simple store needs middleware upgrades (subscribeWithSelector, devtools, event bus, AbortController)</p>
+  </div>
+
+  <div class="rec-card">
+    <h3>2. Frontend Billing System Design Patterns <span class="rec-priority medium">medium</span></h3>
+    <p style="font-size:13px;color:var(--text-muted)">前端计费系统的设计模式</p>
+    <p style="margin-top:8px"><strong>Why 为什么学：</strong>Implemented full downgrade flow this week but backend (Stripe) understanding is limited. The pending/scheduled/active state machine pattern is universal in SaaS billing.</p>
+    <p style="margin-top:8px"><strong>How 怎么学：</strong></p>
+    <ul style="padding-left:20px; font-size:14px;">
+      <li>Read Stripe docs: Subscription Schedules API and Proration sections</li>
+      <li>Compare: project's <code class="code-inline">scheduled_change_effective_at</code> vs Stripe's <code class="code-inline">schedule.phases</code></li>
+      <li>Understand webhook-driven state transitions vs polling</li>
+    </ul>
+    <p style="margin-top:8px"><strong>Expected outcome 预期收获：</strong>Ability to design frontend billing UIs that accurately reflect backend subscription lifecycle</p>
+  </div>
+
+  <div class="rec-card">
+    <h3>3. SSE Reconnection & Last-Event-ID Deep Dive <span class="rec-priority medium">medium</span></h3>
+    <p style="font-size:13px;color:var(--text-muted)">SSE 断点续传与重连策略深入</p>
+    <p style="margin-top:8px"><strong>Why 为什么学：</strong>Both the SSE 3-layer architecture (W14) and this week's deliverables refresh depend on reliable SSE connections. The details of Last-Event-ID reconnection, visibility change retry, and TTL degradation need deeper understanding.</p>
+    <p style="margin-top:8px"><strong>How 怎么学：</strong></p>
+    <ul style="padding-left:20px; font-size:14px;">
+      <li>Read source: <code class="code-inline">lib/fetchEventSource/index.ts</code> and <code class="code-inline">streamManager.ts</code> reconnection logic</li>
+      <li>Experiment: Chrome DevTools → simulate network offline → restore, observe Last-Event-ID header</li>
+      <li>Read MDN: EventSource reconnection specification</li>
+    </ul>
+    <p style="margin-top:8px"><strong>Expected outcome 预期收获：</strong>Ability to debug SSE connection issues and design reconnection strategies for different failure modes</p>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.querySelector(`nav a[href="#${id}"]`).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function toggleDeepDive(btn) {
+  const content = btn.nextElementSibling;
+  content.classList.toggle('open');
+  btn.textContent = content.classList.contains('open') ? '▼ Deep Dive 深度分析' : '▶ Deep Dive 深度分析';
+}
+
+function checkQuiz(btn, result) {
+  const card = btn.closest('.quiz-card');
+  if (card.dataset.answered) return;
+  card.dataset.answered = 'true';
+  btn.classList.add(result);
+  if (result === 'wrong') {
+    card.querySelector('.quiz-opt:nth-child(' + (Array.from(card.querySelectorAll('.quiz-opt')).findIndex(o => o.onclick.toString().includes("'correct'")) + 1) + ')').classList.add('correct');
+  }
+  card.querySelector('.quiz-explain').style.display = 'block';
+}
+</script>
+</body>
+</html>
