@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Week 24 Learning Hub — W24 学习枢纽</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1f2330;
+    --border: #2a2f3d;
+    --text: #e6e8ee;
+    --text-dim: #9aa3b2;
+    --accent: #6cc3ff;
+    --accent-2: #b288ff;
+    --ok: #6ee7a8;
+    --warn: #ffd166;
+    --bad: #ff7a7a;
+    --code-bg: #0b0d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  header {
+    padding: 32px 48px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(108,195,255,0.08), transparent);
+  }
+  h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+  .sub { color: var(--text-dim); font-size: 14px; }
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 48px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  nav button:hover { color: var(--text); border-color: var(--accent); }
+  nav button.active {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  main { padding: 32px 48px 80px; max-width: 1200px; margin: 0 auto; }
+  section { margin-bottom: 48px; display: none; }
+  section.active { display: block; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: var(--accent);
+  }
+  .card .zh { color: var(--text-dim); font-size: 14px; font-weight: 400; }
+  .card h3 {
+    margin: 20px 0 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    margin-right: 6px;
+  }
+  .tag.frontend { background: rgba(108,195,255,0.15); color: var(--accent); }
+  .tag.backend { background: rgba(178,136,255,0.15); color: var(--accent-2); }
+  .tag.general { background: rgba(255,209,102,0.15); color: var(--warn); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--surface-2); color: var(--text-dim); font-weight: 600; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 8px 0;
+  }
+  code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
+  pre code { color: #d4d8e0; }
+  ul { margin: 6px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  details {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  details[open] summary { margin-bottom: 10px; }
+  .quiz-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .quiz-q p.q { font-weight: 600; margin: 0 0 10px; }
+  .choice {
+    display: block;
+    padding: 10px 14px;
+    margin: 6px 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .choice:hover { border-color: var(--accent); }
+  .choice.correct { background: rgba(110,231,168,0.15); border-color: var(--ok); color: var(--ok); }
+  .choice.incorrect { background: rgba(255,122,122,0.15); border-color: var(--bad); color: var(--bad); }
+  .explain {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(108,195,255,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: none;
+  }
+  .explain.show { display: block; }
+  .flashcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    min-height: 110px;
+    transition: all 0.2s;
+  }
+  .flashcard:hover { border-color: var(--accent); }
+  .flashcard .front { font-size: 16px; font-weight: 600; }
+  .flashcard .back {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 13.5px;
+    color: var(--text-dim);
+    display: none;
+  }
+  .flashcard.flipped .back { display: block; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .two-col > div {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .two-col h4 { margin: 0 0 8px; font-size: 13px; color: var(--accent-2); }
+  .decision {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #d4d8e0;
+  }
+  .decision .arrow { color: var(--accent); }
+  .recs { display: grid; gap: 14px; }
+  .rec {
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 6px;
+  }
+  .rec.high { border-left-color: var(--bad); }
+  .rec.medium { border-left-color: var(--warn); }
+  .rec.low { border-left-color: var(--text-dim); }
+  .rec h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+  .rec .why, .rec .how, .rec .gain { margin: 6px 0; font-size: 13.5px; }
+  .rec strong { color: var(--accent); }
+  @media (max-width: 720px) {
+    header, nav, main { padding-left: 20px; padding-right: 20px; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Week 24 Learning Hub — W24 学习枢纽</h1>
+  <div class="sub">2026-06-01 → 2026-06-08 · ~230 commits · Jieying · Kuse Finder v2</div>
+  <div class="sub" style="margin-top:4px">Theme 主题: Data ownership in client storage, surviving component remounts, and disciplined shared-logic extraction / 客户端存储的数据归属、组件重挂载的存活策略、有纪律的共享逻辑抽取</div>
+</header>
+
+<nav>
+  <button class="active" data-tab="home" onclick="switchTab('home', this)">Home 首页</button>
+  <button data-tab="concepts" onclick="switchTab('concepts', this)">Concepts 概念 (4)</button>
+  <button data-tab="decisions" onclick="switchTab('decisions', this)">Decision Guides 决策指南</button>
+  <button data-tab="quiz" onclick="switchTab('quiz', this)">Quiz 测验</button>
+  <button data-tab="flashcards" onclick="switchTab('flashcards', this)">Flashcards 闪卡</button>
+  <button data-tab="recs" onclick="switchTab('recs', this)">Recommendations 推荐</button>
+</nav>
+
+<main>
+
+<!-- ============ HOME ============ -->
+<section id="home" class="active">
+  <div class="card">
+    <h2>This Week at a Glance 本周概览</h2>
+    <p>The week was dominated by the new <strong>Pinned Projects</strong> sidebar feature plus three <strong>collapsed-rail popovers</strong> (Projects / Recents / My workflows). The interesting engineering wasn't the UI — it was the <em>plumbing decisions underneath it</em>: where pin data lives, how a popover that unmounts on every close avoids re-fetching, and when to extract shared logic vs. leave a near-duplicate alone.</p>
+    <p class="zh">本周主线是新的<strong>置顶项目（Pinned Projects）</strong>侧边栏功能，以及三个<strong>收起态侧栏弹窗</strong>（Projects / Recents / My workflows）。真正有含金量的不是 UI 本身，而是<em>底层的工程决策</em>：置顶数据存哪里、一个每次关闭就卸载的弹窗如何避免重复请求、以及什么时候该抽共享逻辑、什么时候该容忍一段近似重复的代码。</p>
+
+    <h3>4 Concepts Extracted 提取的 4 个概念</h3>
+    <ul>
+      <li><span class="tag general">general</span> <strong>Per-user vs device-global client storage</strong> — pin ids are account data, so they must be keyed by user id, not by device. 客户端存储的数据归属：账号级数据要按用户 id 分键，不能用设备级全局 key。</li>
+      <li><span class="tag frontend">frontend</span> <strong>Surviving component remounts: three cache strategies</strong> — module cache + session flag vs Zustand store vs store-event invalidation, all coexisting in one file. 组件重挂载存活：模块缓存 + 会话标志 vs Zustand store vs store 事件失效，三种策略同居一个文件。</li>
+      <li><span class="tag frontend">frontend</span> <strong>Disciplined shared-selector extraction</strong> — extract <code>splitByPinned</code> for the two that share identity/ordering rules; leave <code>AssetsTree</code>'s <code>includes()</code> alone. 有纪律的共享选择器抽取：抽取真正共享规则的，放过形状不同的。</li>
+      <li><span class="tag frontend">frontend</span> <strong>Version-counter signal for derived store reads</strong> — read <code>getState().getRootFolders()</code> keyed on a <code>treeVersion</code> counter instead of subscribing to a reference-unstable array. 版本计数器信号驱动派生读取：依赖 treeVersion 计数器读取，而非订阅引用不稳定的数组。</li>
+    </ul>
+
+    <h3>Why These Four 为什么是这四个</h3>
+    <p>This week had ~230 commits but most were UI/style polish and i18n churn. The four above are the ones with a real <em>decision</em> behind them — each one had an in-project alternative it was weighed against, which is exactly what makes them worth internalizing.</p>
+    <p class="zh">本周约 230 个 commit，但大部分是 UI/样式打磨和 i18n 同步。上面这四个是真正带有<em>决策</em>的：每一个都在项目里有一个被权衡过的替代方案——这正是它们值得内化的原因。</p>
+  </div>
+</section>
+
+<!-- ============ CONCEPTS ============ -->
+<section id="concepts">
+
+  <!-- Concept 1 -->
+  <div class="card">
+    <h2>1. Per-user vs Device-global Client Storage</h2>
+    <div class="zh">客户端存储的数据归属：账号级 vs 设备级</div>
+    <span class="tag general">general</span><span class="tag">data ownership</span><span class="tag">localStorage</span>
+
+    <h3>What & Why 是什么 / 为什么</h3>
+    <p>Pinned project ids were first stored under one device-global key <code>kuse_pinned_project_ids</code>. On a shared browser profile, one account's pins <em>leaked to the next user</em>. The fix: key storage by user id (<code>kuse_pinned_project_ids_&lt;userId&gt;</code>), resync on account change, and one-time migrate the legacy global key.</p>
+    <p class="zh">置顶 id 最初存在一个设备级全局 key 下。在共享浏览器配置上，一个账号的置顶会<em>泄漏给下一个用户</em>。修复：按用户 id 分键，账号切换时重新同步，并把旧的全局 key 一次性迁移过去。</p>
+
+    <p><strong>The core distinction 核心区分</strong>：is this datum a property of the <em>device/browser</em>, or of the <em>account</em>?</p>
+    <ul>
+      <li><strong>Device-global</strong> 设备级：pure UI prefs that don't belong to anyone — e.g. the section's <code>isExpanded</code> toggle. 纯 UI 偏好，不属于任何账号，如 isExpanded 展开状态。</li>
+      <li><strong>Account-scoped</strong> 账号级：anything that references server entities (folder ids, pins, version preference). 任何引用服务端实体的数据（文件夹 id、置顶、版本偏好）。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — code comparison</summary>
+      <p><strong>This week's implementation 本次实现</strong> · <code>store/pinnedProjects/index.ts</code></p>
+<pre><code>const STORAGE_PREFIX = 'kuse_pinned_project_ids_';
+const LEGACY_STORAGE_KEY = 'kuse_pinned_project_ids'; // pre-scoping
+
+function getStorageKey(userId) {
+  return userId != null ? `${STORAGE_PREFIX}${userId}` : `${STORAGE_PREFIX}guest`;
+}
+
+// activeStorageKey follows the signed-in user
+function syncPinsToUser(userId) {
+  const key = getStorageKey(userId);
+  if (key === activeStorageKey) return;
+  activeStorageKey = key;
+  // first sync to a real user → adopt legacy global pins, then delete them
+  if (userId != null &amp;&amp; getLocalStorageItem(key) == null) {
+    const legacy = sanitizeIds(getLocalStorageItem(LEGACY_STORAGE_KEY));
+    if (legacy.length) { savePinnedIds(legacy); removeLocalStorageItem(LEGACY_STORAGE_KEY); }
+  }
+  usePinnedProjectsStore.setState({ pinnedIds: loadPinnedIds(activeStorageKey) });
+}
+
+// subscribe to the user store so pins re-sync on sign-in / switch / logout
+useUserStore.subscribe((state) => {
+  const userId = state.user?.id ?? null;
+  if (userId === lastUserId) return;
+  lastUserId = userId; syncPinsToUser(userId);
+});</code></pre>
+
+      <p><strong>In-project precedent 项目中的先例</strong> · <code>utils/versionPreference.ts</code> — the exact same pattern, deliberately followed:</p>
+<pre><code>const LEGACY_STORAGE_KEY = 'kuse_version_preference';
+const USER_STORAGE_PREFIX = 'kuse_version_preference_';
+
+const getUserStorageKey = (userId) =>
+  userId ? `${USER_STORAGE_PREFIX}${userId}` : `${USER_STORAGE_PREFIX}guest`;
+
+// migrate legacy → guest on first read (only when no user)
+if (!stored &amp;&amp; !userId) {
+  const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+  if (legacy) { localStorage.setItem(userKey, legacy); localStorage.removeItem(LEGACY_STORAGE_KEY); }
+}</code></pre>
+
+      <table>
+        <tr><th>Dimension 维度</th><th>versionPreference (older)</th><th>pinnedProjects (this week)</th></tr>
+        <tr><td>Read model 读取模型</td><td>Functions read storage on demand (pull). 函数按需拉取。</td><td>Mirrored into a Zustand store, re-loaded on user change (push). 镜像进 store，账号变化时主动重载。</td></tr>
+        <tr><td>Cross-component sync 跨组件同步</td><td>Custom <code>window</code> CustomEvent. 自定义 window 事件。</td><td>Zustand subscription on the user store. 订阅 user store。</td></tr>
+        <tr><td>Migration trigger 迁移时机</td><td>Lazy: on first read with no user. 懒迁移：首次无用户读取时。</td><td>On first sync to a real user. 首次同步到真实用户时。</td></tr>
+        <tr><td>Guest handling 访客处理</td><td><code>_guest</code> bucket. 单独 guest 桶。</td><td><code>_guest</code> bucket. 同样。</td></tr>
+      </table>
+      <p>Both reach the same answer; pinnedProjects picks the <em>reactive store mirror</em> because pins drive a live-rendered list (the store push avoids stale UI after an account switch), whereas version preference is read once at route-decision time so a pull is enough.</p>
+    </details>
+
+    <h3>Decision Guide 决策指南</h3>
+    <div class="decision">
+      Does the value reference a server entity (id/account)?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> key by userId + migrate legacy + resync on account change<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no  →</span> device-global key is fine (pure UI toggle)<br>
+      <br>
+      Does it drive a live-rendered list/UI?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> mirror into a store + push on user change (avoid stale UI)<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no  →</span> pull on demand from storage is enough
+    </div>
+  </div>
+
+  <!-- Concept 2 -->
+  <div class="card">
+    <h2>2. Surviving Component Remounts: Three Cache Strategies</h2>
+    <div class="zh">组件重挂载存活：三种缓存策略</div>
+    <span class="tag frontend">frontend</span><span class="tag">Radix Popover</span><span class="tag">caching</span>
+
+    <h3>What & Why 是什么 / 为什么</h3>
+    <p>Radix <code>PopoverContent</code> <strong>unmounts on close</strong>. So the collapsed-rail "My workflows" popover remounts <code>MyWorkflowsList</code> on every open — which originally re-fired <code>listProjects</code> + <code>buildWorkflowAPI.list</code> + <code>fetchWorkflows</code> every single time. The fix used <em>three different caches for three different data sources, in one file</em>.</p>
+    <p class="zh">Radix 弹窗内容<strong>关闭即卸载</strong>，所以收起态 "My workflows" 弹窗每次打开都会重挂载组件、重新发三个请求。修复方案在一个文件里用了<em>针对三种数据源的三种不同缓存</em>。</p>
+
+    <details>
+      <summary>Deep Dive 深度分析 — three caches side by side</summary>
+      <p><strong>① Module-level cache + session flag</strong> (for MA workflows, fetched via raw API):</p>
+<pre><code>// module scope — survives remounts, dies on full page reload
+let cachedMAWorkflowProjects = null;
+let cachedMAWorkflowDefs = null;
+let hasFetchedTurboWorkflowsOnce = false;
+
+useEffect(() => {
+  // popover remounts on every open → skip refetch if cache exists
+  if (variant === 'popover' &amp;&amp; cachedMAWorkflowProjects !== null) return;
+  // ... fetch, then: cachedMAWorkflowProjects = merged;
+}, [variant]);</code></pre>
+
+      <p><strong>② Zustand store cache</strong> (for turbo workflows — the store already persists across remounts):</p>
+<pre><code>const fetchWorkflows = useWorkflowStore((s) => s.fetchWorkflows);
+useEffect(() => {
+  if (variant === 'popover' &amp;&amp; hasFetchedTurboWorkflowsOnce) {
+    setIsInitialTurboReady(true);
+    return; // store already holds the list
+  }
+  void fetchWorkflows().finally(() => { hasFetchedTurboWorkflowsOnce = true; });
+}, [fetchWorkflows, variant]);</code></pre>
+
+      <p><strong>③ Store-event invalidation</strong> (keeps the module cache fresh without re-fetching):</p>
+<pre><code>storeEvents.subscribe(STORE_EVENTS.MA_WORKFLOW_CHANGED, ({ siteProjectId, workflowId, workflowName }) =&gt; {
+  setSiteProjects((prev) =&gt; {
+    const next = prev.map((sp) =&gt; sp.id === siteProjectId ? { ...sp, workflow_id: workflowId } : sp);
+    cachedMAWorkflowProjects = next;   // patch the module cache in place
+    return next;
+  });
+});</code></pre>
+
+      <table>
+        <tr><th>Strategy 策略</th><th>Lifetime 生命周期</th><th>Why here 为何选它</th></tr>
+        <tr><td>① Module cache + flag</td><td>Until page reload 直到刷新页面</td><td>Data comes from a raw API call with no store of its own — module scope is the cheapest place that outlives a remount. 数据来自无 store 的原始 API，模块作用域是最便宜的「比重挂载活得久」的容器。</td></tr>
+        <tr><td>② Zustand store</td><td>Until page reload 直到刷新</td><td>Turbo workflows already live in a store — reuse it, only guard against the redundant per-open fetch. 复用已有 store，只挡掉每次打开的冗余请求。</td></tr>
+        <tr><td>③ Store events</td><td>Live 实时</td><td>Cache freshness without polling — chat stream tells us when a workflow changed, so we patch in place instead of re-fetching. 不靠轮询保新鲜——chat 流告诉我们何时变化，原地打补丁。</td></tr>
+      </table>
+      <p><strong>The key insight 关键洞见</strong>: "cache to survive remount" and "keep cache fresh" are <em>two separate problems</em>. ①② solve survival; ③ solves freshness. Conflating them leads to either stale data or wasteful re-fetches.</p>
+    </details>
+
+    <h3>Decision Guide 决策指南</h3>
+    <div class="decision">
+      Does the data already live in a store?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> reuse store + a session flag to skip per-open refetch<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no  →</span> module-level cache (cheapest container that outlives remount)<br>
+      <br>
+      Can the cache go stale while open elsewhere?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> add event-driven in-place patching (no re-fetch)<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no  →</span> survival cache alone is enough
+    </div>
+  </div>
+
+  <!-- Concept 3 -->
+  <div class="card">
+    <h2>3. Disciplined Shared-Selector Extraction</h2>
+    <div class="zh">有纪律的共享选择器抽取</div>
+    <span class="tag frontend">frontend</span><span class="tag">DRY</span><span class="tag">refactor</span>
+
+    <h3>What & Why 是什么 / 为什么</h3>
+    <p><code>PinnedSection</code> and <code>ProjectsPopover</code> each had the same ~18-line "resolve pinned ids in pin order + remainder" loop. They were merged into one generic <code>splitByPinned(items, pinnedIds, getId)</code>. Crucially, <code>AssetsTree</code>'s pinned check was <em>left alone</em> — it only needs a boolean <code>includes()</code> membership test, a different shape that wouldn't benefit.</p>
+    <p class="zh">两个组件各有一段约 18 行相同的「按置顶顺序解析 + 余项」循环，合并为通用的 <code>splitByPinned</code>。关键是：<code>AssetsTree</code> 的置顶判断<em>没有动</em>——它只需要布尔 <code>includes()</code> 成员判断，形状不同，抽取无收益。</p>
+    <p>This is the project's own CLAUDE.md rule in action: <em>"If the same business rule appears in 2+ places, move it to a shared selector. Do NOT extract just to satisfy a line count."</em></p>
+
+    <details>
+      <summary>Deep Dive 深度分析 — what was shared vs. what was kept</summary>
+      <p><strong>Extracted 抽取出来的</strong> · <code>store/pinnedProjects/index.ts</code>:</p>
+<pre><code>export function splitByPinned(items, pinnedIds, getId) {
+  if (pinnedIds.length === 0) return { pinned: [], unpinned: [...items] };
+  const pinnedById = new Map();
+  const unpinned = [];
+  for (const item of items) {
+    const id = getId(item);
+    if (id != null &amp;&amp; pinnedIds.includes(id)) pinnedById.set(id, item);
+    else unpinned.push(item);
+  }
+  // preserve PIN ORDER, not item order — this is the shared business rule
+  const pinned = pinnedIds.map((id) =&gt; pinnedById.get(id)).filter((x) =&gt; x !== undefined);
+  return { pinned, unpinned };
+}</code></pre>
+      <p>Used identically by both consumers via a <code>getId</code> adapter:</p>
+<pre><code>// ProjectsPopover.tsx
+const { pinned, unpinned } = splitByPinned(filteredFolders, pinnedIds, getNodeNumericId);
+// PinnedSection.tsx — same call, different item shape</code></pre>
+
+      <p><strong>NOT extracted 没有抽取的</strong> · <code>AssetsTree</code> keeps:</p>
+<pre><code>// just "is this node pinned?" — a membership test, not an ordered split
+pinnedIds.includes(getNodeNumericId(node))</code></pre>
+
+      <table>
+        <tr><th>Consumer 使用方</th><th>Need 需求</th><th>Decision 决策</th></tr>
+        <tr><td>PinnedSection</td><td>ordered pinned group + remainder</td><td>→ shared <code>splitByPinned</code></td></tr>
+        <tr><td>ProjectsPopover</td><td>ordered pinned group + remainder</td><td>→ shared <code>splitByPinned</code></td></tr>
+        <tr><td>AssetsTree</td><td>boolean "is pinned?" per node</td><td>→ keep inline <code>includes()</code></td></tr>
+      </table>
+      <p>The discriminator is <strong>"do they share the same business rule, or just the same word?"</strong> Both popover/section share <em>pin-order identity resolution</em> (a rule). AssetsTree shares only the <em>concept</em> "pinned" — its logic is genuinely different and forcing it into the shared selector would add a worse abstraction.</p>
+    </details>
+
+    <h3>Decision Guide 决策指南</h3>
+    <div class="decision">
+      Do 2+ call sites share the same business RULE (not just a keyword)?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> extract a generic selector with an adapter param (getId)<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no  →</span> keep it inline — a forced shared abstraction is worse than dupe<br>
+      <br>
+      Tempted to extract only to hit a line-count target?<br>
+      &nbsp;&nbsp;<span class="arrow">└─ don't.</span> Line count is not a reason to extract (project rule).
+    </div>
+  </div>
+
+  <!-- Concept 4 -->
+  <div class="card">
+    <h2>4. Version-Counter Signal for Derived Store Reads</h2>
+    <div class="zh">版本计数器信号驱动派生读取</div>
+    <span class="tag frontend">frontend</span><span class="tag">Zustand</span><span class="tag">memo</span>
+
+    <h3>What & Why 是什么 / 为什么</h3>
+    <p><code>ProjectsPopover</code> needs the list of root folders. Instead of subscribing to a derived array (which would produce a new reference every render and defeat memoization), it subscribes to a single integer <code>treeVersion</code> and reads <code>getState().getRootFolders()</code> inside a <code>useMemo</code> keyed on that counter.</p>
+    <p class="zh"><code>ProjectsPopover</code> 需要根文件夹列表。它没有订阅派生数组（每次渲染产生新引用，破坏 memo），而是订阅一个整数 <code>treeVersion</code>，在以该计数器为 key 的 <code>useMemo</code> 内读取 <code>getState().getRootFolders()</code>。</p>
+
+    <details>
+      <summary>Deep Dive 深度分析 — counter signal vs. subscribing the array</summary>
+      <p><strong>This week 本次</strong> · <code>ProjectsPopover.tsx</code>:</p>
+<pre><code>// subscribe to a stable integer that bumps when the tree changes
+const treeVersion = useAssetsStore((s) =&gt; s.treeVersion);
+const rootFolders = React.useMemo(
+  () =&gt; useAssetsStore.getState().getRootFolders(), // read derived data imperatively
+  [treeVersion]                                      // recompute only on real change
+);</code></pre>
+      <p><strong>The store side 存储侧</strong> · <code>store/assets/index.ts</code> bumps the counter only when it matters:</p>
+<pre><code>treeVersion: 0,
+// on create/delete/rename:
+set((s) =&gt; ({ ...s, treeVersion: s.treeVersion + 1 }));
+// but for a metadata-only update, bump ONLY if sorting fields changed:
+...(bumpVersion ? { treeVersion: s.treeVersion + 1 } : {})</code></pre>
+
+      <p><strong>The naive alternative 朴素替代</strong> (what this avoids):</p>
+<pre><code>// ❌ getRootFolders() returns a NEW array each call → new reference every render
+const rootFolders = useAssetsStore((s) =&gt; s.getRootFolders());
+// selector returns unstable ref → component re-renders even when nothing changed
+// (Zustand compares by Object.is; a fresh array is never === the previous one)</code></pre>
+
+      <table>
+        <tr><th>Approach 方案</th><th>Re-render trigger 触发重渲染</th><th>Cost 代价</th></tr>
+        <tr><td>Subscribe derived array</td><td>Every store change (new ref each time) 每次 store 变化</td><td>Over-renders; needs a custom equality fn to tame. 过度渲染，需自定义 equality。</td></tr>
+        <tr><td>Counter signal + getState() (this week)</td><td>Only when treeVersion bumps 仅版本号变化时</td><td>Recompute exactly when the tree truly changed. 仅在树真正变化时重算。</td></tr>
+      </table>
+      <p>The extra subtlety: the store is <em>selective</em> about bumping — a non-structural metadata write that doesn't affect sort order doesn't bump <code>treeVersion</code>, so the popover doesn't even recompute. The counter is a hand-tuned "did anything I care about change?" signal.</p>
+    </details>
+
+    <h3>Decision Guide 决策指南</h3>
+    <div class="decision">
+      Does your selector return a freshly-computed object/array?<br>
+      &nbsp;&nbsp;<span class="arrow">├─ yes →</span> don't subscribe it directly (unstable ref → over-renders)<br>
+      &nbsp;&nbsp;<span class="arrow">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> subscribe a version counter, read via getState() in useMemo<br>
+      &nbsp;&nbsp;<span class="arrow">└─ no (primitive/stable ref) →</span> subscribe it directly, it's fine<br>
+      <br>
+      Alternative: pass a custom equality fn (e.g. shallow) to the selector —<br>
+      use when you can't add a counter to the store you don't own.
+    </div>
+  </div>
+
+</section>
+
+<!-- ============ DECISIONS ============ -->
+<section id="decisions">
+  <div class="card">
+    <h2>All Decision Guides 全部决策指南</h2>
+    <p class="zh">把本周四个概念的「什么时候选什么」浓缩在一页，便于复习时快速过一遍。</p>
+
+    <h3>① Client storage scoping 客户端存储分键</h3>
+    <div class="decision">
+      references a server entity (id / account)? <span class="arrow">→</span> key by userId + migrate + resync<br>
+      pure UI toggle? <span class="arrow">→</span> device-global key<br>
+      drives a live-rendered list? <span class="arrow">→</span> mirror into store + push on user change
+    </div>
+
+    <h3>② Surviving remounts 重挂载存活</h3>
+    <div class="decision">
+      data already in a store? <span class="arrow">→</span> reuse store + session flag<br>
+      no store? <span class="arrow">→</span> module-level cache<br>
+      can go stale while open? <span class="arrow">→</span> add event-driven in-place patching
+    </div>
+
+    <h3>③ Shared-logic extraction 共享逻辑抽取</h3>
+    <div class="decision">
+      2+ sites share the same RULE? <span class="arrow">→</span> extract generic selector + getId adapter<br>
+      share only the word/concept? <span class="arrow">→</span> keep inline<br>
+      only to hit a line count? <span class="arrow">→</span> don't extract
+    </div>
+
+    <h3>④ Derived store reads 派生读取</h3>
+    <div class="decision">
+      selector returns fresh object/array? <span class="arrow">→</span> counter signal + getState() in useMemo<br>
+      selector returns primitive/stable ref? <span class="arrow">→</span> subscribe directly<br>
+      can't edit the store? <span class="arrow">→</span> pass custom equality fn
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="quiz">
+  <div class="card">
+    <h2>Quiz 测验 — scenario-based 情景题</h2>
+    <p class="zh">每题给一个具体场景，选出你会怎么做。重点不是「概念是什么」，而是「在这个场景里你选哪个、为什么」。</p>
+  </div>
+
+  <div class="quiz-q" data-correct="1">
+    <p class="q">Q1. You're adding a "favorite color theme" toggle to the sidebar. It's a pure UI preference. How should you store it? / 你要加一个纯 UI 的主题色偏好开关，怎么存？</p>
+    <span class="choice" data-i="0">Key it by userId like the pinned ids. 像置顶 id 一样按用户分键。</span>
+    <span class="choice" data-i="1">Device-global key — it's a UI toggle, not account data. 设备级全局 key——是 UI 偏好不是账号数据。</span>
+    <span class="choice" data-i="2">Store it server-side via an API. 通过 API 存服务端。</span>
+    <span class="choice" data-i="3">Use a module-level variable. 用模块级变量。</span>
+    <div class="explain">A theme toggle is a property of the device/browser, not the account — so a device-global key (like pinnedProjects' <code>isExpanded</code>) is correct. Only data that references server entities needs per-user scoping. 主题偏好是设备属性而非账号属性，设备级 key 正确。只有引用服务端实体的数据才需要按用户分键。</div>
+  </div>
+
+  <div class="quiz-q" data-correct="2">
+    <p class="q">Q2. A Radix popover re-fetches a list on every open. The data lives in a Zustand store. Best fix? / Radix 弹窗每次打开都重拉列表，数据在 Zustand store 里，最佳修复？</p>
+    <span class="choice" data-i="0">Add a module-level cache variable. 加模块级缓存变量。</span>
+    <span class="choice" data-i="1">Keep the popover content mounted (forceMount). 让弹窗内容常驻挂载。</span>
+    <span class="choice" data-i="2">Reuse the store + a session flag to skip the per-open refetch. 复用 store + 会话标志挡掉每次打开的请求。</span>
+    <span class="choice" data-i="3">Switch to React Query. 换成 React Query。</span>
+    <div class="explain">If the data is already in a store, the store survives remounts for free — you only need a session flag (<code>hasFetchedTurboWorkflowsOnce</code>) to skip the redundant per-open fetch. A module cache would be redundant; forceMount changes UX semantics. 数据已在 store 里，store 本就能跨重挂载存活，只需一个会话标志挡掉冗余请求。</div>
+  </div>
+
+  <div class="quiz-q" data-correct="0">
+    <p class="q">Q3. Two components share an ordered "pinned + rest" split. A third only needs "is X pinned?". What do you extract? / 两个组件共享「置顶+余项」有序拆分，第三个只需「X 是否置顶」。抽什么？</p>
+    <span class="choice" data-i="0">Extract splitByPinned for the two; leave the third's includes() inline. 给前两个抽 splitByPinned；第三个保留 includes()。</span>
+    <span class="choice" data-i="1">Extract one mega-helper covering all three. 抽一个覆盖三者的大 helper。</span>
+    <span class="choice" data-i="2">Don't extract — duplication is fine everywhere. 都不抽，到处重复也行。</span>
+    <span class="choice" data-i="3">Extract three separate tiny helpers. 抽三个独立小 helper。</span>
+    <div class="explain">Extract where the same business RULE is shared (the ordered split). The boolean membership test is a genuinely different shape — folding it into the shared selector would be a worse abstraction. Extract by shared rule, not shared keyword. 按共享的业务规则抽取（有序拆分）；布尔成员判断形状不同，强行合并是更差的抽象。</div>
+  </div>
+
+  <div class="quiz-q" data-correct="3">
+    <p class="q">Q4. A Zustand selector <code>s.getRootFolders()</code> returns a new array each call, causing over-renders. Cleanest fix in a store you own? / 选择器每次返回新数组导致过度渲染，你拥有该 store，最干净的修复？</p>
+    <span class="choice" data-i="0">Wrap the component in React.memo. 用 React.memo 包组件。</span>
+    <span class="choice" data-i="1">Call getRootFolders() in render without useMemo. 渲染里直接调用不用 memo。</span>
+    <span class="choice" data-i="2">Deep-clone and compare manually. 手动深拷贝比较。</span>
+    <span class="choice" data-i="3">Subscribe a treeVersion counter, read via getState() in a useMemo keyed on it. 订阅 treeVersion 计数器，在以它为 key 的 useMemo 里用 getState() 读取。</span>
+    <div class="explain">Subscribe a stable integer that bumps only on real change, then read the derived data imperatively inside useMemo. React.memo doesn't help (the unstable ref is the prop); calling in render still re-runs every render. If you didn't own the store, a custom equality fn would be the fallback. 订阅只在真正变化时自增的整数，再在 memo 内命令式读取派生数据。</div>
+  </div>
+
+  <div class="quiz-q" data-correct="1">
+    <p class="q">Q5. Your module cache survives remounts, but a workflow gets renamed elsewhere and the cached list shows the old name. What's missing? / 模块缓存能存活重挂载，但别处重命名后缓存仍显示旧名。缺了什么？</p>
+    <span class="choice" data-i="0">A longer cache TTL. 更长的缓存 TTL。</span>
+    <span class="choice" data-i="1">Event-driven in-place invalidation (patch the cache on a store event). 事件驱动的原地失效（监听 store 事件打补丁）。</span>
+    <span class="choice" data-i="2">Disable the cache entirely. 干脆禁用缓存。</span>
+    <span class="choice" data-i="3">Poll the API every 5 seconds. 每 5 秒轮询一次。</span>
+    <div class="explain">"Survive remount" and "stay fresh" are separate problems. The cache survives fine — it just needs freshness via store-event subscription (<code>MA_WORKFLOW_CHANGED</code> patches the cache in place), not polling or disabling. 「存活」和「新鲜」是两个问题；缓存没问题，缺的是事件驱动的新鲜度维护。</div>
+  </div>
+
+  <div class="quiz-q" data-correct="0">
+    <p class="q">Q6. You ship a per-user storage key. Existing users had their data under the old global key. What must you NOT forget? / 你上线了按用户分键的存储，老用户数据在旧全局 key 下。绝不能忘的是？</p>
+    <span class="choice" data-i="0">One-time migration of the legacy key on first sync to a real user. 首次同步到真实用户时一次性迁移旧 key。</span>
+    <span class="choice" data-i="1">Nothing — old data can just be lost. 没什么，旧数据丢了就丢了。</span>
+    <span class="choice" data-i="2">Force every user to re-login. 强制所有用户重新登录。</span>
+    <span class="choice" data-i="3">Keep writing to both keys forever. 永远同时写两个 key。</span>
+    <div class="explain">Without migration, every existing user silently loses their pins on deploy. The pattern: on first sync to a real user, if the new key is empty, adopt the legacy global value then delete it. Writing to both forever defeats the scoping fix. 不迁移则老用户上线即丢数据；正确做法是首次同步时迁移旧值再删除旧 key。</div>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS ============ -->
+<section id="flashcards">
+  <div class="card">
+    <h2>Flashcards 闪卡</h2>
+    <p class="zh">点击翻面。正面英文术语，背面中文解释 + 英文补充。</p>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Device-global vs account-scoped storage</div>
+    <div class="back">区分依据：这个值是<strong>设备/浏览器</strong>的属性还是<strong>账号</strong>的属性。引用服务端实体（id、置顶、偏好）→ 按 userId 分键；纯 UI 开关（展开状态）→ 设备级。<br><em>The split is "property of the device" vs "property of the account."</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Legacy key migration</div>
+    <div class="back">从全局 key 切到按用户分键时，必须在<strong>首次同步到真实用户</strong>时把旧值迁移过去再删除旧 key，否则老用户上线即丢数据。<br><em>Migrate the pre-scoping global key once, or existing users lose data on deploy.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Radix Popover unmounts on close</div>
+    <div class="back">PopoverContent 关闭即卸载，所以内部组件每次打开都重挂载并重跑 effects/请求。需要缓存来跨重挂载存活。<br><em>Closed popover content unmounts → child remounts every open → effects/fetches re-fire.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Module cache vs store cache (for survival)</div>
+    <div class="back">数据已在 store 里 → 复用 store + 会话标志挡冗余请求；数据无 store（原始 API）→ 模块级变量是最便宜的「比重挂载活得久」的容器。<br><em>In a store? Reuse it + a flag. No store? Module-scope variable.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Survival ≠ Freshness</div>
+    <div class="back">「跨重挂载存活」和「保持新鲜」是两个独立问题。缓存解决存活；store 事件原地打补丁解决新鲜度——不靠轮询，不靠禁用缓存。<br><em>Caching solves survival; store-event in-place patching solves freshness.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">splitByPinned — extract by RULE</div>
+    <div class="back">两个组件共享「按 pin 顺序拆分」这条<strong>规则</strong> → 抽通用选择器（用 getId adapter 适配不同 item 形状）。第三个只共享「置顶」这个<strong>词</strong>、逻辑是 includes() → 保留 inline。<br><em>Extract shared rules, not shared keywords.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Don't extract for line count</div>
+    <div class="back">项目规则：不要仅为满足行数指标去拆文件/抽 helper。抽取的理由必须是「2+ 处共享同一业务规则」。<br><em>Line count is never a reason to extract (project CLAUDE.md rule).</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Unstable selector reference</div>
+    <div class="back">返回新数组/对象的 selector 每次渲染产生新引用，Zustand 用 Object.is 比较永远不相等 → 过度渲染。<br><em>A selector returning a fresh array is never === the previous one → over-renders.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Version-counter signal</div>
+    <div class="back">订阅一个只在真正变化时自增的整数（treeVersion），在以它为 key 的 useMemo 内用 <code>getState()</code> 命令式读取派生数据。store 还能选择性自增（无关变化不 bump）。<br><em>Subscribe a counter, read derived data via getState() in a keyed useMemo.</em></div>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Custom equality fn (fallback)</div>
+    <div class="back">当你<strong>无法</strong>给不属于自己的 store 加版本号时，给 selector 传一个自定义 equality（如 shallow）来抑制无效重渲染——是 version-counter 的退路方案。<br><em>Pass a shallow/custom equality fn when you can't add a counter to a store you don't own.</em></div>
+  </div>
+</section>
+
+<!-- ============ RECOMMENDATIONS ============ -->
+<section id="recs">
+  <div class="card">
+    <h2>Next-Step Recommendations 下一步学习推荐</h2>
+    <p>Based on W24 themes and gaps. Pick 1-2 to deep-dive before next week.</p>
+    <p class="zh">基于本周主题和薄弱点。下周前挑 1-2 个深入。</p>
+  </div>
+
+  <div class="recs">
+    <div class="rec high">
+      <h3>1. Backend session / account-scoped data — server-side equivalent of this week's storage fix (优先级: high)</h3>
+      <p class="why"><strong>Why 为什么</strong>: This week was ALL frontend (storage scoping, caching, selectors). The pin-leak bug existed because pins lived client-side. The backend equivalent — how does the server scope account data, enforce tenant isolation, prevent one user reading another's rows? You touched <code>user_id</code> / <code>tenant_id</code> fields in <code>synthesizeForkWrapperProject</code> but never the enforcement layer. 本周全是前端；置顶泄漏 bug 的根源是数据在客户端。后端如何做账号/租户隔离、防止越权读取——你碰到了 user_id/tenant_id 字段却没碰执行层。</p>
+      <p class="how"><strong>How 怎么学</strong>: Read the Go backend's middleware that injects the authed user into request context (search <code>scheduler</code> / <code>internal/services</code> for auth middleware). Trace one list endpoint (e.g. <code>/sites/v1/projects</code>) from handler → query → the WHERE clause that scopes by tenant. Experiment: write a query without the tenant filter and see what leaks. 读 Go 后端把已认证用户注入请求上下文的中间件，追踪一个 list 端点从 handler 到带租户过滤的 WHERE 子句。</p>
+      <p class="gain"><strong>Gain 收获</strong>: You'll understand data isolation end-to-end — and recognize that the client-side scoping you did this week is defense-in-depth, NOT the real boundary. 端到端理解数据隔离，认清本周的客户端分键是纵深防御而非真正边界。</p>
+    </div>
+
+    <div class="rec high">
+      <h3>2. Zustand selector performance & equality functions, systematically (优先级: high)</h3>
+      <p class="why"><strong>Why 为什么</strong>: The treeVersion trick is one of several Zustand re-render patterns. You used it correctly but reached for it ad-hoc. There's a systematic toolkit: <code>useShallow</code>, custom equality, <code>subscribeWithSelector</code> (already used in pinnedProjects!), and atomic selectors. Knowing the full set means you stop hand-rolling counters when a built-in fits. treeVersion 只是 Zustand 防过度渲染的一种；还有 useShallow、自定义 equality、subscribeWithSelector、原子选择器。掌握全套就不会每次都手搓计数器。</p>
+      <p class="how"><strong>How 怎么学</strong>: Read the Zustand docs section on "Selecting multiple state slices" + <code>useShallow</code>. Audit <code>store/assets/index.ts</code> and <code>store/pinnedProjects/index.ts</code> — both use <code>subscribeWithSelector</code>; figure out what that middleware actually enables. Experiment: rewrite ProjectsPopover's treeVersion read using <code>useShallow</code> and measure renders with React DevTools Profiler. 读 Zustand 文档的多切片选择 + useShallow，审计两个已用 subscribeWithSelector 的 store，用 Profiler 对比两种写法的渲染次数。</p>
+      <p class="gain"><strong>Gain 收获</strong>: A decision table for "which Zustand pattern for which render problem" instead of reinventing per-case. 建立「哪种渲染问题用哪个 Zustand 模式」的决策表。</p>
+    </div>
+
+    <div class="rec medium">
+      <h3>3. Cache invalidation patterns beyond hand-rolled events (优先级: medium)</h3>
+      <p class="why"><strong>Why 为什么</strong>: MyWorkflowsList hand-rolls module cache + four <code>storeEvents.subscribe</code> blocks to keep it fresh. That's a lot of manual wiring for what libraries (React Query / SWR) call "cache invalidation" and "optimistic updates." Worth knowing the off-the-shelf model to judge when the hand-rolled version is justified. MyWorkflowsList 手搓了模块缓存 + 4 个事件订阅来保新鲜；这正是 React Query/SWR 的「缓存失效 + 乐观更新」。了解成熟模型才能判断何时手搓合理。</p>
+      <p class="how"><strong>How 怎么学</strong>: Read TanStack Query's "Query Invalidation" + "Optimistic Updates" docs. Map each concept onto MyWorkflowsList: <code>cachedMAWorkflowProjects</code> = query cache, <code>MA_WORKFLOW_CHANGED</code> handler = <code>setQueryData</code> patch, the popover skip-flag = <code>staleTime</code>. Experiment: sketch how the same component would look with React Query. 读 TanStack Query 的失效与乐观更新文档，把本周代码逐项映射过去。</p>
+      <p class="gain"><strong>Gain 收获</strong>: You'll articulate exactly why the team hand-rolls (stream-driven, not request-driven) and when a library would win. 能说清团队为何手搓（流驱动而非请求驱动），以及何时该上库。</p>
+    </div>
+
+    <div class="rec low">
+      <h3>4. Radix UI primitives — mount/portal lifecycle (优先级: low)</h3>
+      <p class="why"><strong>Why 为什么</strong>: Two separate bugs this week traced back to Radix behavior: PopoverContent unmounting on close (the refetch issue) and Dialog being rendered as a sibling so portal clicks don't bubble to the row (the delete-then-renavigate comment in MyWorkflowsList). Understanding Radix's portal + mount model prevents a whole class of these. 本周两个 bug 都源于 Radix 行为：弹窗关闭即卸载、Dialog 作为兄弟节点渲染以免 portal 点击冒泡。理解其 portal/mount 模型可预防一整类问题。</p>
+      <p class="how"><strong>How 怎么学</strong>: Read Radix's docs on <code>forceMount</code> and the Portal component. Find the comment in <code>MyWorkflowsList.tsx</code> about rendering Dialog as a sibling "so synthetic click events from inside the portal don't bubble back" — reproduce that bug deliberately by nesting it, then watch the re-navigation. 读 Radix 的 forceMount/Portal 文档，按 MyWorkflowsList 里的注释故意复现「点击冒泡导致误导航」的 bug。</p>
+      <p class="gain"><strong>Gain 收获</strong>: Instinct for when Radix's unmount/portal defaults will bite, and the two escape hatches (forceMount, sibling rendering). 对 Radix 卸载/portal 默认行为何时坑人的直觉，以及两个逃生口。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+  // Global tab switcher — called directly from onclick attribute for resilience
+  function switchTab(tabId, btnEl) {
+    var navBtns = document.querySelectorAll('nav button');
+    for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+    var secs = document.querySelectorAll('section');
+    for (var j = 0; j < secs.length; j++) secs[j].classList.remove('active');
+    if (btnEl) btnEl.classList.add('active');
+    var target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function initInteractions() {
+    // Quiz — choices need a data-i index assigned for click handling
+    var quizQs = document.querySelectorAll('.quiz-q');
+    for (var qi = 0; qi < quizQs.length; qi++) {
+      (function (q) {
+        var correct = parseInt(q.getAttribute('data-correct'), 10);
+        var choices = q.querySelectorAll('.choice');
+        for (var ci = 0; ci < choices.length; ci++) {
+          choices[ci].setAttribute('data-i', ci);
+          (function (c) {
+            c.addEventListener('click', function () {
+              var picked = parseInt(c.getAttribute('data-i'), 10);
+              var all = q.querySelectorAll('.choice');
+              for (var k = 0; k < all.length; k++) {
+                all[k].classList.remove('correct', 'incorrect');
+              }
+              if (picked === correct) {
+                c.classList.add('correct');
+              } else {
+                c.classList.add('incorrect');
+                for (var m = 0; m < all.length; m++) {
+                  if (parseInt(all[m].getAttribute('data-i'), 10) === correct) {
+                    all[m].classList.add('correct');
+                  }
+                }
+              }
+              var exp = q.querySelector('.explain');
+              if (exp) exp.classList.add('show');
+            });
+          })(choices[ci]);
+        }
+      })(quizQs[qi]);
+    }
+
+    // Flashcards
+    var cards = document.querySelectorAll('.flashcard');
+    for (var fi = 0; fi < cards.length; fi++) {
+      (function (f) {
+        f.addEventListener('click', function () { f.classList.toggle('flipped'); });
+      })(cards[fi]);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initInteractions);
+  } else {
+    initInteractions();
+  }
+</script>
+</body>
+</html>

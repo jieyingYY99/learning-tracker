@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Week 16 Learning Hub — W16 学习枢纽</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1f2330;
+    --border: #2a2f3d;
+    --text: #e6e8ee;
+    --text-dim: #9aa3b2;
+    --accent: #6cc3ff;
+    --accent-2: #b288ff;
+    --ok: #6ee7a8;
+    --warn: #ffd166;
+    --bad: #ff7a7a;
+    --code-bg: #0b0d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  header {
+    padding: 32px 48px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(108,195,255,0.08), transparent);
+  }
+  h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+  .sub { color: var(--text-dim); font-size: 14px; }
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 48px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  nav button {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  nav button:hover { color: var(--text); border-color: var(--accent); }
+  nav button.active {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  main { padding: 32px 48px 80px; max-width: 1200px; margin: 0 auto; }
+  section { margin-bottom: 48px; display: none; }
+  section.active { display: block; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: var(--accent);
+  }
+  .card .zh { color: var(--text-dim); font-size: 14px; font-weight: 400; }
+  .card h3 {
+    margin: 20px 0 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    margin-right: 6px;
+  }
+  .tag.frontend { background: rgba(108,195,255,0.15); color: var(--accent); }
+  .tag.backend { background: rgba(178,136,255,0.15); color: var(--accent-2); }
+  .tag.general { background: rgba(255,209,102,0.15); color: var(--warn); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--surface-2); color: var(--text-dim); font-weight: 600; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 8px 0;
+  }
+  code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
+  pre code { color: #d4d8e0; }
+  ul { margin: 6px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  details {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  details[open] summary { margin-bottom: 10px; }
+  .quiz-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .quiz-q p.q { font-weight: 600; margin: 0 0 10px; }
+  .choice {
+    display: block;
+    padding: 10px 14px;
+    margin: 6px 0;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .choice:hover { border-color: var(--accent); }
+  .choice.correct { background: rgba(110,231,168,0.15); border-color: var(--ok); color: var(--ok); }
+  .choice.incorrect { background: rgba(255,122,122,0.15); border-color: var(--bad); color: var(--bad); }
+  .explain {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(108,195,255,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: none;
+  }
+  .explain.show { display: block; }
+  .flashcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    min-height: 110px;
+    transition: all 0.2s;
+  }
+  .flashcard:hover { border-color: var(--accent); }
+  .flashcard .front { font-size: 16px; font-weight: 600; }
+  .flashcard .back {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    font-size: 13.5px;
+    color: var(--text-dim);
+    display: none;
+  }
+  .flashcard.flipped .back { display: block; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .two-col > div {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .two-col h4 { margin: 0 0 8px; font-size: 13px; color: var(--accent-2); }
+  .decision {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #d4d8e0;
+  }
+  .decision .arrow { color: var(--accent); }
+  .recs { display: grid; gap: 14px; }
+  .rec {
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 6px;
+  }
+  .rec.high { border-left-color: var(--bad); }
+  .rec.medium { border-left-color: var(--warn); }
+  .rec.low { border-left-color: var(--text-dim); }
+  .rec h3 { margin: 0 0 6px; font-size: 15px; color: var(--text); }
+  .rec .why, .rec .how, .rec .gain { margin: 6px 0; font-size: 13.5px; }
+  .rec strong { color: var(--accent); }
+  @media (max-width: 720px) {
+    header, nav, main { padding-left: 20px; padding-right: 20px; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Week 16 Learning Hub — W16 学习枢纽</h1>
+  <div class="sub">2026-04-13 → 2026-04-18 · 17 commits · Jieying · Kuse Finder v2</div>
+  <div class="sub" style="margin-top:4px">Theme 主题: View-state lifecycle, UX polish patterns, and defensive consistency / 视图状态生命周期、UX 打磨模式与防御性一致性</div>
+</header>
+
+<nav>
+  <button class="active" data-tab="home" onclick="switchTab('home', this)">Home 首页</button>
+  <button data-tab="concepts" onclick="switchTab('concepts', this)">Concepts 概念 (5)</button>
+  <button data-tab="decisions" onclick="switchTab('decisions', this)">Decision Guides 决策指南</button>
+  <button data-tab="quiz" onclick="switchTab('quiz', this)">Quiz 测验</button>
+  <button data-tab="flashcards" onclick="switchTab('flashcards', this)">Flashcards 闪卡</button>
+  <button data-tab="recs" onclick="switchTab('recs', this)">Recommendations 推荐</button>
+</nav>
+
+<main>
+
+<!-- HOME -->
+<section id="home" class="active">
+  <div class="card">
+    <h2>This Week's Story <span class="zh">本周主线</span></h2>
+    <p>W16 was almost entirely about <strong>NewTaskView state lifecycle</strong> and <strong>UX polish</strong>. Five concepts emerge from 17 commits, all sharing one theme: <em>defensive consistency</em> — making behavior survive page refresh, external mutation, view switching, and closure staleness.</p>
+    <p class="zh">W16 几乎全部围绕 <strong>NewTaskView 状态生命周期</strong> 和 <strong>UX 细节打磨</strong>。从 17 个 commit 中提炼出 5 个概念，共同主题是 <em>防御性一致性</em> — 让行为在页面刷新、外部修改、视图切换、闭包过期等场景下都保持正确。</p>
+  </div>
+
+  <div class="card">
+    <h2>Concepts Map <span class="zh">概念关系图</span></h2>
+    <pre><code>                   [NewTaskView 着陆页]
+                          │
+           ┌──────────────┼──────────────┐
+           │              │              │
+  conversation-history   localStorage-  centralized-view-
+  (data fetching)        persistence    side-effect
+                         (refresh proof) (atomic switch)
+                          │              │
+                          └──────┬───────┘
+                                 │
+                   resetAllViews atomic write
+                                 │
+                          ttl-based-ensure
+                          (external-mutation tolerance)
+                                 │
+                   background-vs-item-context-menu
+                         (DOM-driven dispatch)</code></pre>
+    <p style="color:var(--text-dim); font-size:13px">All five concepts interact with <code>store/ui/index.ts</code>. Understanding one deepens the others.</p>
+    <p class="zh" style="font-size:13px">5 个概念都绕着 <code>store/ui/index.ts</code> 展开，理解一个会强化对其他的认知。</p>
+  </div>
+
+  <div class="card">
+    <h2>Last Week's Review 上周复习</h2>
+    <p>W15 concepts (subscription-downgrade-state-machine, sse-event-driven-file-refresh, cron-schedule-polling-architecture, upload-replace-skill-crud) are at <strong>Stage 1 → 2</strong> today (6 days since W15 was generated on 2026-04-12). Recommended quick review: re-read each concept's decision-guide section.</p>
+    <p class="zh">W15 的 4 个概念今天正好处在 <strong>Stage 1 → 2</strong> 阶段（距 W15 生成日 6 天）。建议复习方式：重新阅读每个概念的决策指南。</p>
+  </div>
+</section>
+
+<!-- CONCEPTS -->
+<section id="concepts">
+  <!-- C1 -->
+  <div class="card">
+    <span class="tag frontend">frontend</span>
+    <h2>1. NewTaskView Conversation History Integration <div class="zh">NewTaskView 对话历史集成</div></h2>
+    <p>Land the <code>ConversationHistory</code> popup on the NewTaskView entry page with waterfall pagination. Reuses the same component as Chat but with <code>currentConversation=null</code> (no highlight) and the parent owns the fetch/optimistic-update logic.</p>
+    <p class="zh">把 Chat header 里的 <code>ConversationHistory</code> 组件搬到着陆页 NewTaskView，用瀑布流分页展示历史对话。<code>currentConversation</code> 传 null（着陆页没有“当前对话”的概念），由父组件 <code>NewTaskView</code> 自己管理 fetch、分页状态和 optimistic delete/rename。</p>
+
+    <h3>Key Pattern 关键模式</h3>
+    <pre><code>// paginationOffsetRef + hasMoreRef: ref-based guard against closure staleness
+const paginationOffsetRef = useRef(0);
+const isLoadingMoreRef = useRef(false);
+const hasMoreRef = useRef(true);
+
+const loadMore = useCallback(async () =&gt; {
+  if (isLoadingMoreRef.current || !hasMoreRef.current) return;
+  isLoadingMoreRef.current = true;
+  try {
+    const res = await getFolderConversations({
+      limit: 20, offset: paginationOffsetRef.current, mode: 'waterfall',
+    });
+    paginationOffsetRef.current += res.data.length;
+    hasMoreRef.current = Boolean(res.has_more);
+    setConversations(prev =&gt; dedupByUid([...prev, ...res.data]));
+  } finally {
+    isLoadingMoreRef.current = false;
+  }
+}, []);
+
+// Delete with offset sync (keep pagination aligned)
+const handleDelete = useCallback(async (id: string) =&gt; {
+  await deleteFolderConversation(id);
+  setConversations(prev =&gt; prev.filter(c =&gt; c.uid !== id));
+  paginationOffsetRef.current = Math.max(0, paginationOffsetRef.current - 1);
+}, []);</code></pre>
+
+    <details>
+      <summary>Deep Dive — 深度分析</summary>
+      <h3>Existing implementations 已有实现</h3>
+      <table>
+        <tr><th>Location</th><th>Approach</th></tr>
+        <tr><td><code>ChatHeader/ConversationHistory</code></td><td>Chat 内使用，<code>currentConversation</code> 非 null（高亮当前）、父组件已维护对话列表</td></tr>
+        <tr><td><code>NewTaskView/index.tsx</code> (db689ca4)</td><td>新入口：<code>currentConversation=null</code>、双 ref 分页去重、cancelled flag 防 unmount 写入、optimistic delete 并 offset 自减</td></tr>
+      </table>
+
+      <h3>Comparison 对比</h3>
+      <p>Same component, two usage contexts. Chat has a current conversation (highlight target), NewTaskView doesn't. Chat's parent already owns the list; NewTaskView's parent has to bootstrap fetch + pagination. The <strong>ref-based pagination guard</strong> is the novel part — it prevents the classic closure trap where <code>loadMore</code> reads a stale <code>offset</code> state.</p>
+      <p class="zh">同一个组件两种使用场景。Chat 有当前对话需要高亮，NewTaskView 没有。Chat 的父组件已有对话列表，NewTaskView 要自己 bootstrap 分页 fetch。<strong>ref-based 分页保护</strong>是新颖点 — 避免闭包捕获过时的 offset 状态。</p>
+
+      <h3>Trade-offs 取舍</h3>
+      <ul>
+        <li>Ref dual-guard: reliable, but you must keep ref and state in sync <span class="zh">（ref 双重保护可靠，但需要手动同步 ref 和 state）</span></li>
+        <li>Cancelled flag: simple (no AbortController), but fetch still completes (wasted bandwidth) <span class="zh">（cancelled 标记简单，但 fetch 仍会完成，浪费带宽）</span></li>
+        <li>Optimistic update without rollback: faster UX, but silently fails if API errors <span class="zh">（乐观更新无回滚 UX 快但 API 失败时会静默）</span></li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- C2 -->
+  <div class="card">
+    <span class="tag frontend">frontend</span>
+    <h2>2. Background vs Item Context Menu <div class="zh">背景 vs 条目双上下文菜单</div></h2>
+    <p>Finder now shows <strong>two different menus</strong> on right-click: one when you hit a file/folder, one when you hit empty space. The dispatcher uses <code>closest('[data-finder-item]')</code> to decide which menu to open, and automatically replaces selection if the right-clicked item isn't currently selected.</p>
+    <p class="zh">Finder 的右键现在有两种菜单：击中 item 显示条目菜单，击中空白显示背景菜单（New folder / Paste）。分派逻辑用 <code>closest('[data-finder-item]')</code> 做 DOM 探测，右键未选中条目时会自动先选中再显示菜单，符合 macOS/Windows 习惯。</p>
+
+    <h3>Key Pattern 关键模式</h3>
+    <pre><code>// Ref captures current selection to avoid closure staleness
+const selectedSetRef = useRef(selectedSet);
+selectedSetRef.current = selectedSet;
+
+const handleContextMenu = useCallback((e: React.MouseEvent) =&gt; {
+  e.preventDefault();
+  const { safeX, safeY } = clamp(e.clientX, e.clientY, 216, 200);
+
+  const itemEl = (e.target as HTMLElement).closest('[data-finder-item]');
+  if (itemEl) {
+    const path = itemEl.getAttribute('data-finder-item')!;
+    // Right-click on NOT-selected → replace selection with this item
+    if (!selectedSetRef.current.has(path)) {
+      selectMultiple([path], { skipChatSync: true });
+    }
+    setBgCtxMenu(m =&gt; m.open ? { ...m, open: false } : m);
+    setCtxMenu({ open: true, x: safeX, y: safeY });
+  } else {
+    // Empty space → background menu
+    setCtxMenu(m =&gt; m.open ? { ...m, open: false } : m);
+    setBgCtxMenu({ open: true, x: safeX, y: safeY });
+  }
+}, [selectMultiple]);
+
+// Outside-click handles BOTH menus via querySelectorAll
+window.addEventListener('click', (e) =&gt; {
+  const menus = document.querySelectorAll('[data-context-menu]');
+  for (const menu of menus) if (menu.contains(e.target)) return;
+  closeBothMenus();
+}, true);</code></pre>
+
+    <details>
+      <summary>Deep Dive — 深度分析</summary>
+      <h3>3 existing patterns in the project</h3>
+      <table>
+        <tr><th>Where</th><th>Pattern</th><th>Scope</th></tr>
+        <tr><td>AssetsTree</td><td>Single menu + path param per row</td><td>Item-only (tree rows)</td></tr>
+        <tr><td>Finder (old)</td><td>Single menu + selection gate</td><td>Item-only, empty-space skipped</td></tr>
+        <tr><td>Finder (new, bd6641fd)</td><td>Dual menu + DOM探测 + auto-select</td><td>Item + empty space + multi-select</td></tr>
+      </table>
+
+      <h3>Comparison 对比</h3>
+      <p>Key upgrade: from <strong>state-driven</strong> dispatch (<code>selection.length</code>) to <strong>DOM-driven</strong> dispatch (<code>closest data-attribute</code>). State-driven can't tell "empty space" apart from "nothing selected" — both have <code>selection.length === 0</code>. DOM探测 reads the actual click target, correctly distinguishing the two.</p>
+      <p class="zh">核心升级：从<strong>状态驱动</strong>分派（<code>selection.length</code>）改为 <strong>DOM 驱动</strong>分派（<code>closest data-attribute</code>）。状态驱动无法区分"空白区"和"没选中条目"，两者 <code>selection.length</code> 都是 0；DOM 探测读实际点击目标能正确区分。</p>
+
+      <h3>Trade-offs 取舍</h3>
+      <ul>
+        <li>Dual state (<code>ctxMenu + bgCtxMenu</code>): more state to manage, but clean separation <span class="zh">（两个 state 多一点负担，但语义清晰）</span></li>
+        <li><code>selectedSetRef</code> is mandatory: without it, <code>handleContextMenu</code> captures stale selection <span class="zh">（必须用 ref 避免闭包捕获过时的 selection）</span></li>
+        <li><code>querySelectorAll</code> outside-click: one listener handles N menus <span class="zh">（一个监听器处理多个菜单的外部点击）</span></li>
+      </ul>
+    </details>
+  </div>
+
+  <!-- C3 -->
+  <div class="card">
+    <span class="tag frontend">frontend</span>
+    <h2>3. localStorage View-State Persistence <div class="zh">localStorage 视图状态持久化</div></h2>
+    <p>Zustand re-initializes on every page refresh. If a user was in folder view and refreshes, they'd jump back to NewTaskView unless we persist the flag. The pattern: a <code>getInitialX()</code> helper reads localStorage at store init, and <code>resetAllViews</code> writes the flag during view switches.</p>
+    <p class="zh">Zustand store 每次刷新都会重新初始化。如果用户在 folder view 刷新，会跳回 NewTaskView，除非把这个视图 flag 持久化到 localStorage。模式是：<code>getInitialX()</code> helper 在 store 初始化时读 localStorage，<code>resetAllViews</code> 在切换视图时写回。</p>
+
+    <h3>Key Pattern 关键模式</h3>
+    <pre><code>// Tri-state init: null (first-time) vs 'true' vs 'false'
+const getInitialNewTaskView = (): boolean =&gt; {
+  if (typeof window === 'undefined') return true;  // SSR guard
+  const saved = window.localStorage.getItem(NEW_TASK_VIEW_STORAGE_KEY);
+  return saved === null ? true : saved === 'true';  // default true for first-time users
+};
+
+// Atomic write inside resetAllViews
+resetAllViews: (merge, options) =&gt; {
+  const state = get();
+  if (!options?.keepPreview) useFilePreviewStore.getState().hide();
+  if (merge?.isNewTaskView) {
+    window.localStorage.setItem(NEW_TASK_VIEW_STORAGE_KEY, 'true');
+  } else {
+    window.localStorage.setItem(NEW_TASK_VIEW_STORAGE_KEY, 'false');
+  }
+  set({ isTrashView: false, isNewTaskView: false, ...merge });
+},</code></pre>
+
+    <details>
+      <summary>Deep Dive — 深度分析</summary>
+      <h3>4 patterns in project</h3>
+      <table>
+        <tr><th>Pattern</th><th>Default</th><th>Cleanup</th><th>Use case</th></tr>
+        <tr><td>Enum setting (sort mode)</td><td>Specific enum</td><td>Overwrite</td><td>Preferences</td></tr>
+        <tr><td>Numeric (zoom)</td><td>1.0</td><td>Overwrite</td><td>Preferences</td></tr>
+        <tr><td>Boolean view (KuseClaw)</td><td>false</td><td><code>removeItem</code></td><td>Advanced view opt-in</td></tr>
+        <tr><td>Boolean view (NewTaskView)</td><td><strong>true</strong></td><td>Explicit <code>'false'</code></td><td>Landing page</td></tr>
+      </table>
+
+      <h3>Why NewTaskView defaults to <code>true</code></h3>
+      <p>First-time users should land on NewTaskView (the onboarding entry). After first login, the store reads <code>null</code> from localStorage → returns <code>true</code>. If we used the <code>removeItem</code> cleanup style like KuseClaw, exiting NewTaskView would delete the key, causing the next refresh to incorrectly read <code>null</code> → <code>true</code> again. Hence the explicit <code>'false'</code> write.</p>
+      <p class="zh">NewTaskView 对首次用户默认开启（着陆页）。首次登录时 <code>localStorage</code> 返回 <code>null</code>，helper 视为 <code>true</code>。如果像 KuseClaw 那样用 <code>removeItem</code> 清理，退出 NewTaskView 会删除键，下次刷新又错误地视为 <code>true</code>。因此必须显式写 <code>'false'</code>。</p>
+
+      <h3>SSR guard is mandatory 必须加 SSR 保护</h3>
+      <p>Next.js renders stores on the server where <code>window</code> is undefined. Every <code>getInitialX</code> must check <code>typeof window === 'undefined'</code> first, or the build crashes.</p>
+    </details>
+  </div>
+
+  <!-- C4 -->
+  <div class="card">
+    <span class="tag frontend">frontend</span>
+    <h2>4. TTL-Based Resource Ensure <div class="zh">TTL 周期性资源校验</div></h2>
+    <p>The old <code>ensureDefaultFolder</code> used a one-shot flag — once created successfully, never check again. Bug: user deletes the default folder on another device, this client never re-creates it. Fix: 60s TTL, re-verify after expiry.</p>
+    <p class="zh">旧版 <code>ensureDefaultFolder</code> 用一次性 flag — 成功创建后永不重试。Bug 场景：用户在另一台设备删除默认文件夹，这台客户端永远不会重新创建。修复：60s TTL，过期后重新校验。</p>
+
+    <h3>Key Pattern 关键模式</h3>
+    <pre><code>let lastEnsuredAt = 0;
+const ENSURE_TTL = 60_000;
+
+export async function ensureDefaultFolder() {
+  if (Date.now() - lastEnsuredAt &gt; ENSURE_TTL) {
+    try {
+      const { id } = await mkdir(DEFAULT_FOLDER.path);
+      lastEnsuredAt = Date.now();
+    } catch (e) { /* folder already exists is fine */ }
+  }
+  return DEFAULT_FOLDER;
+}</code></pre>
+
+    <details>
+      <summary>Deep Dive — 深度分析</summary>
+      <h3>3 time-based patterns in project</h3>
+      <table>
+        <tr><th>Pattern</th><th>Example</th><th>Trigger</th></tr>
+        <tr><td>Debounce</td><td><code>refreshScheduler</code> 800ms</td><td>User input, batched refresh</td></tr>
+        <tr><td>TTL check</td><td><code>ensureDefaultFolder</code> 60s</td><td>"resource should exist"</td></tr>
+        <tr><td>TTL expiry fallback</td><td><code>streamManager</code> reload</td><td>Connection-level strategy switch</td></tr>
+      </table>
+
+      <h3>Decision matrix 决策矩阵</h3>
+      <div class="decision">
+"Create once, never changes" (session id) <span class="arrow">→</span> one-shot flag
+"Should exist, may be deleted externally" <span class="arrow">→</span> TTL (60s for user ops)
+"Needs fresh data" (counters) <span class="arrow">→</span> polling / SSE
+"Explicit invalidation" (post-action) <span class="arrow">→</span> cache-then-invalidate</div>
+
+      <h3>Why 60s? 为什么是 60s</h3>
+      <p>TTL is a consistency vs. call-cost tradeoff. For default folder: user-driven external mutations (deleting on another device) are rare and <em>user-paced</em>. A 60s staleness window is imperceptible to users. Much shorter (like 5s) would hammer the backend; much longer (like 1 hour) would frustrate users who just synced across devices.</p>
+      <p class="zh">TTL 本质是一致性 vs 调用成本的权衡。默认文件夹由用户操作触发外部变化（另一设备删除），频率低且节奏慢。60s 延迟用户无感；更短会打爆后端，更长会让刚跨设备同步的用户困惑。</p>
+    </details>
+  </div>
+
+  <!-- C5 -->
+  <div class="card">
+    <span class="tag frontend">frontend</span>
+    <h2>5. Centralized View-Switch Side Effect <div class="zh">视图切换副作用集中化</div></h2>
+    <p>Moved "hide file preview when switching to exclusive views" from individual callers (<code>enterTrashView</code>, <code>enterSharedWithMeView</code>, etc.) into <code>resetAllViews</code> itself, with an <code>options.keepPreview</code> opt-out. Added a no-op guard to <code>hide()</code> to avoid wasteful re-renders.</p>
+    <p class="zh">把"切换到互斥视图时关闭 file preview"这个副作用，从多个调用点（<code>enterTrashView</code>、<code>enterSharedWithMeView</code> 等）搬到 <code>resetAllViews</code> 内部，提供 <code>options.keepPreview</code> opt-out 豁免。配套给 <code>hide()</code> 加 no-op guard 避免无谓重渲染。</p>
+
+    <h3>Key Pattern 关键模式</h3>
+    <pre><code>// In store/ui/index.ts
+resetAllViews: (merge, options) =&gt; {
+  const state = get();
+  // No-op guard: nothing to do?
+  if (!merge &amp;&amp; !state.isTrashView &amp;&amp; !state.isSharedWithMeView &amp;&amp; ...) return;
+
+  // Side effect centralized here, default-executed, opt-out via flag
+  if (!options?.keepPreview) useFilePreviewStore.getState().hide();
+
+  set({ isTrashView: false, ..., ...merge });
+},
+
+// In store/filePreview/store.ts — no-op guard
+hide: () =&gt; {
+  if (!get().isVisible) return;
+  set({ isVisible: false, selectedFileId: null });
+},</code></pre>
+
+    <details>
+      <summary>Deep Dive — 深度分析</summary>
+      <h3>3 side-effect coupling patterns</h3>
+      <div class="two-col">
+        <div>
+          <h4>Manual-at-callsite (old)</h4>
+          <pre><code>enterTrashView() {
+  resetAllViews({...});
+  filePreviewStore.hide();  // easy to forget
+}</code></pre>
+          <p style="color:var(--text-dim); font-size:12.5px">Easy to miss when adding new views</p>
+        </div>
+        <div>
+          <h4>Centralized opt-out (new)</h4>
+          <pre><code>resetAllViews(merge, options) {
+  if (!options?.keepPreview)
+    filePreviewStore.hide();
+  // ...
+}</code></pre>
+          <p style="color:var(--text-dim); font-size:12.5px">Default-safe: forgot to opt-out = correct behavior</p>
+        </div>
+      </div>
+
+      <h3>Opt-in vs Opt-out is a safety stance</h3>
+      <p><strong>Opt-in</strong>: you must say "yes, hide preview" each time → forgetting keeps preview open → potentially wrong.<br>
+      <strong>Opt-out</strong>: default is hide, you must say "no, keep preview" when needed → forgetting hides preview → safer default.</p>
+      <p class="zh"><strong>Opt-in</strong>：每次要明确说"是的，关闭预览"，漏写就保留预览 → 错误偏向；<br>
+      <strong>Opt-out</strong>：默认关闭，需要时明确说"保留预览"，漏写就关闭 → 安全偏向。</p>
+
+      <h3>Why the no-op guard matters</h3>
+      <p>With <code>subscribeWithSelector</code>, any <code>set()</code> call triggers subscribers even if values are identical (Zustand uses <code>Object.is</code> per-key, but re-reads everything). Calling <code>hide()</code> when already hidden wastes a render cycle. The guard returns early — zero cost, zero renders.</p>
+      <p class="zh"><code>subscribeWithSelector</code> 下任何 <code>set()</code> 都会触发订阅者，即使值相同（Zustand 按键用 <code>Object.is</code>，但仍会重新读取）。已经隐藏时再调 <code>hide()</code> 会浪费一次渲染周期。guard 提前 return → 零代价零渲染。</p>
+    </details>
+  </div>
+</section>
+
+<!-- DECISIONS -->
+<section id="decisions">
+  <div class="card">
+    <h2>Quick Decision Cards 决策速查</h2>
+    <p class="zh">每次下次遇到类似场景，30 秒内决策。</p>
+  </div>
+
+  <div class="card">
+    <h3>1. Reuse a component across contexts?</h3>
+    <div class="decision">
+Same UI + same behavior differ only by data/callbacks <span class="arrow">→</span> reuse + pass currentX=null for "no current"
+Same UI + different behavior <span class="arrow">→</span> extract to shared primitive + context-specific wrappers
+Different UI <span class="arrow">→</span> don't force reuse</div>
+  </div>
+
+  <div class="card">
+    <h3>2. Right-click menu: single or dual?</h3>
+    <div class="decision">
+Menu only makes sense when hitting an item (e.g., tree row) <span class="arrow">→</span> single menu + path param
+Need different menu on empty space (New/Paste) <span class="arrow">→</span> dual menu + data-attribute DOM probe
+Need pre-selection on unselected item <span class="arrow">→</span> call selectMultiple() inside handler (use ref, NOT state)</div>
+  </div>
+
+  <div class="card">
+    <h3>3. localStorage boolean view flag</h3>
+    <div class="decision">
+Default OFF (advanced feature opt-in) <span class="arrow">→</span> read '=== true' + removeItem on exit
+Default ON (landing page) <span class="arrow">→</span> tri-state read (null=default) + explicit 'false' write
+ALWAYS <span class="arrow">→</span> typeof window === 'undefined' SSR guard
+Multiple exclusive views <span class="arrow">→</span> write in resetAllViews for atomicity</div>
+  </div>
+
+  <div class="card">
+    <h3>4. "Ensure this resource exists" check</h3>
+    <div class="decision">
+Never changes after creation <span class="arrow">→</span> one-shot flag
+Can be externally deleted (user on other device) <span class="arrow">→</span> TTL check (60s for user-paced)
+Needs real-time state <span class="arrow">→</span> polling or SSE
+Has explicit "it changed" signal <span class="arrow">→</span> cache-then-invalidate</div>
+  </div>
+
+  <div class="card">
+    <h3>5. Side effect tied to view switch</h3>
+    <div class="decision">
+Effect should almost always run <span class="arrow">→</span> centralize inside the switch action + opt-out option
+Effect is rare/special <span class="arrow">→</span> call explicitly at callsite (opt-in)
+subscribeWithSelector store action called often <span class="arrow">→</span> add no-op guard to prevent wasted renders</div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <div class="card">
+    <h2>Quiz 测验 — Apply the Decision Guides</h2>
+    <p>Click an option to check. <span class="zh">点击选项检查答案。</span></p>
+  </div>
+
+  <div class="quiz-q" data-correct="1">
+    <p class="q">Q1. You're adding a "Recent files" popover to a new landing page. The existing <code>RecentFilesList</code> component takes <code>currentFileId</code> (for highlighting) and callbacks. On the landing page there's no "current file". What do you do?
+    <br><span class="zh">你要在新着陆页加一个"最近文件"弹窗。现有的 <code>RecentFilesList</code> 组件接受 <code>currentFileId</code>（用于高亮）和一堆回调。着陆页没有"当前文件"概念。怎么办？</span></p>
+    <div class="choice" data-i="0">Fork the component into two versions</div>
+    <div class="choice" data-i="1">Reuse it and pass <code>currentFileId={null}</code>; let parent own the fetch/pagination</div>
+    <div class="choice" data-i="2">Rewrite everything from scratch to avoid coupling</div>
+    <div class="explain">Reuse + pass <code>null</code> matches the NewTaskView pattern. Parent owns fetch because the landing page has different pagination/lifecycle needs. Forking creates divergence; rewriting wastes the existing component.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="2">
+    <p class="q">Q2. In your right-click handler, you read <code>selectedSet</code> from a Zustand selector, call <code>selectMultiple([path])</code>, then check <code>selectedSet.has(path)</code>. Why is this wrong?
+    <br><span class="zh">右键处理函数里你从 Zustand selector 读 <code>selectedSet</code>，调用 <code>selectMultiple([path])</code> 后再 <code>selectedSet.has(path)</code>。为什么错？</span></p>
+    <div class="choice" data-i="0">Zustand selectors are async</div>
+    <div class="choice" data-i="1">You forgot to pass skipChatSync</div>
+    <div class="choice" data-i="2"><code>selectedSet</code> is a closure-captured value from the last render; it won't update within the same handler call. Use <code>selectedSetRef.current</code>.</div>
+    <div class="choice" data-i="3">You need <code>useSyncExternalStore</code></div>
+    <div class="explain">Classic React closure trap. The handler captured <code>selectedSet</code> when it was created; calling <code>selectMultiple</code> updates store but the in-scope variable is frozen. Ref captures current via <code>ref.current = state</code> on every render, bypassing the closure.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="0">
+    <p class="q">Q3. You're adding a boolean view flag called <code>isWelcomeView</code> that should default to <strong>ON for first-time users, OFF thereafter</strong>. What's the right persistence pattern?
+    <br><span class="zh">你要加一个布尔视图 flag <code>isWelcomeView</code>，首次用户默认开，之后默认关。持久化模式怎么选？</span></p>
+    <div class="choice" data-i="0">Tri-state read: <code>saved === null ? true : saved === 'true'</code>, and explicitly write <code>'false'</code> on dismiss</div>
+    <div class="choice" data-i="1">Read <code>=== 'true'</code> and use <code>removeItem</code> to clean up</div>
+    <div class="choice" data-i="2">Store it in session storage instead</div>
+    <div class="choice" data-i="3">Just use state; don't persist</div>
+    <div class="explain">Option 1 matches NewTaskView. If you used <code>removeItem</code> cleanup, dismissing would delete the key, and the next refresh would read <code>null</code> → default ON again — infinite loop of welcome screen.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="1">
+    <p class="q">Q4. Your app has a "pinned workspace" feature. User A creates a pinned workspace on web, then deletes it on mobile. User A refreshes web — it's still pinned (stale). Which fix?
+    <br><span class="zh">"Pinned workspace" 功能：用户 A 在 web 创建后在手机上删除。A 刷新 web 仍显示 pinned。怎么修？</span></p>
+    <div class="choice" data-i="0">Polling every 5s</div>
+    <div class="choice" data-i="1">TTL-based re-verify (e.g., 60s) — cheap, tolerates user-paced external changes</div>
+    <div class="choice" data-i="2">Remove the feature</div>
+    <div class="choice" data-i="3">Only use SSE to sync state</div>
+    <div class="explain">TTL is the right granularity for user-paced external changes. 5s polling would hammer backend with no user benefit (changes are rare). SSE is overkill for "stale on refresh" scenarios. Remove is not a fix.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="2">
+    <p class="q">Q5. You have 5 places calling <code>enterXXXView()</code>. Each one currently calls <code>analytics.track('view_change')</code> after. A new dev adds a 6th view and forgets to track. Best fix?
+    <br><span class="zh">5 个地方调用 <code>enterXXXView()</code>，每处都手动 <code>analytics.track('view_change')</code>。新人加第 6 个视图时忘了加 track。怎么修？</span></p>
+    <div class="choice" data-i="0">Add lint rule to warn</div>
+    <div class="choice" data-i="1">Document it in CLAUDE.md</div>
+    <div class="choice" data-i="2">Move the <code>track()</code> call INTO <code>resetAllViews</code> (or the central switching action) with an opt-out option if needed</div>
+    <div class="choice" data-i="3">Nothing; require code reviews</div>
+    <div class="explain">Default-safe centralization. Moving the effect into the callee means forgetting = correct behavior (tracks by default). Lint/docs/reviews rely on humans remembering; centralization doesn't.</div>
+  </div>
+
+  <div class="quiz-q" data-correct="3">
+    <p class="q">Q6. In a Zustand store with <code>subscribeWithSelector</code>, calling <code>set({ isVisible: false })</code> when <code>isVisible</code> was already <code>false</code>...
+    <br><span class="zh">Zustand + <code>subscribeWithSelector</code>，已经 <code>isVisible=false</code> 时再调 <code>set({ isVisible: false })</code>...</span></p>
+    <div class="choice" data-i="0">Does nothing; Zustand short-circuits identical values</div>
+    <div class="choice" data-i="1">Throws an error</div>
+    <div class="choice" data-i="2">Crashes in dev mode</div>
+    <div class="choice" data-i="3">Still triggers the state update internally and may re-notify subscribers; add a no-op guard for hot paths</div>
+    <div class="explain">Zustand doesn't globally short-circuit — setState runs. For hot paths (called many times per second), add <code>if (!get().isVisible) return</code> before <code>set()</code> to avoid wasteful subscriber notifications. This is what W16's <code>hide()</code> guard does.</div>
+  </div>
+</section>
+
+<!-- FLASHCARDS -->
+<section id="flashcards">
+  <div class="card">
+    <h2>Flashcards 闪卡 — Click to flip</h2>
+    <p class="zh">点击卡片翻面。</p>
+  </div>
+
+  <div class="flashcard">
+    <div class="front">Waterfall pagination</div>
+    <div class="back">A pagination mode where you request <code>{ limit, offset, mode: 'waterfall' }</code> and the server returns <code>{ data, has_more }</code>. Client keeps a running <code>offset</code> counter and appends results. <br><span class="zh">瀑布流分页：客户端维护 offset 累加值，server 返回 <code>has_more</code> 决定是否继续。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">Closure staleness in event handlers</div>
+    <div class="back">A handler created in render N captures state from render N. If the state changes in render N+1, the handler still sees the old value. Fix: <code>ref.current = state</code> pattern — ref is mutable and always current.<br><span class="zh">闭包过期：render N 创建的 handler 捕获 N 时的 state，render N+1 中 state 变了 handler 仍看到旧值。修复：用 ref 同步当前值。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">DOM-driven dispatch</div>
+    <div class="back">Deciding handler behavior from <code>e.target.closest('[data-X]')</code> instead of React state. Useful when the event target itself carries the semantic info (right-click on item vs empty space).<br><span class="zh">DOM 驱动分派：从 <code>closest('[data-X]')</code> 判断分支，而不是读 React state。当事件目标本身携带语义时很有用。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">SSR guard for localStorage</div>
+    <div class="back"><code>typeof window === 'undefined'</code> check before accessing <code>window.localStorage</code>. Required for Next.js because store initialization runs on both server and client — server has no window.<br><span class="zh">访问 <code>localStorage</code> 前必加 <code>typeof window === 'undefined'</code> 判定，否则 Next.js SSR 崩溃。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">Tri-state localStorage read</div>
+    <div class="back">For defaults-on-first-use flags: <code>saved === null ? DEFAULT : saved === 'true'</code>. Three states: first-time user (null), explicitly on ('true'), explicitly off ('false'). Prevents "exit → delete → refresh resurrects default".<br><span class="zh">针对首次默认开启的 flag，三态读取，避免退出删除键后刷新又回到默认开启。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">TTL re-check vs one-shot flag</div>
+    <div class="back">One-shot: boolean that flips true forever after success. TTL: timestamp; re-verify when <code>Date.now() - ts &gt; TTL</code>. Use TTL when external mutation is possible (e.g., user on other device).<br><span class="zh">一次性 flag 假设成功后状态不变；TTL 允许外部变化恢复，最迟 TTL 秒发现。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">Opt-out vs Opt-in side effect</div>
+    <div class="back">Opt-in: must say "yes" each time → forgetting = unsafe default. Opt-out: default fires, say "no" to skip → forgetting = safe default. Pick based on which direction is "usually correct".<br><span class="zh">Opt-in 默认不做，容易漏触发；Opt-out 默认触发，漏写时是安全的。根据默认行为哪个更常正确选择。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">No-op guard in Zustand action</div>
+    <div class="back"><code>if (!get().isVisible) return;</code> before <code>set()</code>. Prevents wasted subscriber notifications when the action is called but state wouldn't change. Especially for actions called in loops or on every render.<br><span class="zh">action 里先判断状态是否需要变，避免 <code>set()</code> 触发无谓订阅者通知。热路径必备。</span></div>
+  </div>
+  <div class="flashcard">
+    <div class="front">querySelectorAll for multi-menu outside-click</div>
+    <div class="back">When you have N popups open simultaneously, register ONE window click listener; inside it, <code>document.querySelectorAll('[data-context-menu]')</code> and iterate. Close only if target is inside none.<br><span class="zh">多个弹窗共存时，一个 window click 监听器 + <code>querySelectorAll</code> 遍历判断，比每个弹窗各自监听更省。</span></div>
+  </div>
+</section>
+
+<!-- RECS -->
+<section id="recs">
+  <div class="card">
+    <h2>Next Learning Directions 下一步学习推荐</h2>
+    <p>Based on W16 themes and gaps. Pick 1-2 to deep-dive before next week.</p>
+    <p class="zh">基于本周主题和薄弱点。下周前挑 1-2 个深入。</p>
+  </div>
+
+  <div class="recs">
+    <div class="rec high">
+      <h3>1. Abstracting localStorage persistence (HIGH) · localStorage 持久化的系统化抽象</h3>
+      <p class="why"><strong>Why:</strong> W16 added <code>NEW_TASK_VIEW_STORAGE_KEY</code>. Project now has 7+ independent localStorage keys in <code>store/ui/index.ts</code> alone, each with hand-written <code>getInitial</code> + sync. Every new view repeats the pattern. Easy to miss SSR guard or forget to write-back.<br>
+      <span class="zh"><strong>为什么学：</strong>本周新增第 7 个 <code>STORAGE_KEY</code>，都是手写 <code>getInitial</code> + 写回。每加一个视图就重复一遍，容易漏 SSR 保护或写入同步。</span></p>
+      <p class="how"><strong>How:</strong><br>
+      <span class="zh"><strong>怎么学：</strong></span>
+      <ul>
+        <li>Read: all <code>STORAGE_KEY</code> usages in <code>store/ui/index.ts</code> (~7 instances), extract common pattern <span class="zh">（读所有 STORAGE_KEY 用法，找共同模式）</span></li>
+        <li>Experiment: write a <code>createPersistedAtom&lt;T&gt;(key, default, validator)</code> helper; migrate 2-3 keys and measure LOC saved <span class="zh">（实验：写一个 createPersistedAtom helper，迁移 2-3 个键看代码量减少多少）</span></li>
+        <li>Read docs: Zustand <code>persist</code> middleware with <code>partialize</code>, <code>storage</code> adapter, and <code>onRehydrateStorage</code> — compare DIY vs official <span class="zh">（看 Zustand persist 中间件对比手写方案）</span></li>
+      </ul></p>
+      <p class="gain"><strong>Gain:</strong> New view flags take 1 line instead of 15; SSR guard is automatic; refactor pays for itself after 2 new views.<br>
+      <span class="zh"><strong>收获：</strong>新增视图 flag 从 15 行压缩到 1 行；SSR 保护自动；2 个新视图后就回本。</span></p>
+    </div>
+
+    <div class="rec medium">
+      <h3>2. Cursor-anchored popup positioning (MEDIUM) · 光标锚定弹窗定位</h3>
+      <p class="why"><strong>Why:</strong> W16's context menu manually computes x/y with <code>Math.min(x, innerWidth - 216)</code>. Project already uses Radix Popover and @floating-ui elsewhere, but FinderView doesn't — because cursor-anchored menus need to follow the mouse, not a trigger element. This class of popup deserves a systematic approach.<br>
+      <span class="zh"><strong>为什么学：</strong>本周手写 x/y + 边界夹取，项目里已有 Radix Popover / @floating-ui 但 FinderView 没用，因为右键要跟随光标而非触发元素。这类 cursor-anchored popup 值得系统方案。</span></p>
+      <p class="how"><strong>How:</strong>
+      <ul>
+        <li>Read: <code>@floating-ui/react</code> VirtualElement usage (Slash Command menu already uses it) <span class="zh">（读 @floating-ui VirtualElement 用法，Slash Command 菜单已用）</span></li>
+        <li>Experiment: refactor FinderView's <code>ctxMenu</code> to <code>@floating-ui</code> VirtualElement; test whether outside-click and collision detection unify <span class="zh">（实验：改造为 VirtualElement 看 outside-click 和碰撞检测是否能统一）</span></li>
+        <li>Read docs: Radix <code>DropdownMenu.Trigger asChild</code> for programmatic triggers <span class="zh">（看 Radix DropdownMenu 是否支持程序化触发）</span></li>
+      </ul></p>
+      <p class="gain"><strong>Gain:</strong> Build a reusable <code>useCursorAnchoredMenu</code> hook; future right-click menus take 5 lines instead of 50.<br>
+      <span class="zh"><strong>收获：</strong>做出可复用的 <code>useCursorAnchoredMenu</code> hook；未来右键菜单 5 行代替 50 行。</span></p>
+    </div>
+
+    <div class="rec medium">
+      <h3>3. Backend-side default resource patterns (MEDIUM) · 后端视角的 Default Resource</h3>
+      <p class="why"><strong>Why:</strong> <code>ensureDefaultFolder</code>'s TTL mode compensates for the backend NOT returning a default folder id in user profile. If the backend guaranteed it, the entire TTL mechanism could be deleted. W16 was 100% frontend again — time to think from the API design side.<br>
+      <span class="zh"><strong>为什么学：</strong><code>ensureDefaultFolder</code> 的 TTL 是补偿后端没在 user profile 里返回 default folder id。如果后端保证了，整个 TTL 机制都能删。W16 又是 100% 前端，该换视角了。</span></p>
+      <p class="how"><strong>How:</strong>
+      <ul>
+        <li>Compare: frontend TTL ensure vs backend idempotent <code>GET /me</code> (returns <code>default_folder_id</code>) <span class="zh">（对比前端 TTL ensure 和后端 idempotent /me 返回 default_folder_id）</span></li>
+        <li>Read project's user info endpoint response — does it already have <code>default_folder</code>? <span class="zh">（读项目 user info 端点，看有没有 default_folder 字段）</span></li>
+        <li>Reflect: if moved to backend, how much frontend code is deleted? (Estimate: all of <code>ensureDefaultFolder</code> + TTL) <span class="zh">（思考：搬到后端能删多少前端代码 — 估计整个 ensureDefaultFolder + TTL 都能去掉）</span></li>
+        <li>Read: REST API design best practices on idempotent initialization <span class="zh">（看 REST 设计最佳实践的 idempotent initialization 章节）</span></li>
+      </ul></p>
+      <p class="gain"><strong>Gain:</strong> Next time you see a frontend compensating for a backend gap, you propose the backend fix instead of patching frontend. Fewer defensive layers = fewer bugs.<br>
+      <span class="zh"><strong>收获：</strong>下次看到前端补偿后端缺陷时，会主动提后端方案而不是前端打补丁。防御层越少 bug 越少。</span></p>
+    </div>
+
+    <div class="rec low">
+      <h3>4. Zustand selector equality semantics (LOW) · Zustand selector 相等性语义</h3>
+      <p class="why"><strong>Why:</strong> The no-op guard in <code>hide()</code> and the early return in <code>resetAllViews</code> reveal I don't have a clear model of when Zustand triggers subscriber renders. The <code>subscribeWithSelector</code> middleware has nuanced equality behavior that's easy to misuse.<br>
+      <span class="zh"><strong>为什么学：</strong><code>hide()</code> 的 no-op guard 和 <code>resetAllViews</code> early return 说明我对 Zustand 何时触发订阅者重渲染没有清晰模型。<code>subscribeWithSelector</code> 的 equality 行为容易误用。</span></p>
+      <p class="how"><strong>How:</strong>
+      <ul>
+        <li>Read: Zustand source <code>createImpl.ts</code> setState logic and equality checks <span class="zh">（读 Zustand 源码 createImpl.ts）</span></li>
+        <li>Experiment: remove the <code>hide()</code> no-op guard; measure preview component rerenders with React DevTools Profiler <span class="zh">（实验：去掉 no-op guard，用 Profiler 测预览组件 rerender 次数）</span></li>
+        <li>Docs: Zustand selector + <code>equalityFn</code> (second argument — <code>shallow</code> vs <code>Object.is</code>) <span class="zh">（看 Zustand selector 的第二个参数 equalityFn）</span></li>
+      </ul></p>
+      <p class="gain"><strong>Gain:</strong> Stop adding no-op guards defensively; know exactly when they're needed vs redundant.<br>
+      <span class="zh"><strong>收获：</strong>停止防御性加 no-op guard，清楚知道何时需要何时多余。</span></p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+  // Global tab switcher — called directly from onclick attribute for resilience
+  function switchTab(tabId, btnEl) {
+    var navBtns = document.querySelectorAll('nav button');
+    for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+    var secs = document.querySelectorAll('section');
+    for (var j = 0; j < secs.length; j++) secs[j].classList.remove('active');
+    if (btnEl) btnEl.classList.add('active');
+    var target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function initInteractions() {
+    // Quiz
+    var quizQs = document.querySelectorAll('.quiz-q');
+    for (var qi = 0; qi < quizQs.length; qi++) {
+      (function (q) {
+        var correct = parseInt(q.getAttribute('data-correct'), 10);
+        var choices = q.querySelectorAll('.choice');
+        for (var ci = 0; ci < choices.length; ci++) {
+          (function (c) {
+            c.addEventListener('click', function () {
+              var picked = parseInt(c.getAttribute('data-i'), 10);
+              var all = q.querySelectorAll('.choice');
+              for (var k = 0; k < all.length; k++) {
+                all[k].classList.remove('correct', 'incorrect');
+              }
+              if (picked === correct) {
+                c.classList.add('correct');
+              } else {
+                c.classList.add('incorrect');
+                for (var m = 0; m < all.length; m++) {
+                  if (parseInt(all[m].getAttribute('data-i'), 10) === correct) {
+                    all[m].classList.add('correct');
+                  }
+                }
+              }
+              var exp = q.querySelector('.explain');
+              if (exp) exp.classList.add('show');
+            });
+          })(choices[ci]);
+        }
+      })(quizQs[qi]);
+    }
+
+    // Flashcards
+    var cards = document.querySelectorAll('.flashcard');
+    for (var fi = 0; fi < cards.length; fi++) {
+      (function (f) {
+        f.addEventListener('click', function () { f.classList.toggle('flipped'); });
+      })(cards[fi]);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initInteractions);
+  } else {
+    initInteractions();
+  }
+</script>
+</body>
+</html>
