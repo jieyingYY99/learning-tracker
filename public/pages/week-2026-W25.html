@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Week 25 Learning Hub — W25 学习枢纽 · Deck Canvas Editor</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-2: #1f2330;
+    --border: #2a2f3d;
+    --text: #e6e8ee;
+    --text-dim: #9aa3b2;
+    --accent: #6cc3ff;
+    --accent-2: #b288ff;
+    --ok: #6ee7a8;
+    --warn: #ffd166;
+    --bad: #ff7a7a;
+    --code-bg: #0b0d12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  header {
+    padding: 32px 48px 16px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(108,195,255,0.08), transparent);
+  }
+  h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: -0.02em; }
+  .sub { color: var(--text-dim); font-size: 14px; }
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 48px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  nav a {
+    color: var(--text-dim); text-decoration: none; font-size: 13px;
+    padding: 6px 12px; border-radius: 8px; transition: all .15s;
+  }
+  nav a:hover { color: var(--text); background: var(--surface-2); }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; }
+  section { margin-bottom: 56px; scroll-margin-top: 64px; }
+  h2 { font-size: 22px; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+  h2 .en { color: var(--accent); }
+  h2 .zh { color: var(--text); }
+  .section-sub { color: var(--text-dim); font-size: 13px; margin: 0 0 24px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px; margin-bottom: 20px;
+  }
+  .card h3 { margin: 0 0 4px; font-size: 18px; }
+  .card h3 .zh { color: var(--text-dim); font-weight: 500; font-size: 15px; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+  .tag.fe { background: rgba(108,195,255,0.15); color: var(--accent); }
+  .tag.gen { background: rgba(178,136,255,0.15); color: var(--accent-2); }
+  .desc { color: var(--text-dim); font-size: 14px; margin: 10px 0 14px; }
+  .meta { font-size: 12px; color: var(--text-dim); margin-bottom: 12px; }
+  .meta code { background: var(--code-bg); padding: 1px 6px; border-radius: 5px; color: var(--accent); font-size: 11px; }
+  details { border: 1px solid var(--border); border-radius: 10px; margin-top: 12px; background: var(--surface-2); }
+  details > summary {
+    cursor: pointer; padding: 12px 16px; font-size: 13px; font-weight: 600;
+    color: var(--accent); list-style: none; user-select: none;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before { content: '▸ '; }
+  details[open] > summary::before { content: '▾ '; }
+  .details-body { padding: 0 16px 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; color: var(--accent); font-size: 11px; }
+  .tabs { display: flex; gap: 4px; margin: 12px 0 0; flex-wrap: wrap; }
+  .tab-btn {
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 12px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 12px; font-family: inherit;
+  }
+  .tab-btn.active { background: var(--code-bg); color: var(--accent); border-bottom-color: var(--code-bg); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 0 8px 8px 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 12px; margin: 0;
+    font-family: 'SF Mono', Menlo, Consolas, monospace; line-height: 1.5;
+  }
+  pre code { color: #d7dce6; }
+  .cmt { color: #5d6677; }
+  .kw { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .fn { color: #82aaff; }
+  .decision {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; font-family: 'SF Mono', Menlo, monospace; font-size: 12px;
+    white-space: pre-wrap; color: #cdd3df; line-height: 1.7; margin-top: 12px;
+  }
+  .decision .q { color: var(--warn); }
+  .decision .a { color: var(--ok); }
+  .keypoints { margin: 14px 0 0; padding-left: 0; list-style: none; }
+  .keypoints li { padding: 6px 0 6px 22px; position: relative; font-size: 13px; border-bottom: 1px dashed var(--border); }
+  .keypoints li:before { content: '◆'; position: absolute; left: 0; color: var(--accent-2); font-size: 10px; top: 9px; }
+  .keypoints b { color: var(--text); }
+  /* Quiz */
+  .quiz-q { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .quiz-q .scenario { font-size: 14px; margin-bottom: 14px; }
+  .quiz-q .scenario .zh { color: var(--text-dim); display: block; margin-top: 4px; font-size: 13px; }
+  .opt {
+    display: block; width: 100%; text-align: left; background: var(--surface-2);
+    border: 1px solid var(--border); color: var(--text); padding: 11px 14px;
+    border-radius: 9px; margin-bottom: 8px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all .12s;
+  }
+  .opt:hover { border-color: var(--accent); }
+  .opt.correct { border-color: var(--ok); background: rgba(110,231,168,0.1); }
+  .opt.wrong { border-color: var(--bad); background: rgba(255,122,122,0.1); }
+  .explain { font-size: 12.5px; color: var(--text-dim); margin-top: 10px; padding: 12px 14px; background: var(--code-bg); border-radius: 9px; display: none; }
+  .explain.show { display: block; }
+  .explain b { color: var(--ok); }
+  /* Flashcards */
+  .flashgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .flash { perspective: 1200px; height: 200px; cursor: pointer; }
+  .flash-inner { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+  .flash.flipped .flash-inner { transform: rotateY(180deg); }
+  .flash-face {
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex;
+    flex-direction: column; justify-content: center; overflow: auto;
+  }
+  .flash-front { background: var(--surface-2); }
+  .flash-front .term { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .flash-front .hint { font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+  .flash-back { background: var(--surface); transform: rotateY(180deg); font-size: 12.5px; color: var(--text); }
+  .flash-back b { color: var(--accent-2); }
+  footer { text-align: center; color: var(--text-dim); font-size: 12px; padding: 24px; border-top: 1px solid var(--border); }
+  .pill { display:inline-block; background: var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:3px 10px; font-size:11px; color:var(--text-dim); margin:2px; }
+  .callout { background: rgba(255,209,102,0.08); border-radius: 10px; padding: 12px 16px; font-size: 13px; margin: 14px 0; color: #f0e2bd; }
+  .callout b { color: var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Week 25 Learning Hub <span style="color:var(--text-dim);font-weight:400;font-size:20px;">· W25 学习枢纽</span></h1>
+  <div class="sub">Deck Canvas Editor — Geometry · Floating Toolbars · Non-Destructive Crop · Undo Hybrid · Analytics · Cross-Process Insert<br/>
+  Deck 画布编辑器 — 几何操作 · 浮动工具栏 · 非破坏性裁剪 · 撤销混合模式 · 埋点体系 · 跨进程插入</div>
+  <div class="sub" style="margin-top:8px;">📅 2026-06-09 → 2026-06-15 · 379 commits（其中 152 个 deck）· 6 new concepts 6 个新概念</div>
+</header>
+
+<nav>
+  <a href="#overview">Overview 概览</a>
+  <a href="#c1">1 · Geometry 几何</a>
+  <a href="#c2">2 · Text Toolbar 文本工具栏</a>
+  <a href="#c3">3 · Image Crop 图片裁剪</a>
+  <a href="#c4">4 · Undo Hybrid 撤销混合</a>
+  <a href="#c5">5 · Analytics 埋点</a>
+  <a href="#c6">6 · Cross-Process Insert 插入</a>
+  <a href="#quiz">Quiz 测验</a>
+  <a href="#flashcards">Flashcards 闪卡</a>
+  <a href="#next">Next 下一步</a>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2><span class="en">Overview</span> <span class="zh">概览</span></h2>
+  <p class="section-sub">本周 379 个 commit 几乎全押在 deck 幻灯片编辑器上（152 个 deck commit）。这是项目中第一个真正的「画布直接操作编辑器」，从未在过往学习记录中出现。所有交互都建立在一套 <b>host ↔ iframe postMessage bridge</b> 上 —— 这是理解本周 6 个概念的共同主线。<br/>
+  This week's 379 commits were almost entirely the deck slide editor (152 deck commits). It's the project's first real direct-manipulation canvas editor. Every interaction is built on a single <b>host ↔ iframe postMessage bridge</b> — the common thread behind all six concepts.</p>
+  <div class="card">
+    <h3>The Common Thread <span class="zh">共同主线：跨进程 bridge 架构</span></h3>
+    <div class="decision"><span class="q">deck 内容跑在 iframe 里（第三方 deck 引擎的原生 HTML），React host 无法直接访问它的 DOM。</span>
+The deck content lives inside an iframe (third-party engine's native HTML); the React host can't touch its DOM directly.
+
+  Host  ──action(postMessage)──▶  iframe bridge runtime (≈3500 行 ES5 字符串脚本)
+        ◀──event(postMessage)───  (selection rect / styles / list commit / load)
+
+<span class="a">→ 拖拽几何、格式化命令、选区上报、元素插入、撤销补丁、埋点，全都走这条通道。</span>
+<span class="a">→ 本周多个竞态 bug（in-flight remount 丢补丁 / pending 失效误选 / load 竞态）都源于这条异步边界。</span></div>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 1 ============ -->
+<section id="c1">
+  <h2><span class="en">1 · Direct-Manipulation Geometry</span> <span class="zh">画布直接操作几何</span> <span class="tag fe">frontend</span></h2>
+  <p class="section-sub">拖拽移动 · 两阶段点击选择 · 8-handle resize · 边界 clamp · flow→absolute 冻结</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc">deck 画布上直接拖动/缩放绝对定位的 shape。几何计算在 iframe bridge runtime（ES5 字符串脚本，可同源单测），数据模型是 <code>left/top/width/height</code> + <b>anchor 中性化</b>（拖拽时写 <code>right/bottom:auto</code>，防止固定的右/下锚点把宽高拉伸而非移动）。clamp 分两个 regime。<br/>
+    Drag/resize absolutely-positioned shapes directly on the deck canvas. Geometry math lives in the iframe bridge runtime (ES5 string, unit-testable). Model is <code>left/top/width/height</code> + <b>anchor neutralization</b>; clamp has two regimes.</p>
+    <div class="meta">📁 <code>deckDragGeometry.ts</code> · <code>deckSelectionLogic.ts</code> · <code>deckFreezeLogic.ts</code> · <code>deckStageBridgeRuntime.ts</code></div>
+
+    <ul class="keypoints">
+      <li><b>FITS vs OVERSIZED clamp</b>：shape 小于 slide → 接触边界即停 <code>[0, section-size]</code>；shape 大于 slide（full-bleed 出血条纹）→ 允许超出但保留 minVisible px 可抓 <code>[minVisible-size, section-minVisible]</code>。<br/><span style="color:var(--text-dim)">普通元素和故意出血的背景条用不同夹取策略。</span></li>
+      <li><b>detach text from clip</b>：text shape 用 autofit（<code>overflow:hidden</code>），拖拽时临时设 <code>overflow:visible</code> 让被裁的文本可见 → 必须按 <b>visible extent</b>（box∪scrollSize）而非 box 计算夹取。<br/><span style="color:var(--text-dim)">这是「拖拽时能看到完整文本」UX 的代价：坐标系变复杂。</span></li>
+      <li><b>三层坐标系</b>：slide 设计空间 px → iframe visual px → host viewport px，<code>scale = iframeRect.width / iframe.offsetWidth</code> 恢复 zoom。这是项目中最复杂的几何交互。</li>
+      <li><b>flow→absolute 冻结</b>：点「Enable drag editing」时遍历 DOM，把叶子块/有皮肤的容器测量成绝对 shape，重测 drift > 0.5px 则整片回滚（从 cssText 备份恢复）。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — vs @dnd-kit vs marquee</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>实现</th><th>文件</th><th>方案</th><th>坐标系 / 数据</th><th>适用</th></tr>
+          <tr><td><b>Deck 画布拖拽</b></td><td><code>deckDragGeometry.ts</code></td><td>手写指针 + 纯几何 clamp + anchor 中性化</td><td>slide px（3 层换算）/ CSS 绝对定位</td><td>自由坐标画布 shape</td></tr>
+          <tr><td><b>@dnd-kit</b></td><td><code>DnDProvider</code></td><td>声明式 DndContext + collision detection</td><td>无坐标 / 路径集合</td><td>有序树/列表节点（文件拖放）</td></tr>
+          <tr><td><b>Marquee 选区</b></td><td><code>useListDragSelect.ts</code></td><td>行 index + rAF auto-scroll</td><td>container clientY+scrollTop / Set&lt;id&gt;</td><td>2D 矩形范围选择（列表多选）</td></tr>
+        </table>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab(this,'g-deck')">Deck clamp</button>
+          <button class="tab-btn" onclick="showTab(this,'g-dnd')">@dnd-kit</button>
+          <button class="tab-btn" onclick="showTab(this,'g-marquee')">marquee</button>
+        </div>
+        <div id="g-deck" class="tab-pane active"><pre><code><span class="cmt">// 二元 clamp regime —— deckDragGeometry.ts</span>
+<span class="kw">function</span> <span class="fn">kuseDragClampAxis</span>(pos, size, sectionSize, minVisible) {
+  <span class="kw">if</span> (size &lt; sectionSize) {
+    <span class="cmt">// FITS：接触边界即停</span>
+    <span class="kw">return</span> clamp(pos, <span class="str">0</span>, sectionSize - size);
+  }
+  <span class="cmt">// OVERSIZED（full-bleed 出血）：允许超出但保留可抓边缘</span>
+  <span class="kw">return</span> clamp(pos, minVisible - size, sectionSize - minVisible);
+}
+<span class="cmt">// 拖 text shape 时按 visible extent 夹取（含溢出文本）</span>
+<span class="kw">const</span> extent = <span class="fn">kuseVisibleExtent</span>(boxSize, scrollSize); <span class="cmt">// = max(box, scroll)</span></code></pre></div>
+        <div id="g-dnd" class="tab-pane"><pre><code><span class="cmt">// @dnd-kit —— 纯逻辑映射，无坐标</span>
+&lt;<span class="fn">DndContext</span> sensors={[pointerSensor]} collisionDetection={finderAware}&gt;
+  <span class="cmt">// 拖拽结束只改逻辑位置（parentPath），不碰坐标</span>
+  <span class="fn">onDragEnd</span>={(e) =&gt; <span class="fn">moveItems</span>(sourcePaths, e.over.id)}
+&lt;/DndContext&gt;
+<span class="cmt">// 无法在 iframe 沙箱运行（需完整 DOM 事件），不支持离线 HTML</span></code></pre></div>
+        <div id="g-marquee" class="tab-pane"><pre><code><span class="cmt">// marquee 选区 —— useListDragSelect.ts</span>
+<span class="cmt">// auto-scroll 速度按距边缘比例</span>
+<span class="kw">const</span> proximity = <span class="str">1</span> - distToEdge / EDGE_ZONE;
+<span class="kw">const</span> speed = MIN + (MAX - MIN) * proximity;
+<span class="cmt">// 选中结果是行 index 范围 → Set&lt;id&gt;</span></code></pre></div>
+
+        <div class="decision"><span class="q">Q: 拖拽一个东西，用哪种方案？</span>
+<span class="a">有序列表/树节点 + 只改逻辑位置（index/parentPath）+ 不在 iframe</span>  → @dnd-kit
+<span class="a">任意 x/y 自由坐标 + 几何约束（aspect/clamp/anchor）或在 iframe / 需离线</span>  → 手写几何
+<span class="a">2D 矩形范围选择 + grid 行列可算 + 需 auto-scroll</span>  → marquee 选区
+<span class="a">full-bleed 出血元素</span>  → OVERSIZED clamp（允许超出，保留 minVisible）
+<span class="a">普通 shape</span>  → FITS clamp（接触边界即停）</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 2 ============ -->
+<section id="c2">
+  <h2><span class="en">2 · Floating Text Toolbar over iframe contentEditable</span> <span class="zh">iframe 文本浮动工具栏</span> <span class="tag fe">frontend</span></h2>
+  <p class="section-sub">bold/italic · list · link · heading level · typography —— 经 postMessage bridge，不走 execCommand 也不走 Tiptap</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc">选中 shape 后浮现的格式化工具栏。编辑内容是 iframe 内第三方引擎的原生 HTML（不受 ProseMirror schema 管辖），所以命令经 bridge 分层 action：<code>applyStyles</code>（块级）/ <code>applyRangeStyle</code>（span 包裹）/ <code>applyList</code>（重建 p↔ul）/ <code>applyLink</code>。定位用 iframe 上报的 selection rect + 纯函数碰撞避让。<br/>
+    Format toolbar floating over a selected shape. Content is the iframe engine's native HTML (not ProseMirror), so commands go through layered bridge actions, positioned via the reported selection rect.</p>
+    <div class="meta">📁 <code>DeckTextToolbar.tsx</code> · <code>deckTextToolbarLogic.ts</code> · <code>deckToolbarPlacement.ts</code> · <code>deckSelectionRect.ts</code></div>
+
+    <ul class="keypoints">
+      <li><b>块级操作 scope 到 outer block</b>：用户 drill into 一个 styled span 时，level/align/indent 必须作用在外层块（<code>resolveBlockTargetPath(path, outerPath)</code>），不是 span —— <code>padding-left</code> 在 inline span 上无效。</li>
+      <li><b>状态反射有延迟</b>：iframe 回传 computed+inline 样式快照（+ range 特有 <code>rangeFontWeight/rangeColor/rangeLink</code>），host 才知道当前格式。比 Tiptap 的 <code>editor.isActive()</code> 慢 ~1 帧。</li>
+      <li><b>定位独立于 iframe</b>：<code>placeDeckToolbar</code> 纯函数（above/below 翻转 + 居中 + viewport clamp 8px），工具栏浮在 host viewport，能响应 host 窗口 resize。</li>
+      <li><b>高频选区用专属轻通道</b>：拖拽时每帧上报，只发 rect 不序列化整个样式快照；<code>selectionRectsEqual</code> 去重避免无效 host re-render。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — vs Tiptap BubbleMenu</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>维度</th><th>Deck bridge 工具栏</th><th>Tiptap BubbleMenu</th></tr>
+          <tr><td>编辑器</td><td>iframe 内原生 contentEditable（无法掌控）</td><td>自家 ProseMirror state（完全掌控）</td></tr>
+          <tr><td>命令模型</td><td>显式路由：块级 <code>applyStyles</code> / range <code>applyRangeStyle</code></td><td>schema 驱动 <code>chain().toggleBold().run()</code></td></tr>
+          <tr><td>状态反射</td><td>postMessage 回传样式快照（~1 帧延迟）</td><td><code>editor.isActive('bold')</code> 同步零延迟</td></tr>
+          <tr><td>定位</td><td>独立浮在 host viewport（纯函数计算）</td><td>floating-ui 绑定编辑器容器</td></tr>
+          <tr><td>跨 iframe</td><td>必须 postMessage 双向通信</td><td>单进程，无需</td></tr>
+        </table>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab(this,'t-deck')">Deck bridge</button>
+          <button class="tab-btn" onclick="showTab(this,'t-tiptap')">Tiptap</button>
+        </div>
+        <div id="t-deck" class="tab-pane active"><pre><code><span class="cmt">// 块级操作强制回到外层块（drill-in span 修复）</span>
+<span class="kw">const</span> blockPath = <span class="fn">resolveBlockTargetPath</span>(selection.path, selection.outerPath);
+bridge.<span class="fn">applyStyles</span>(blockPath, { <span class="str">'text-align'</span>: <span class="str">'center'</span> });
+<span class="fn">resolveIndentScope</span>() === <span class="str">'block'</span>; <span class="cmt">// 硬编码：padding-left 在 span 上无效</span>
+
+<span class="cmt">// range 级（有 active selection）→ 包 span</span>
+<span class="kw">if</span> (rangeActive) bridge.<span class="fn">applyRangeStyle</span>(<span class="str">'color'</span>, value);</code></pre></div>
+        <div id="t-tiptap" class="tab-pane"><pre><code><span class="cmt">// Tiptap —— schema 自动区分 node/mark，同步反射</span>
+editor.<span class="fn">chain</span>().<span class="fn">focus</span>().<span class="fn">toggleBold</span>().<span class="fn">run</span>();
+<span class="kw">const</span> active = editor.<span class="fn">isActive</span>(<span class="str">'bold'</span>); <span class="cmt">// 零延迟</span>
+<span class="cmt">// mark 不能跨 node 边界（schema 规则），无需手动 scope</span></code></pre></div>
+        <div class="decision"><span class="q">Q: 富文本工具栏用哪种？</span>
+<span class="a">编辑器是自家 ProseMirror state + 工具栏共享 editor + 需协作/undo</span>  → Tiptap BubbleMenu
+<span class="a">内容在 iframe / 第三方 DOM + 工具栏要浮在 iframe 外 + 不同命令需不同策略</span>  → 自定义浮动 + postMessage bridge
+<span class="a">块级格式化（level/align/indent）</span>  → 永远 scope 到外层块，不要作用在 drilled-in span
+<span class="a">跨 iframe 高频选区上报</span>  → 专属轻量 rect 通道（不序列化样式快照）+ 去重</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 3 ============ -->
+<section id="c3">
+  <h2><span class="en">3 · Non-Destructive Image Crop</span> <span class="zh">非破坏性图片裁剪</span> <span class="tag fe">frontend</span></h2>
+  <p class="section-sub">transform 几何（crop-to-scale）vs clip-path 蒙版（crop-to-shape）—— 两条非破坏路径</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc"><b>crop-to-scale</b>：源分数坐标 <code>CropRect[0..1]</code> 编码为 IMG 的 <code>transform: scale(1/w,1/h) translate(...)</code> + <code>object-fit:fill</code>，缩放与拉伸互相抵消保证无失真。<b>crop-to-shape</b>：clip-path 蒙版加在<b>未变换的 figure 父元素</b>（不是被 transform 的 img，否则圆变椭圆）。<br/>
+    Two non-destructive crop paths: transform geometry (scale-crop, fractional source rect) and clip-path mask (shape-crop, on the untransformed parent).</p>
+    <div class="meta">📁 <code>deckImageCropLogic.ts</code> · <code>deckImageShapeLogic.ts</code> · <code>DeckImageCropEditor.tsx</code> · <code>DeckImageReplacePanel.tsx</code></div>
+
+    <ul class="keypoints">
+      <li><b>NO-DISTORTION INVARIANT</b>：rect 宽高比 = figure 宽高比时 <code>scale(1/w,1/h)</code> 才能抵消 fill 拉伸 → 选 16:9 preset 必须同步 pin <code>figure aspect-ratio: 16/9</code>。</li>
+      <li><b>蒙版加在 figure 不加在 img</b>：CSS clip-path 在元素 local（pre-transform）坐标系解析再应用 transform —— 加在被 scale 的 img 上圆会变椭圆，加在无变换的 figure 上几何恒定。</li>
+      <li><b>id marker 往返，不匹配 clip-path</b>：浏览器把 <code>circle(50%)</code> 规范化为 <code>circle(50% at 50% 50%)</code>，字符串匹配失效 → 用 <code>--deck-shape</code> 自定义属性（字面存储不规范化）往返 active 状态。</li>
+      <li><b>replace 只换 src</b>：<code>swapSrc</code> 不写 style patch，新图自动继承 crop+shape（img node 和 figure parent 不变，分数坐标对任意宽高比有效），保留用户工作流。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — 三种裁剪机制对比</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>机制</th><th>破坏性</th><th>作用对象</th><th>用途</th></tr>
+          <tr><td>transform 几何（scale-crop）</td><td>非破坏可逆</td><td>IMG transform</td><td>deck/pptx 可逆展示裁剪</td></tr>
+          <tr><td>clip-path 蒙版（shape-crop）</td><td>非破坏，与 crop 正交</td><td>FIGURE 父元素</td><td>装饰性形状裁剪</td></tr>
+          <tr><td>canvas / 后端像素裁剪</td><td>破坏（需另存原始）</td><td>像素</td><td>精确导出/后端处理</td></tr>
+          <tr><td>object-fit + object-position</td><td>非破坏</td><td>IMG box</td><td>大量图片性能优先（chat/feed）</td></tr>
+        </table>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab(this,'i-scale')">scale-crop</button>
+          <button class="tab-btn" onclick="showTab(this,'i-shape')">shape-crop</button>
+          <button class="tab-btn" onclick="showTab(this,'i-replace')">replace</button>
+        </div>
+        <div id="i-scale" class="tab-pane active"><pre><code><span class="cmt">// 源分数坐标 → IMG transform（无失真）</span>
+img.style.objectFit = <span class="str">'fill'</span>;
+img.style.transformOrigin = <span class="str">'top left'</span>;
+img.style.transform = <span class="str">`scale(${1/w}, ${1/h}) translate(${-l*100}%, ${-t*100}%)`</span>;
+<span class="cmt">// 必须同步 pin 容器宽高比，否则 scale 无法抵消拉伸</span>
+figure.style.aspectRatio = <span class="str">`${pw} / ${ph}`</span>;</code></pre></div>
+        <div id="i-shape" class="tab-pane"><pre><code><span class="cmt">// clip-path 加在未变换的 figure，不加在被 scale 的 img</span>
+figure.style.clipPath = <span class="str">'circle(closest-side at 50% 50%)'</span>;
+<span class="cmt">// active 状态用 id marker 往返（不匹配会被规范化的 clip-path）</span>
+img.style.setProperty(<span class="str">'--deck-shape'</span>, <span class="str">'circle'</span>);
+<span class="kw">const</span> activeId = <span class="fn">parseActiveShapeId</span>(inline[<span class="str">'--deck-shape'</span>]);</code></pre></div>
+        <div id="i-replace" class="tab-pane"><pre><code><span class="cmt">// replace 只换 src，新图继承既有 crop + shape</span>
+<span class="kw">const</span> <span class="fn">swapSrc</span> = (url) =&gt; {
+  bridge.<span class="fn">replaceImageSrc</span>(path, url);
+  preview.<span class="fn">applyImageReplace</span>(path, url);
+  <span class="cmt">// 不写 style patch —— transform/clip-path 仍在 img/figure 上</span>
+};</code></pre></div>
+        <div class="decision"><span class="q">Q: 图片裁剪用哪种？</span>
+<span class="a">展示时几何裁剪 + 保留原文件（可逆编辑）</span>  → transform 几何，记得 pin 容器 aspect-ratio
+<span class="a">装饰性形状裁剪 + 不改文件逻辑</span>  → clip-path 蒙版，必须加在未变换的父元素
+<span class="a">精确像素 / 导出后端处理</span>  → canvas 或后端裁剪（破坏性，另存原始 src）
+<span class="a">大量图片 + 性能优先</span>  → object-fit + 静态 object-position
+<span class="a">round-trip active 状态</span>  → 用自定义属性 id marker，别比对会被规范化的 CSS 值</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 4 ============ -->
+<section id="c4">
+  <h2><span class="en">4 · Undo/Redo: Snapshot + In-Place Hybrid</span> <span class="zh">撤销/重做：快照+原地补丁混合</span> <span class="tag fe">frontend</span></h2>
+  <p class="section-sub">structural op 存整片 HTML（remount 闪烁）· in-place op 存补丁（bridge 原地打补丁不闪烁）</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc">混合两种 op：<b>structural</b>（增删改幻灯片等结构改动）存整片 before/after HTML，restore 时 bump structuralVersion 触发 iframe remount；<b>in-place</b>（样式/文本/图片 src 等非结构改动）存 per-node 补丁，经 <code>iframe:patch</code> 事件 + <code>setNodeHtml/applyStyles/replaceImageSrc</code> 原地打补丁，不 remount、不闪烁、选区不丢。<br/>
+    Hybrid: structural ops store whole-doc HTML (remount), in-place ops store per-node patches replayed via bridge (no flash, selection kept).</p>
+    <div class="meta">📁 <code>deckHistory.ts</code> · <code>DeckPreview.ts</code> · <code>deckPatchRouter.ts</code> · <code>useDeckBridge.ts</code></div>
+
+    <div class="callout"><b>核心竞态 bug：</b> 双 undo 时，structural restore 让 iframe 正在重载，紧随的 in-place postMessage 被丢弃（bridge 监听器还没重新挂上）→ host 缓存与 iframe DOM 静默分歧，无自愈。<br/>
+    <b>Race bug:</b> on a double-undo, a structural restore reloads the iframe; the next in-place postMessage is dropped (listener not re-attached) → cache and iframe silently diverge.</div>
+
+    <ul class="keypoints">
+      <li><b>version-tag stash 修复</b>：in-place 补丁打上当前 <code>structuralVersion</code> 暂存，iframe load 后版本匹配才 replay，不匹配则丢弃为 stale（文档反正已变形）。</li>
+      <li><b>structuralVersion 在 restore 时 unused</b>：op 记录时存的版本是死值，restore 要新鲜读 <code>_structuralVersion</code> 才有意义。</li>
+      <li><b>bridge 拒绝的 URL 要 skip 且 no-emit</b>：保持 host 缓存与 iframe DOM lock-step，避免分歧。</li>
+      <li><b>in-place 选区不丢</b>：node path 不变，无需 remount 后 re-anchor（structural op 才需要）。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — 三种 undo 范式 + 项目 4 套实现</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>实现</th><th>范式</th><th>restore 闪烁?</th><th>存储</th></tr>
+          <tr><td><b>Deck（本周）</b></td><td>snapshot + in-place op 混合</td><td>structural 是 / in-place 否</td><td>补丁（省）+ 整片（结构）</td></tr>
+          <tr><td>assets <code>UndoStore</code></td><td>backup-restore</td><td>隐式（整树重建）</td><td>整树快照</td></tr>
+          <tr><td>A4 <code>HistoryManager</code></td><td>纯快照（debounced）</td><td>总是（整片重排）</td><td>整片 HTML（贵）</td></tr>
+          <tr><td>ProseMirror</td><td>transaction</td><td>智能合并</td><td>每键 mutation（自动 dedup）</td></tr>
+        </table>
+        <pre style="border-radius:8px;margin-top:10px;"><code><span class="cmt">// version-tag stash —— 解决 in-flight remount 竞态</span>
+<span class="cmt">// 暂存：补丁打上当前结构版本</span>
+this._pendingInPlacePatches = { version: this._structuralVersion, patches };
+<span class="cmt">// iframe load 后消费：版本不匹配 → 丢弃为 stale</span>
+<span class="fn">takePendingInPlacePatches</span>() {
+  <span class="kw">const</span> p = this._pendingInPlacePatches;
+  this._pendingInPlacePatches = <span class="kw">null</span>;
+  <span class="kw">if</span> (!p || p.version !== this._structuralVersion) <span class="kw">return</span> []; <span class="cmt">// stale 丢弃</span>
+  <span class="kw">return</span> p.patches;
+}</code></pre>
+        <div class="decision"><span class="q">Q: undo/redo 用哪种范式？</span>
+<span class="a">静态可序列化内容 + 编辑不频繁/批量 + remount 可接受 + 要回任意态</span>  → 纯快照（A4 文档）
+<span class="a">编辑频繁细粒度 + 有原地打补丁通道 + 要避免闪烁/保选区 + op 可 replay</span>  → op-based 原地补丁（deck 非结构）
+<span class="a">编辑器有内建状态机 + op 自动 compose + 需冲突解决（协作）</span>  → transaction（ProseMirror）
+<span class="a">跨进程/异步 remount 做原地优化</span>  → 必须 version-tag 暂存 + load 后版本匹配 replay</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 5 ============ -->
+<section id="c5">
+  <h2><span class="en">5 · Session + Funnel Analytics Infra</span> <span class="zh">会话化漏斗化埋点基础设施</span> <span class="tag gen">general</span></h2>
+  <p class="section-sub">集中 typed wrapper · session roll-up · 6 个 funnel · 4 项准确性原则</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc"><code>utils/tracking/deck.ts</code> 用统一 <code>track()</code> + 强类型 <code>DeckCommonParams</code> + 20+ typed wrapper 封装所有 deck_* 事件。DeckPreview 维护 <code>_deckSession</code>（UUID + counter + did* flags），打开建 session、关闭 roll-up 出 <code>session_ended</code> 聚合指标。这是项目目前<b>最成熟</b>的 analytics 实现。<br/>
+    Centralized typed analytics with session lifecycle, roll-up metrics, 6 funnels — the project's most mature tracking implementation.</p>
+    <div class="meta">📁 <code>utils/tracking/deck.ts</code> · <code>DeckPreview.ts</code> · <code>fromDeck.ts</code></div>
+
+    <ul class="keypoints">
+      <li><b>4 项准确性原则</b>（都低代码量高价值）：</li>
+      <li>① <b>buffer</b>：load 事件 buffer 到 session 存在后才发（防异步初始化竞态，确保有 session_id）。</li>
+      <li>② <b>dedupe</b>：<code>edit_mode_entered</code> 用 <code>_editSessionTracked</code> + 500ms debounce 去重（防 iframe remount blip 重复触发）。</li>
+      <li>③ <b>gate on real mutation</b>：image 事件门控 —— mutation 返回 bool，no-op（URL 相同）不发事件。</li>
+      <li>④ <b>snapshot ctx</b>：export ctx 在 click 时快照，防多秒导出过程中 <code>slide_index</code> 漂移。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — vs 散点埋点（dispute / scheduled-tasks）</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>维度</th><th>deck.ts（集中）</th><th>dispute/scheduled-tasks（散点）</th></tr>
+          <tr><td>common params</td><td>统一 <code>DeckCommonParams</code>，改一处全生效</td><td>字段直传，不一致</td></tr>
+          <tr><td>session</td><td>UUID + counter roll-up（GA4 可 JOIN 同会话）</td><td>无（需子查询 JOIN request_id）</td></tr>
+          <tr><td>funnel</td><td>requested→succeeded/failed + duration+error_code</td><td>无结尾事件，需自定义 SQL</td></tr>
+          <tr><td>准确性</td><td>buffer/dedupe/gate/snapshot 4 修复</td><td>无（事件树浅，单层）</td></tr>
+        </table>
+        <pre style="border-radius:8px;margin-top:10px;"><code><span class="cmt">// 集中 typed wrapper —— common 改一处全事件生效</span>
+<span class="kw">function</span> <span class="fn">track</span>(name, params = {}) {
+  <span class="fn">windowTrackEvent</span>(name, { file_type: <span class="str">'deck'</span>, ...params, userStatus });
+}
+<span class="kw">export const</span> trackDeckImageGenerated = (p: DeckCommonParams & {
+  source: <span class="str">'ai'</span>; status?: <span class="str">'success'</span>|<span class="str">'failed'</span>; duration_ms?: number; error_code?: string,
+}) =&gt; <span class="fn">track</span>(EVENT.deck_image_generated, p);
+
+<span class="cmt">// 准确性③：gate on real mutation（mutation 返 bool）</span>
+<span class="kw">if</span> (preview.<span class="fn">applyImageReplace</span>(path, url)) {       <span class="cmt">// no-op 不进 if</span>
+  <span class="fn">trackDeckImageReplaced</span>({ ...preview.<span class="fn">trackingCommon</span>(), source: <span class="str">'upload'</span> });
+}</code></pre>
+        <div class="callout">⚠️ 散点埋点（dispute/scheduled-tasks）<b>也没问题</b> —— 事件少、无 common、无 session/funnel 需求。<b>选对抽象等级是关键，不是越复杂越好。</b></div>
+        <div class="decision"><span class="q">Q: 埋点用哪种抽象等级？</span>
+<span class="a">event &lt;5 + 无 common + 不需聚合 + 无竞态 + 不成 funnel</span>  → 散点直埋
+<span class="a">event ≥10 + &gt;50% 共享 common + 严格 TS + 多人协作</span>  → 集中 typed wrapper
+<span class="a">一次任务含多子操作 + 要统计会话级转化</span>  → 引入 session + roll-up
+<span class="a">用户启动功能有成功/失败结果 + 要测 conversion/dropout</span>  → funnel 建模
+准确性 checklist：异步初始化 → buffer；频繁 toggle → debounce；mutation 埋点 → gate on real mutation；多秒 funnel → snapshot ctx</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CONCEPT 6 ============ -->
+<section id="c6">
+  <h2><span class="en">6 · Cross-Process Insert: Pending + Post-Remount Auto-Select</span> <span class="zh">跨进程插入：pending + 重挂载后自动选中</span> <span class="tag fe">frontend</span></h2>
+  <p class="section-sub">数据驱动工具栏 · 插入 Text/Image/Shape 到 iframe 后异步选中 · 竞态清理</p>
+  <div class="card">
+    <h3>What it is <span class="zh">这是什么</span></h3>
+    <p class="desc">顶部工具栏（数据驱动 placeholder 名册 + icon-only 分组）的插入栏把元素插到 iframe 内第三方 HTML。因为插入要改 host cache → bump structuralVersion → iframe remount（异步）→ 新节点才进 DOM，host 无法同步访问，所以用 <b>pending + consume</b>：记录路径快照，iframe onLoad 时一次性消费并经 bridge 选中。<br/>
+    Insert bar inserts elements into the iframe's HTML. Since insert triggers an async remount, the host can't access the new node synchronously — so it uses pending + post-remount consume.</p>
+    <div class="meta">📁 <code>DeckTopToolbar.tsx</code> · <code>deckTopToolbarItems.ts</code> · <code>DeckPreview.ts</code> · <code>DeckStage.tsx</code></div>
+
+    <ul class="keypoints">
+      <li><b>pending path 是绝对索引快照</b> <code>[slideIndex, childIndex]</code>：任何改 slide/child-index 的 sibling op（delete/duplicate/reorder/imageReplace）都会让它失效 → 必须 <code>_invalidatePendingInsertSelection()</code> 防误选。</li>
+      <li><b>一次性消费语义</b>：<code>takePendingInsertSelection()</code> 取出后立即清字段，避免被消费多次。</li>
+      <li><b>插入文本故意不加 data-kuse-edit 标记</b>：否则翻转整个 deck 进 whitelist regime，反而让原有无标记段落停止编辑（Heuristic regime 下新文本自动可编辑）。</li>
+      <li><b>no-op guard</b>：插到 empty/generating slide 返回 null 不记录 pending。</li>
+    </ul>
+
+    <details>
+      <summary>Deep Dive 深度分析 — vs 同进程插入（Chat slash / FinderView auto-rename）</summary>
+      <div class="details-body">
+        <table>
+          <tr><th>维度</th><th>Deck insert bar</th><th>Chat slash command</th><th>FinderView auto-rename</th></tr>
+          <tr><td>插入目标</td><td>跨进程 iframe 第三方 HTML</td><td>同进程 ProseMirror</td><td>同进程 store + DOM</td></tr>
+          <tr><td>选中时机</td><td>异步：remount 后 onLoad</td><td>同步：同 transaction</td><td>异步：store event + rAF</td></tr>
+          <tr><td>pending 概念</td><td>有（跨进程异步边界）</td><td>无</td><td>有（但无跨进程）</td></tr>
+          <tr><td>竞态清理</td><td>有（每个 sibling op 清除）</td><td>N/A（transaction 原子）</td><td>无需路径失效</td></tr>
+        </table>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="showTab(this,'ins-deck')">Deck（异步）</button>
+          <button class="tab-btn" onclick="showTab(this,'ins-chat')">Chat（同步）</button>
+        </div>
+        <div id="ins-deck" class="tab-pane active"><pre><code><span class="cmt">// 记录 pending + bump 触发异步 remount</span>
+<span class="fn">insertShape</span>(html) {
+  this._pendingInsertSelectionPath = path;  <span class="cmt">// [slideIndex, childIndex]</span>
+  this._structuralVersion++;                <span class="cmt">// → iframe remount</span>
+}
+<span class="cmt">// iframe onLoad 一次性消费</span>
+<span class="kw">const</span> p = preview.<span class="fn">takePendingInsertSelection</span>();   <span class="cmt">// take 清字段</span>
+<span class="kw">if</span> (p) bridge.<span class="fn">selectShape</span>([...p]);
+<span class="cmt">// 每个 sibling op 必须清除，否则路径快照失效误选</span>
+<span class="fn">applyDelete</span>(path) { this.<span class="fn">_invalidatePendingInsertSelection</span>(); ... }</code></pre></div>
+        <div id="ins-chat" class="tab-pane"><pre><code><span class="cmt">// 同进程 ProseMirror —— 插入即可同步选中，无 pending</span>
+editor.<span class="fn">chain</span>().<span class="fn">insertContent</span>(node).<span class="fn">focus</span>().<span class="fn">run</span>();
+<span class="cmt">// selection 相对当前 doc，transaction 原子，无竞态窗口</span></code></pre></div>
+        <div class="decision"><span class="q">Q: 插入元素后怎么选中？</span>
+<span class="a">同进程可访问 DOM + 插入与选中原子（同 transaction）+ 无长竞态窗口</span>  → 同步选中
+<span class="a">跨进程（iframe/worker/remote）+ 插入与重建异步边界</span>  → pending + post-mount consume
+<span class="a">同进程异步定位新建元素（如新建文件夹进编辑态）</span>  → store event + rAF + setEditingPath
+竞态清理必做：所有 sibling structural op 清 pending；消费用 take 非 get；no-op guard；一次性语义</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="quiz">
+  <h2><span class="en">Quiz</span> <span class="zh">测验</span> — 场景选型 Scenario-based</h2>
+  <p class="section-sub">不是「这是什么」，而是「这个场景你会选哪种方案？为什么」。点选项查看答案。<br/>Not "what is it" but "which approach in this scenario, and why". Click an option to reveal.</p>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q1.</b> 你要做一个 Kanban 看板，卡片在列之间拖拽，只需要改变卡片所属的列和顺序，不涉及任意像素坐标。用哪种拖拽方案？<span class="zh">A Kanban board where cards drag between columns — only logical position (column + order) changes, no pixel coordinates.</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 手写指针事件 + 几何 clamp（像 deck 画布）</button>
+    <button class="opt" onclick="pick(this,true)">B. @dnd-kit 声明式 DndContext + collision detection</button>
+    <button class="opt" onclick="pick(this,false)">C. marquee 选区 + auto-scroll</button>
+    <div class="explain"><b>正确：B。</b> 卡片是有序集合、拖拽只改逻辑位置（columnId + index）、无几何约束、不在 iframe —— 这正是 @dnd-kit 的甜区。手写几何（A）是自由坐标画布才需要的重型方案，在这里是过度工程。marquee（C）是范围选择不是拖放排序。</div>
+  </div>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q2.</b> 你要给一张图片加圆形遮罩做头像，同时这张图片本身用 CSS transform 做了缩放裁剪。clip-path 应该加在哪？<span class="zh">Round mask on an image that already has a CSS transform scale-crop. Where to put clip-path?</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 直接加在被 transform 的 &lt;img&gt; 上</button>
+    <button class="opt" onclick="pick(this,true)">B. 加在未变换的父元素（figure）上</button>
+    <button class="opt" onclick="pick(this,false)">C. 反向计算 clip-path 抵消 transform 后加在 img 上</button>
+    <div class="explain"><b>正确：B。</b> CSS clip-path 在元素的 local（pre-transform）坐标系解析<b>再</b>应用 transform。加在被 scale(1/w,1/h) 的 img 上，圆会被同样拉伸成椭圆（A 错）。反向计算（C）复杂且脆弱。加在无变换的 figure 父元素上，蒙版几何与 crop transform 正交、恒定 —— 这正是 deck crop-to-shape 的设计。</div>
+  </div>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q3.</b> 你的编辑器做撤销：内容是一个大文档，用户每秒打很多字，你想要撤销时不闪烁、保留光标，且改动可以经编辑器的命令通道重放。用哪种 undo 范式？<span class="zh">Frequent fine-grained edits, want no-flash undo that keeps the cursor and can replay through the editor's command channel.</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 纯快照：每次编辑存整片内容，restore 时整片重排</button>
+    <button class="opt" onclick="pick(this,true)">B. op-based 原地补丁：存 per-node before/after，经命令通道重放</button>
+    <button class="opt" onclick="pick(this,false)">C. backup-restore：备份整个状态树，失败时整树恢复</button>
+    <div class="explain"><b>正确：B。</b> 频繁细粒度编辑 + 有原地打补丁通道 + 要避免 remount 闪烁/保选区 + op 可经同一 mutator 重放 → op-based 原地补丁（deck 非结构改动正是这样）。纯快照（A）restore 必整片重排（闪烁、丢光标）。backup-restore（C）适合粗粒度文件操作。注意：如果是跨进程异步 remount，还要加 version-tag 暂存防竞态。</div>
+  </div>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q4.</b> 你给一个只有 3 个事件、字段各不相同、互相无关联的功能加埋点。要不要建集中 typed wrapper + session + funnel？<span class="zh">3 events, all different fields, unrelated. Build centralized wrapper + session + funnel?</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 要，越规范越好，统一用 deck.ts 那套</button>
+    <button class="opt" onclick="pick(this,true)">B. 不要，散点直埋就够，事件少无 common 无 funnel 需求</button>
+    <button class="opt" onclick="pick(this,false)">C. 要 session 不要 funnel</button>
+    <div class="explain"><b>正确：B。</b> 选对抽象等级是关键，不是越复杂越好。event &lt;5 + 无共享 common + 不需聚合 + 无竞态 + 不成 funnel → 散点直埋足够（项目里 dispute/scheduled-tasks 就是这样，没问题）。集中 typed wrapper（A）在 event≥10 + 高 common 重复 + funnel 需求时才值得。session（C）只在「一次任务含多子操作 + 要统计会话级转化」时引入。</div>
+  </div>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q5.</b> 你在 iframe 里插入一个元素，插入会触发 iframe 重挂载，之后你想选中这个新元素。但插入后、重挂载完成前，用户可能删了别的元素。怎么保证不误选？<span class="zh">Insert into iframe triggers remount; you want to select the new element after; but user may delete other elements before remount completes.</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 插入后立即 bridge.selectShape，不用等</button>
+    <button class="opt" onclick="pick(this,true)">B. 记录 pending 路径，每个 sibling structural op 清除它，onLoad 后才消费</button>
+    <button class="opt" onclick="pick(this,false)">C. 用 setTimeout 等 500ms 再选</button>
+    <div class="explain"><b>正确：B。</b> 跨进程异步边界下，host 无法同步访问 iframe 新节点（A 错，selectShape 此时新节点还没进 DOM）。pending path 是绝对索引快照 <code>[slideIndex, childIndex]</code>，任何改 slide/child-index 的 sibling op（delete/duplicate/reorder）都会让它失效，所以必须在每个这类 op 里清除 pending，并在 onLoad 后用 take（一次性）消费。setTimeout（C）是脆弱的时序赌博，无法防竞态。</div>
+  </div>
+
+  <div class="quiz-q">
+    <div class="scenario"><b>Q6.</b> 你的富文本工具栏，用户 drill into 一个加粗的 span，然后点「居中对齐」。对齐应该作用在哪个元素上？<span class="zh">User drills into a bold span, clicks "center align". Which element should it apply to?</span></div>
+    <button class="opt" onclick="pick(this,false)">A. 当前选中的 span（path）</button>
+    <button class="opt" onclick="pick(this,true)">B. span 的外层块（outerPath）</button>
+    <button class="opt" onclick="pick(this,false)">C. 整个 shape 容器</button>
+    <div class="explain"><b>正确：B。</b> text-align / indent / heading level 是<b>块级</b>属性，作用在 inline span 上无效（<code>padding-left</code> 在 span 上不起作用）。所以块级操作必须 <code>resolveBlockTargetPath(path, outerPath)</code> 回到外层块。deck 还把 <code>resolveIndentScope()</code> 硬编码返回 'block'。range 级属性（color/font）才作用在 span。</div>
+  </div>
+</section>
+
+<!-- ============ FLASHCARDS ============ -->
+<section id="flashcards">
+  <h2><span class="en">Flashcards</span> <span class="zh">闪卡</span></h2>
+  <p class="section-sub">点击翻转。正面英文术语，背面中文解释。Click to flip — English term front, Chinese explanation back.</p>
+  <div class="flashgrid">
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Anchor Neutralization</div><div class="hint">deck 画布拖拽 / drag</div></div>
+        <div class="flash-face flash-back">拖拽绝对定位 shape 时写 <b>right/bottom: auto</b>，防止固定的右/下锚点把宽高拉伸而非移动。PPTX 绝对定位可能有 right/bottom anchor，不中性化会导致拖拽变拉伸。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">FITS vs OVERSIZED clamp</div><div class="hint">边界夹取 / containment</div></div>
+        <div class="flash-face flash-back">两个夹取 regime：shape &lt; slide → <b>FITS</b>（接触边界即停）；shape ≥ slide（full-bleed 出血）→ <b>OVERSIZED</b>（允许超出但保留 minVisible px 可抓）。单一 clamp 会破坏出血设计意图。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Visible Extent</div><div class="hint">detach text / clamp</div></div>
+        <div class="flash-face flash-back"><b>max(boxSize, scrollSize)</b>。text shape 拖拽时 detach overflow 让 autofit 文本可见，因此夹取要按 box ∪ 溢出内容的总范围，而非仅 box 尺寸。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Three Coordinate Systems</div><div class="hint">deck 坐标 / coords</div></div>
+        <div class="flash-face flash-back">slide 设计空间 px → iframe visual px → host viewport px。<b>scale = iframeRect.width / iframe.offsetWidth</b> 恢复 zoom。项目中最复杂的几何交互。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Block-Scope vs Range-Scope</div><div class="hint">文本工具栏 / toolbar</div></div>
+        <div class="flash-face flash-back">块级（level/align/indent）→ 强制回外层块 <b>resolveBlockTargetPath(path, outerPath)</b>，drill-in span 上无效。range 级（color/font）→ 作用在 selection span。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">NO-DISTORTION INVARIANT</div><div class="hint">图片裁剪 / crop</div></div>
+        <div class="flash-face flash-back">crop-to-scale 无失真条件：<b>rect 宽高比 = figure 宽高比</b>，此时 scale(1/w,1/h) 才能抵消 object-fit:fill 的拉伸。选比例 preset 必须同步 pin figure aspect-ratio。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">clip-path on Untransformed Parent</div><div class="hint">形状裁剪 / shape-crop</div></div>
+        <div class="flash-face flash-back">clip-path 加在<b>未变换的 figure 父元素</b>，不加在被 transform 的 img。CSS 在 local（pre-transform）坐标系解析 clip-path 再应用 transform —— 加在 img 上圆会变椭圆。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">ID Marker Round-Trip</div><div class="hint">active 状态 / round-trip</div></div>
+        <div class="flash-face flash-back">用 <b>--deck-shape</b> 自定义属性往返 active 形状，<b>不匹配 clip-path 字符串</b>（浏览器把 circle(50%) 规范化为 circle(50% at 50% 50%)，字符串匹配失效）。自定义属性字面存储不规范化。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Structural vs In-Place Op</div><div class="hint">undo 混合 / hybrid</div></div>
+        <div class="flash-face flash-back"><b>structural</b>（增删幻灯片）存整片 HTML，restore 触发 iframe remount（闪烁）；<b>in-place</b>（样式/文本/src）存 per-node 补丁，经 bridge 原地打补丁（不闪烁、保选区）。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Version-Tag Stash</div><div class="hint">in-flight remount 竞态</div></div>
+        <div class="flash-face flash-back">in-place 补丁打上当前 <b>structuralVersion</b> 暂存，iframe load 后<b>版本匹配才 replay</b>，不匹配则丢弃为 stale。解决「structural restore 让 iframe 重载时 in-place postMessage 被丢弃」的静默分歧。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Gate on Real Mutation</div><div class="hint">埋点准确性 / accuracy</div></div>
+        <div class="flash-face flash-back">mutation 函数返回 <b>bool</b>，埋点门控在真实 mutation：<b>if (applyImageReplace(...)) track(...)</b>。no-op（URL 相同）不发事件，避免幽灵事件污染数据。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Session Roll-Up</div><div class="hint">埋点 session / analytics</div></div>
+        <div class="flash-face flash-back">打开建 session（UUID + counter Set + did* flags），关闭发 <b>session_ended</b> 含聚合指标（slides_edited、ai_slides_created、did_export）。GA4 可 JOIN 同会话事件，一个 event 给所有会话级指标。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Pending + Post-Remount Consume</div><div class="hint">跨进程插入 / insert</div></div>
+        <div class="flash-face flash-back">跨进程插入元素后选中：记录 pending 路径快照 + bump 触发 remount，<b>iframe onLoad 后用 take 一次性消费</b>。每个 sibling structural op 必须清除 pending 防路径失效误选。</div>
+      </div>
+    </div>
+    <div class="flash" onclick="this.classList.toggle('flipped')">
+      <div class="flash-inner">
+        <div class="flash-face flash-front"><div class="term">Whitelist vs Heuristic Regime</div><div class="hint">deck 可编辑性 / editability</div></div>
+        <div class="flash-face flash-back">deck 有 data-kuse-edit 标记 → <b>whitelist</b>（只标记节点可编辑）；无标记 → <b>heuristic</b>（自动分类可编辑）。插入文本<b>故意不加标记</b>，否则翻转整个 deck 进 whitelist 让原有段落停止编辑。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEXT ============ -->
+<section id="next">
+  <h2><span class="en">Next Steps</span> <span class="zh">下一步学习推荐</span></h2>
+  <p class="section-sub">基于本周工作的短板与延伸 Based on this week's gaps and extensions</p>
+
+  <div class="card">
+    <h3>1 · iframe ↔ host 跨进程通信架构（postMessage bridge 系统化）<span class="tag" style="background:rgba(255,122,122,0.15);color:var(--bad)">high</span></h3>
+    <p class="desc"><b>为什么学：</b>本周 deck 几乎所有交互都建立在一套手搓的 host↔iframe bridge 上（<code>deckStageBridgeRuntime</code> 已 ~3500 行）。缺少跨进程通信的系统模型（消息协议、请求-响应配对、超时、版本同步、origin 安全）—— 这正是多个竞态 bug（in-flight remount 丢补丁 / pending 失效 / load 竞态）的共同根源。</p>
+    <ul class="keypoints">
+      <li><b>读源码：</b>通读 <code>deckStageBridgeRuntime.ts + useDeckBridge.ts + deckPatchRouter.ts</code>，画出完整 action（host→iframe）和 event（iframe→host）清单</li>
+      <li><b>做实验：</b>Chrome DevTools 在 host 和 iframe 两个 context 同时下断点，观察一次 drag-commit 的完整消息往返</li>
+      <li><b>看文档：</b>MDN <code>Window.postMessage</code> 的 targetOrigin/source 安全章节 + Comlink 库（把 postMessage 封装成 RPC），对比手搓 bridge vs RPC 的取舍</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>2 · 浏览器 CSS 几何与坐标系（transform / clip-path / object-fit / 多层缩放）<span class="tag" style="background:rgba(255,122,122,0.15);color:var(--bad)">high</span></h3>
+    <p class="desc"><b>为什么学：</b>本周 6 个概念里 3 个的 bug 都来自 CSS 几何理解不到位：clip-path 加在被 transform 的 img 上扭曲、crop scale 与 figure aspect 不匹配失真、三层坐标系换算、clip-path 值被浏览器规范化。反复踩同一类坑。</p>
+    <ul class="keypoints">
+      <li><b>读规范：</b>MDN clip-path（注意「在元素 local 坐标系解析再应用 transform」）、transform-origin、object-fit/object-position</li>
+      <li><b>做实验：</b>手写 demo，把 clip-path 分别加在有/无 transform 的元素上，对比圆是否变椭圆</li>
+      <li><b>推导：</b>用纸笔推一遍 <code>deckImageCropLogic</code> 的 NO-DISTORTION INVARIANT；查 getBoundingClientRect 在多层 transform/zoom 下返回 visual 还是 layout 坐标</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>3 · undo/redo 的三种范式与状态机（snapshot vs op/command vs transaction）<span class="tag" style="background:rgba(255,209,102,0.15);color:var(--warn)">medium</span></h3>
+    <p class="desc"><b>为什么学：</b>项目里已有 4 套各不相同的 undo（deck 混合、A4 纯快照、assets backup-restore、ProseMirror transaction），但没有统一心智模型判断何时用哪种、何时该原地优化、如何处理 redo 分叉与竞态。version-tag stash 是临时手搓。</p>
+    <ul class="keypoints">
+      <li><b>读源码：</b>并排对比 <code>deckHistory.ts</code> / <code>store/undo/index.ts</code> / <code>A4ContentHistoryManager.ts</code> 的栈结构、重入守卫、redo 清除时机</li>
+      <li><b>做实验：</b>给 deck 制造「undo → 立即编辑 → redo」分叉，观察 redo 栈何时被清</li>
+      <li><b>进阶：</b>读 ProseMirror history 模块（~300 行）理解 transaction 如何 rebase/compose 实现协作下的 undo</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>4 · 后端视角：deck 文件的持久化、版本与协作冲突 <span class="tag" style="background:rgba(255,209,102,0.15);color:var(--warn)">medium</span></h3>
+    <p class="desc"><b>为什么学：</b>本周 379 commit 几乎全是前端，deck 所有改动最终要落盘成 .deck 文件并触发 save，但完全没碰后端：多端编辑冲突、save 乐观锁/版本号、前端 structuralVersion/contentVersion 在后端如何对应。连续多周前端为主，后端视角是明显短板。</p>
+    <ul class="keypoints">
+      <li><b>读源码：</b><code>DeckSaveManager.ts</code> 的 save 触发与去抖，再追到后端 deck 保存 API（看是否有 version/etag 做并发控制）</li>
+      <li><b>对比：</b>前端 structuralVersion 单调递增 vs 后端是否有 file_version 列（呼应记忆里「Deck evals 埋点方案」需后端给 file_version 加列）</li>
+      <li><b>研究：</b>last-write-wins vs 乐观锁 412 vs OT/CRDT 三种协作策略，判断 deck「单用户为主、偶尔多端」该用哪种</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Week 25 Learning Hub · 生成于 2026-06-15 · 6 concepts · 379 commits analyzed<br/>
+  下次复习 Next review: 2026-06-16（W25 新概念 Stage 1）· 复习曲线 1→3→7→14→30 天
+</footer>
+
+<script>
+  function showTab(btn, paneId) {
+    const tabs = btn.parentElement;
+    tabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const container = tabs.parentElement;
+    container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById(paneId).classList.add('active');
+  }
+  function pick(btn, correct) {
+    const q = btn.closest('.quiz-q');
+    if (q.dataset.done) return;
+    q.dataset.done = '1';
+    q.querySelectorAll('.opt').forEach(o => o.style.cursor = 'default');
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    if (!correct) {
+      // 高亮正确项
+      q.querySelectorAll('.opt').forEach(o => {
+        if (o.getAttribute('onclick').includes('true')) o.classList.add('correct');
+      });
+    }
+    q.querySelector('.explain').classList.add('show');
+  }
+</script>
+</body>
+</html>

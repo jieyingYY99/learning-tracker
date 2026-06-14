@@ -14,10 +14,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "dnd-kit-advanced-patterns",
@@ -33,10 +37,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "move-conflict-resolution-rollback",
@@ -51,10 +59,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "html-publish-workflow",
@@ -70,10 +82,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "websocket-reconnect-safety",
@@ -88,10 +104,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "uiblock-interactive-cards",
@@ -109,10 +129,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "pipedream-connect-oauth",
@@ -132,10 +156,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "customize-view-architecture",
@@ -157,10 +185,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "download-export-refactor",
@@ -180,10 +212,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "credit-dispute-system",
@@ -200,10 +236,14 @@
         {
           "date": "2026-03-28",
           "completed": true
+        },
+        {
+          "date": "2026-06-15",
+          "completed": true
         }
       ],
-      "next_review": "2026-04-07",
-      "review_stage": 1
+      "next_review": "2026-06-22",
+      "review_stage": 2
     },
     {
       "id": "batch-operations-design",
@@ -236,9 +276,14 @@
         "trade_offs": "Trash: simpler (irreversible, no conflicts), idempotent, explicit confirmation. Finder delete: reversible via undo, optimistic for speed. Finder move: most complex but handles conflicts and partial failures gracefully.",
         "decision_guide": "Irreversible + no conflicts → Trash pattern (idempotent API, explicit dialog). Reversible + no conflicts → Finder delete (optimistic + UndoEntry). Reversible + may conflict → Move pattern (per-item resolution, partial rollback)."
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "race-condition-prevention-patterns",
@@ -284,9 +329,14 @@
         "trade_offs": "Version counter: simple, works for any async, but stale request still completes (wasted bandwidth). AbortController: cancels early, saves bandwidth, but more complex setup. Boolean flag: simplest, but blocks all concurrent calls. Dual guard: handles React's batching, but JSON.stringify has performance cost for large payloads.",
         "decision_guide": "Cancel network request → AbortController. Invalidate stale result → Version counter. Prevent duplicate processing → Dual guard. Block concurrent calls → Boolean flag. Suppress events during transitions → Timer suppression."
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "tiptap-inputrule-slash-commands",
@@ -320,9 +370,14 @@
         "trade_offs": "InputRule: automatic, great UX for typing patterns, but regex timing is tricky (fires after character insertion). ReactNodeViewRenderer: full React rendering power, but heavier and not auto-triggered. Marks: simplest for text formatting, but can't represent complex content.",
         "decision_guide": "Auto-trigger on typing pattern → InputRule + Atom Node. Needs interactive React UI → ReactNodeViewRenderer. Text formatting only → Mark extension. Block-level media → Standard HTML Node."
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "sse-streaming-architecture",
@@ -369,9 +424,14 @@
         "trade_offs": "简单方案（refine.ts）：代码少、易维护、无状态管理开销，但不支持重试、不能处理多 Agent、不能做断点续传。三层架构（Chat）：功能完整、健壮、可扩展，但代码量大（2500+ 行）、调试复杂（事件要经过 3 层转换才到 UI）、新增事件类型需要修改 streamProcessor 的 switch。",
         "decision_guide": "单向文本流 + 一次性请求（如 AI 编辑）→ 简单方案（直接 fetchEventSource + 单回调）。多 Agent 嵌套 + Tool 流式 + 需要重试/断点续传 → 三层架构。介于两者之间（如需要重试但无 Agent 嵌套）→ 只用 StreamManager + 简单 processor，跳过 MessageBuilder 的复杂 Part 系统。"
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "scheduled-tasks-crud-architecture",
@@ -412,9 +472,14 @@
         "trade_offs": "简单 store（TurboTasks）：代码少、易理解、开发快，但缺少 request cancellation 和事件集成。成熟 store（Trash/Assets）：健壮但代码量大、学习曲线高。delta-diff edit 模式：只发送改变的字段，减少服务端写入，但需要 undefined vs null 语义约定。",
         "decision_guide": "新功能 MVP → 简单 store 模式（plain create + 乐观更新 + toast）。功能稳定后需要跨组件响应 → 升级到 subscribeWithSelector + event bus。有并发写入风险 → 加 AbortController。需要 undo → 参考 assetsStore 的 backup-restore 模式。Dialog 内有 Popover → 使用 ScrollablePopoverContent。"
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "ime-composition-state-guard",
@@ -452,9 +517,14 @@
         "trade_offs": "useCompositionState hook：最安全（双重检查），但需要 3 个 props 传递。内联 nativeEvent.isComposing：最简单，但在某些浏览器/OS 组合中 isComposing 可能在 keydown 时已经为 false（已知竞态）。ProseMirror native listener：唯一选择（ProseMirror 不走 React event），但需要 useEffect 清理。prop delegation 模式：虚拟列表中避免 N 个 ref 实例（只有一个同时在编辑），但让 TreeRowContentProps 承载了 IME 相关 props。",
         "decision_guide": "React 控制的 input/contentEditable（rename、search、modal）→ useCompositionState hook。Tiptap/ProseMirror 内部 → native DOM listener + ref。低风险输入（非提交型）→ 内联 nativeEvent.isComposing。虚拟列表中的编辑行（同一时间只有一个编辑）→ 父组件实例化 hook + props 下传。"
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "tiptap-suggestion-plugin",
@@ -482,9 +552,14 @@
         "trade_offs": "Suggestion：完整的发现性 UX（popup + 搜索过滤 + 键盘导航），但需要手动管理 React 生命周期（ReactRenderer 创建独立 React root，不继承父应用的 Context）。InputRule：零 UI 开销，但用户必须知道命令名。ReactNodeView：全功能 React 渲染，但必须手动 stopPropagation 所有键盘事件，且所有事件必须用 native listener（ProseMirror 会先于 React 拦截 keydown）。",
         "decision_guide": "需要发现性菜单（搜索 + 选择列表）→ Suggestion plugin + ReactRenderer。需要自动文本替换（无 UI）→ InputRule。需要文档内嵌入 React 交互组件 → ReactNodeViewRenderer + native event interception。需要两者 → 同时注册（如本项目：Suggestion 是主路径，InputRule 是 fallback）。关键注意：ReactRenderer 的 React root 不继承 Context，需要全局 Provider（Lingui macro 可工作因为是编译时转换）。"
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "exclusive-view-state-pattern",
@@ -523,9 +598,14 @@
         "trade_offs": "多布尔 + enforcer：灵活（每个视图独立 metadata）、渐进式（新增视图只加一个 boolean + 在 resetAllViews 中清除），但无编译时互斥保证（直接 set() 可绕过 enforcer）。枚举/判别联合：编译时安全，但新增状态需修改 union type + 所有 switch/if 消费点。Store event auto-rename：解耦好（store 不关心 UI 如何响应），但事件链长（3 层跳转），调试需要追踪事件流。",
         "decision_guide": "2 种状态、无 metadata → boolean。3+ 种状态、无 per-state metadata → 字符串枚举（如 ViewMode）。3+ 种状态、部分带 metadata → 多布尔 + resetAllViews（当前方案）或判别联合 type（更安全但迁移成本高）。跨层 UI 响应（store action → 多个 UI 副作用）→ Store event pub-sub + subscribeToStoreEvent。"
       },
-      "reviews": [],
-      "next_review": "2026-04-05",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "subscription-downgrade-state-machine",
@@ -562,9 +642,14 @@
         "trade_offs": "即时切换：简单、反馈快，但不可逆。乐观切换：用户体验好，但需要 rollback 逻辑。延迟调度：安全（用户有反悔窗口），但 UI 复杂度高（需展示当前态 + 未来态 + 生效时间 + 取消按钮），错误处理更复杂（需要 error_code 分类）。",
         "decision_guide": "变更即时生效 + 可逆 → 乐观切换（如 task status toggle）。变更即时 + 不可逆 → 确认弹窗 + 即时切换（如 publish）。变更延迟生效 + 可取消 → 调度状态机（如 downgrade），需要额外的 scheduled 状态、effective_at 时间、restore 端点。涉及金钱/订阅 → 无乐观更新，全部等服务端确认。"
       },
-      "reviews": [],
-      "next_review": "2026-04-13",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "sse-event-driven-file-refresh",
@@ -599,9 +684,14 @@
         "trade_offs": "即时 mutation：保证数据一致性，但每次 Fuse 事件都触发 React 重渲染。防抖批量刷新：减少 API 调用和渲染次数，但有 800ms 延迟。事件总线：松耦合但事件流难追踪。混合方案（本项目）：mutation 即时可见 + 刷新延迟批量，兼顾即时反馈和性能。",
         "decision_guide": "文件增删（必须即时可见）→ 直接 mutation（nodesByPath 操作）。文件夹内容列表刷新（可容忍延迟）→ refreshScheduler 防抖。第三方列表刷新（如 Skills）→ setTimeout 防抖。UI 状态变更（面板/选择）→ 事件总线。关键决策：delete 操作只做即时 mutation 不触发父目录刷新，避免删除后刷新导致已删文件闪现的竞态。"
       },
-      "reviews": [],
-      "next_review": "2026-04-13",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "cron-schedule-polling-architecture",
@@ -638,9 +728,14 @@
         "trade_offs": "SSE：最实时（毫秒级），但需要维护连接、处理断线重连。固定轮询：最简单，但在空闲时浪费带宽。自适应轮询：按需调整频率，但需要状态检测逻辑。Optimistic run：即时反馈，但需要 run_id 前缀去重。",
         "decision_guide": "服务端支持 SSE/WebSocket → 优先长连接。服务端只提供 REST API + 需要实时反馈 → 自适应轮询。服务端只提供 REST + 低实时要求 → 固定间隔轮询。用户触发的操作需要即时反馈 → optimistic 插入 + 去重。"
       },
-      "reviews": [],
-      "next_review": "2026-04-13",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "upload-replace-skill-crud",
@@ -670,9 +765,14 @@
         "trade_offs": "单文件全量刷新（Skills）：代码最少（~50 行 API + dialog），但上传后 UI 有短暂空白。多文件 optimistic（Chat）：用户体验最好但代码量 10 倍以上。409 冲突检测模式：服务端驱动的冲突解决，比前端预检查更可靠但多一次 round-trip。",
         "decision_guide": "单文件上传 + 容忍短暂延迟 → 简单模式（API + loadAll 刷新）。多文件 + 需要即时反馈 → optimistic 模式（tempId + parallel upload + 映射）。有名称冲突可能 → 409 冲突检测 + 确认弹窗 + force 参数。大文件/需要进度 → uploadFilesUnified + onProgress 回调。"
       },
-      "reviews": [],
-      "next_review": "2026-04-13",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "newtask-conversation-history",
@@ -705,9 +805,14 @@
         "trade_offs": "ref 双重保护（isLoadingMoreRef + hasMoreRef）：可靠阻止并发，但需要手动同步 ref 和 state。cancelled flag 模式：简单（无 AbortController），但 fetch 仍会完成（浪费带宽）。optimistic update（先改本地）：UX 更快，但失败时需要 rollback（当前代码未处理）。复用 ConversationHistory 组件：代码复用率高，但组件的 props 接口必须支持两种上下文。",
         "decision_guide": "首页/着陆页需要展示对话列表 → 复用 ConversationHistory + 父自管 fetch 逻辑（currentConversation=null）。需要分页 + 防并发 → ref + state 双存（ref 用于 closure，state 用于 UI）。无 AbortController 的 fetch 保护 → cancelled flag（简单但浪费带宽）。delete/rename → optimistic 更新 + API 调用，失败当前忽略（可接受因为是幂等操作）。"
       },
-      "reviews": [],
-      "next_review": "2026-04-19",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "background-vs-item-context-menu",
@@ -740,9 +845,14 @@
         "trade_offs": "单菜单 + path 参数（Tree）：最简单，但只能处理命中 row，无法区分空白。单菜单 + selection gate（旧 Finder）：实现快，但 UX 差（空白右键什么也不发生，违反 macOS/Windows 惯例）。双菜单 + DOM 探测（新 Finder）：UX 完整（覆盖 item/empty/multi-select 三场景），但需要两个 state、两个关闭逻辑、多菜单 outside-click（querySelectorAll）。selectedSetRef 模式：解决 React closure 捕获过时 selectedSet 的问题，是必需的 ref 模式。",
         "decision_guide": "只需要条目上下文菜单（如 tree row）→ 单菜单 + path 参数。右键空白需要不同菜单（如 Finder 的 New folder / Paste）→ 双菜单 + data-attribute 探测。右键未选中条目应该先选中再显示菜单 → selectMultiple 在 handleContextMenu 内调用（注意用 selectedSetRef 而非 selectedSet 避免过时）。多个菜单可能同时存在 → querySelectorAll('[data-context-menu]') + for 循环判定 contains。"
       },
-      "reviews": [],
-      "next_review": "2026-04-19",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "localstorage-view-state-persistence",
@@ -781,9 +891,14 @@
         "trade_offs": "removeItem 清理（KuseClaw 模式）：localStorage 更干净，但默认必须是 false（否则删除后又变 true）。显式 'false' 写入（NewTask 模式）：localStorage 条目永存，但支持默认 true（首次用户体验）。SSR 保护（typeof window）：必须加，否则 Next.js SSR 时崩溃。集中写入 vs 分散写入：集中（resetAllViews）保证与其他 view 状态同步，分散写入（直接在 set 里 localStorage.setItem）简单但易漏。",
         "decision_guide": "默认开启的视图（着陆页类）→ 三态判定（null 默认 true）+ 写入 'false' 覆盖。默认关闭的视图（高级功能类）→ 简单判定（=== 'true'）+ removeItem 清理。有多个 view 互斥 → 在 resetAllViews 集中写入保证原子。配置类（非视图开关）→ 读时校验 + 写时直接 setItem。Next.js SSR → 永远加 typeof window === 'undefined' 保护。"
       },
-      "reviews": [],
-      "next_review": "2026-04-19",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "ttl-based-resource-ensure",
@@ -821,9 +936,14 @@
         "trade_offs": "One-shot flag：代码最少（一个 boolean），但假设“成功后状态不会变”，外部改变后无法恢复。TTL 模式：代码稍多（时间戳 + 比较），但允许外部变化恢复，缺点是 TTL 内的外部变化会有 60s 延迟被发现。轮询模式：最激进（固定间隔检查），保证最新但浪费 API 调用。Cache-then-invalidate：精确（明确清空），但需要 cache key 管理。",
         "decision_guide": "资源“创建一次后不变”（如 session id）→ one-shot flag。资源“应该存在但可能被外部删除”（如 default folder）→ TTL 模式，TTL 选择依据外部变化频率（60s 对用户操作足够）。数据“需要最新”（如实时 count）→ 轮询或 SSE。缓存“可以明确清空”（如用户操作后 invalidate）→ cache-then-invalidate。关键问题：一致性要求 vs 调用成本。"
       },
-      "reviews": [],
-      "next_review": "2026-04-19",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "centralized-view-side-effect",
@@ -861,9 +981,14 @@
         "trade_offs": "调用点手动：最灵活但最易漏。集中 opt-in：显式但默认行为不安全。集中 opt-out：默认安全但需要 opt-out 机制。no-op guard：性能优化，但逻辑略复杂（需要先 get() 判断）。",
         "decision_guide": "多个调用点应该触发同一副作用 → 移到被调用方（store action 内部），不是调用方。默认行为安全方向是“执行副作用”→ opt-out（keepPreview=true 豁免）。默认行为是“跳过副作用”→ opt-in（需要显式 forceHide=true 才执行）。action 可能被重复调用且 set() 开销大 → 加 no-op guard。关键启发：subscribeWithSelector 下，set() 即使值不变也可能触发订阅者 rerender，no-op guard 是必要优化。"
       },
-      "reviews": [],
-      "next_review": "2026-04-19",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "per-user-vs-device-storage",
@@ -887,9 +1012,14 @@
         "trade_offs": "设备级 key：简单，但共享浏览器配置下会跨账号泄漏服务端数据。账号级 key：杜绝泄漏，但需要迁移逻辑 + 账号切换重同步，复杂度更高。store 镜像 push vs 按需 pull：前者保证 UI 实时正确但要维护订阅，后者轻量但派生 UI 会有旧值风险。",
         "decision_guide": "数据引用服务端实体（id/账号）→ 按 userId 分键 + 迁移旧 key + 账号变化重同步；纯 UI 开关 → 设备级 key 即可。若该数据驱动实时渲染的列表/UI → 镜像进 store 并在账号变化时 push（避免旧 UI）；否则按需从 storage pull 足够。上线分键改动时务必做一次性 legacy 迁移，否则老用户上线即丢数据。"
       },
-      "reviews": [],
-      "next_review": "2026-06-09",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "surviving-remounts-cache-strategies",
@@ -917,9 +1047,14 @@
         "trade_offs": "模块缓存：最简单、跨重挂载、但跨标签页不共享且页面刷新即失。store 缓存：复用已有基础设施、自动响应式。事件失效：实时新鲜、不轮询、但要为每种变化手写订阅（本例 4 个）。轮询/禁用缓存是反模式（浪费请求/退化体验）。",
         "decision_guide": "数据已在 store 里 → 复用 store + 会话标志挡每次打开的请求；无 store → 模块级缓存。缓存在别处打开时可能变旧 → 加事件驱动的原地打补丁（不重新请求）；不会变旧 → 存活缓存即可。永远不要把『存活』和『新鲜』混为一谈。"
       },
-      "reviews": [],
-      "next_review": "2026-06-09",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "disciplined-shared-selector-extraction",
@@ -949,9 +1084,14 @@
         "trade_offs": "抽取：消除真实重复、规则单点维护、改一处全生效。但过度抽取（把形状不同的逻辑塞进一个泛化 helper）会增加参数/分支、降低可读性，比少量重复更糟。项目 CLAUDE.md 明确：不要仅为满足行数指标拆文件。",
         "decision_guide": "2+ 处共享同一条业务规则（非仅关键词）→ 抽通用选择器 + adapter 参数（如 getId）；只共享词/概念但逻辑不同 → 保留 inline；仅为命中行数指标 → 不抽。InlineRenameInput / projectMenuItems 是『真共享』的正例，AssetsTree.includes() 是『假共享』保留 inline 的正例。"
       },
-      "reviews": [],
-      "next_review": "2026-06-09",
-      "review_stage": 0
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
     },
     {
       "id": "version-counter-derived-store-read",
@@ -979,12 +1119,298 @@
         "trade_offs": "订阅派生数组：写法直观，但引用不稳定 → 过度渲染，需自定义 equality 才能驯服。计数器信号 + getState()：精确控制重算时机、可选择性 bump，但需要 store 维护计数器（你得拥有该 store）。退路：无法改 store 时给 selector 传自定义 equality（如 useShallow）。",
         "decision_guide": "selector 返回新建的对象/数组 → 不要直接订阅；订阅版本计数器 + useMemo 内 getState() 读取（你拥有 store 时）。selector 返回原始值/稳定引用 → 直接订阅即可。无法给不属于你的 store 加计数器 → 给 selector 传自定义/shallow equality fn 作为退路。"
       },
+      "reviews": [
+        {
+          "date": "2026-06-15",
+          "completed": true
+        }
+      ],
+      "next_review": "2026-06-18",
+      "review_stage": 1
+    },
+    {
+      "id": "deck-canvas-direct-manipulation-geometry",
+      "name": "画布直接操作几何系统（Deck Canvas Direct-Manipulation Geometry）",
+      "category": "frontend",
+      "description": "deck 幻灯片画布的拖拽移动 + 两阶段点击选择 + 8-handle box-resize + 边界 clamp containment + flow→absolute 冻结转换。几何计算在 iframe bridge runtime（ES5 字符串脚本 + 同源单测），数据模型是绝对定位 left/top/width/height + anchor 中性化（拖拽时写 right/bottom:auto 防止拉伸锚点拉伸宽高）。clamp 分 FITS / OVERSIZED 两个 regime；text shape 拖拽时 detach overflow 让 autofit 文本可见，因此按 visible extent（box∪scroll）而非 box 计算夹取。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "2e74143d3 feat(deck): drag-to-move gesture for absolutely positioned shapes in edit mode",
+        "1dfff2d50 feat(deck): two-stage click selection for draggable shapes",
+        "54107f0c3 feat(deck): draw a selection box with 8 resize handles on box-selected shapes",
+        "b7a9d9c03 feat(deck): resize box-selected shapes via the 8 selection handles",
+        "7c95864f1 fix(deck): cap east/south resize growth instead of sliding the anchored edge",
+        "33cea1252 fix(deck): contain dragged shapes on-slide by visible extent",
+        "12cba4277 feat(deck): detach text shapes from their own clip on drag/resize",
+        "2fe2f2f67 feat(deck): convert flow-layout slides to absolute shapes in the bridge",
+        "c7f69455d feat(deck): persist drag-move commits and track them as move edits"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/DeckOverlay/deckDragGeometry.ts + deckStageBridgeRuntime.ts",
+            "approach": "手写指针事件 + 纯几何 clamp：FITS/OVERSIZED 二元 regime、aspect-lock corner handle、visible-extent、anchor 中性化（right/bottom:auto），几何逻辑写成 ES5 字符串供 iframe 注入 + 同源单测",
+            "key_code_pattern": "kuseDragClampAxis(pos,size,sectionSize,minVisible)：size<section→FITS [0,section-size]，else→OVERSIZED [minVisible-size, section-minVisible]"
+          },
+          {
+            "location": "components/DnDProvider/index.tsx（@dnd-kit）+ store/assets moveItems",
+            "approach": "声明式 DndContext + PointerSensor + collision detection，操作有序树节点，拖拽只改逻辑位置（parentPath），无坐标概念",
+            "key_code_pattern": "finderAwareCollision 过滤 + moveItems(sourcePaths, targetPath) 路径集合 diff"
+          },
+          {
+            "location": "components/FinderView/hooks/useListDragSelect.ts",
+            "approach": "marquee 选区：指针拖拽 + 行 index 计算 + rAF auto-scroll loop，选中结果是 Set<id>，坐标是 container clientY + scrollTop",
+            "key_code_pattern": "proximity = 1 - distToEdge/EDGE_ZONE; speed = MIN + (MAX-MIN)*proximity"
+          },
+          {
+            "location": "components/DeckOverlay/FloatingToolbar/DeckImageCropEditor.tsx",
+            "approach": "图片 crop 编辑器：free-resize 8 handle + pan + zoom，但坐标系是 host viewport px（fixed position），约束是 COVER INVARIANT（图片恒盖住裁剪框），比画布拖拽简单（单一 clamp 无 oversized regime）",
+            "key_code_pattern": "resizeCropFrame + clampImageOffset 保持 cover invariant"
+          }
+        ],
+        "comparison": "deck 画布拖拽跨越三层坐标系（slide 设计空间 px → iframe visual px → host viewport px，scale = iframeRect.width/iframe.offsetWidth 恢复 zoom），是项目中最复杂的几何交互。@dnd-kit 完全逻辑化（id 映射，无坐标），适合有序列表/树；marquee 是 2D 矩形范围选择但只算行 index；crop editor 虽也有 8-handle resize 但坐标在屏幕空间且只有单一 clamp。核心区分：拖拽是改逻辑顺序（@dnd-kit）还是改自由坐标（手写几何）？dnd-kit 还无法在 iframe 沙箱内运行（需完整 DOM 事件），离线 HTML 也不支持。",
+        "trade_offs": "手写几何：支持任意坐标+复杂约束（anchor/aspect/visible extent）+iframe 隔离+离线 HTML，但代码量大（~800 行 geometry）、bridge runtime 测试难、pointer event 手绑定维护高。@dnd-kit：成熟库（sensor/collision/类型完整/移动端），但只适合 list/tree 逻辑定位、坐标计算不直观、sortable 期望数组难定制。两 clamp regime 让 full-bleed 出血条纹可超出 slide 但保持 minVisible 可抓，单一 clamp 会破坏设计意图。detach overflow 让拖拽时文本可见但坐标系变复杂（要按 visible extent 夹取 + postcondition rollback）。",
+        "decision_guide": "操作有序列表/树节点、只改逻辑位置（index/parentPath）、无复杂几何约束、不在 iframe → @dnd-kit（如 Assets 文件拖放、Kanban）。需要任意 x/y 自由坐标 + 几何约束（aspect-lock/clamp region/anchor）或在 iframe 沙箱/需离线 → 手写几何（如 deck shape 拖拽、Figma 风画布）。2D 矩形范围 + grid 行列 index 可算 + 需 auto-scroll → marquee 选区（如 Finder 列表多选）。full-bleed 出血元素 → 用 OVERSIZED clamp（允许超出但保持 minVisible）；普通 shape → FITS clamp（接触边界即停）。"
+      },
       "reviews": [],
-      "next_review": "2026-06-09",
+      "next_review": "2026-06-16",
+      "review_stage": 0
+    },
+    {
+      "id": "deck-floating-text-toolbar-contenteditable",
+      "name": "iframe contentEditable 浮动文本工具栏（Floating Text Toolbar over iframe contentEditable）",
+      "category": "frontend",
+      "description": "deck 选中 shape 后浮现的文本快捷工具栏（bold/italic/list/link/heading level/typography）。编辑内容是 iframe 内第三方 deck 引擎的原生 HTML（不受 ProseMirror schema 管辖），所以格式化命令不走 execCommand 也不走 Tiptap，而是经 postMessage bridge 分层 action：applyStyles（块级）/ applyRangeStyle（span 包裹）/ applyList（重建 p↔ul）/ applyLink。工具栏定位用 iframe 上报的 selection viewport rect + placeDeckToolbar 纯函数碰撞避让。块级操作（level/align/indent）必须 scope 到 outerPath（外层块）而非 drilled-in span，状态反射靠 iframe 回传 computed/inline 样式快照。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "ab8c98c90 feat(deck): report selection viewport rect to host (F1)",
+        "58810511c feat(deck): add floating quick-toolbar shell over selected shape",
+        "f2aa633ab feat(deck): add text quick-toolbar typography controls (F3)",
+        "eb98bf067 feat(deck): add bold/italic/underline/strike toggles to text toolbar (F4)",
+        "a9c6c95a8 feat(deck): add list (none/bulleted/numbered) control to text toolbar (F5)",
+        "10524afb6 feat(deck): add hyperlink control to floating text toolbar (F6)",
+        "f523093b1 feat(deck): apply heading level presets from the text toolbar (F7)",
+        "8ed3e4b7f fix(deck): scope toolbar level/align/indent to the box, not a drilled-in span",
+        "ee14bbedd fix(deck): refresh toolbar reflection for block-scoped writes while drilled into a span"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/DeckOverlay/FloatingToolbar/DeckTextToolbar.tsx + deckTextToolbarLogic.ts + deckToolbarPlacement.ts",
+            "approach": "原生 contentEditable + postMessage bridge：4 套 action（applyStyles 块级 / applyRangeStyle span 包裹 / applyList 重建块 / applyLink），定位用 placeDeckToolbar 纯函数（above/below 翻转 + 居中 + viewport clamp 8px）",
+            "key_code_pattern": "resolveBlockTargetPath(path, outerPath) 块级写 outerPath；resolveIndentScope()==='block' 硬编码（padding-left 在 span 上无效）"
+          },
+          {
+            "location": "components/MarkdownOverlay 的 Tiptap BubbleMenu/Toolbar",
+            "approach": "ProseMirror 事务模型：editor.chain().focus().toggleBold().run()，状态用 editor.isActive('bold') 同步读取，schema 自动管理 node/mark 边界，BubbleMenu 内置 floating-ui 定位",
+            "key_code_pattern": "editor.chain().focus().toggleBold().run() + editor.isActive('bold')"
+          },
+          {
+            "location": "components/DeckOverlay/deckSelectionRect.ts + useDeckBridge.ts",
+            "approach": "跨 iframe 选区上报：高频专属轻量通道（仅 rect，不序列化样式），iframeContentScale 恢复 zoom，selectionRectsEqual 去重避免无效 host re-render",
+            "key_code_pattern": "iframeContentScale = iframeHostWidth/iframeLayoutWidth（除零退化为 1）"
+          }
+        ],
+        "comparison": "Tiptap BubbleMenu 基于自家掌控的 ProseMirror state（schema/transaction/isActive 零延迟同步反射），deck 工具栏基于无法掌控的 iframe 内第三方原生 DOM（postMessage 双向通信，状态反射有 ~1 帧延迟，要从 iframe 回传 computed+inline 样式快照 + range 特有属性 rangeFontWeight/rangeColor/rangeLink）。命令模型：Tiptap 是 schema 驱动自动区分 node/mark 且不能跨 node 边界；deck 是显式路由（块级 applyStyles vs range applyRangeStyle）+ 显式作用域管理（drill-in span 时块级操作强制回到 outer block）。定位：BubbleMenu 绑定编辑器内部容器；deck 工具栏独立浮在 host viewport（不受 iframe 容器约束，能响应 host 窗口 resize）。",
+        "trade_offs": "Tiptap：集成度高、chain API 直观、状态零延迟、插件生态丰富、协作/undo 内置，但要求编辑器是自家 ProseMirror。deck bridge 方案：唯一能处理 iframe 隔离 + 异构第三方 DOM + 复杂 list 形式（legacy nested vs modern）的方案，host 主线程不被 iframe 阻塞，但学习曲线高（postMessage 协议 + 多套 action + 块/range 作用域）、跨 iframe 调试要同时看两个 context、新命令要改 bridge runtime。",
+        "decision_guide": "单进程 React + rich-text 是自家 ProseMirror state（你掌控 schema/node/mark）+ 工具栏共享 editor instance + 需协作/undo → Tiptap BubbleMenu（如 Markdown/Notion 风编辑器）。编辑内容在 iframe（第三方 HTML/Web Component/shadow DOM）+ 文档是真实 DOM 非 PM state + 工具栏要浮在 iframe 外 + 不同命令需不同应用策略 → 自定义浮动工具栏 + postMessage bridge（如 deck）。跨 iframe 高频选区上报 → 专属轻量 rect 通道（不序列化整个样式快照）+ 去重。块级格式化（level/align/indent）→ 永远 scope 到外层块（resolveBlockTargetPath），不要作用在 drilled-in span。"
+      },
+      "reviews": [],
+      "next_review": "2026-06-16",
+      "review_stage": 0
+    },
+    {
+      "id": "deck-image-crop-shape-clippath",
+      "name": "非破坏性图片裁剪：transform 几何 vs clip-path 蒙版（Non-Destructive Image Crop: Transform Geometry vs Clip-Path Mask）",
+      "category": "frontend",
+      "description": "deck 图片两条非破坏性裁剪路径。crop-to-scale（G2）：用源分数坐标 CropRect[0..1] 编码为 IMG 的 transform: scale(1/w,1/h) translate(-l*100%,-t*100%) + object-fit:fill，缩放与拉伸互相抵消保证无失真，必须同步 pin figure 的 aspect-ratio 才能让 rect 宽高比 = figure 宽高比。crop-to-shape（G3）：clip-path 蒙版加在未变换的 figure 父元素（不是被 transform 的 img，否则圆会变椭圆），active 状态用 --deck-shape 自定义属性 id marker 往返（不匹配 clip-path 字符串，因浏览器会规范化）。free-crop 编辑器用 frame + imgState(pan/zoom) 维持 COVER INVARIANT。replace 只换 src 不写 patch，新图自动继承 crop+shape（分数坐标对任意宽高比有效）。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "e5be11dcb feat(deck): add image floating quick toolbar shell (G1)",
+        "5fbc5c657 feat(deck): add crop-to-scale bar to the image quick toolbar",
+        "6946e73bc feat(deck): add crop-to-shape clip-path masks to the image toolbar",
+        "a3a8680e3 feat(deck): double-click an image to crop in place (pan + zoom)",
+        "6ccd6925d feat(deck): rebuild crop editor — free-resize frame, pan/zoom, element-resize commit",
+        "b2fff4b4d feat(deck): replace image from upload/board/AI keeping crop and shape",
+        "b156e12b2 fix(deck): mask crop-to-shape on the untransformed figure, not the cropped img",
+        "7558350e0 fix(deck): round-trip crop-to-shape highlight via id marker, not clip-path match",
+        "55cdca195 fix(deck): crop-to-shape circle uses closest-side so wide images actually clip"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/DeckOverlay/FloatingToolbar/deckImageCropLogic.ts",
+            "approach": "crop-to-scale：源分数坐标 CropRect[0..1] → IMG transform，纯逻辑无 DOM 可单测，NO-DISTORTION INVARIANT（rect 宽高比 = figure 宽高比则无失真）",
+            "key_code_pattern": "transform: scale(1/w,1/h) translate(-l*100%,-t*100%) + object-fit:fill；cropFrameToSourceRect 把屏幕 frame 转回源分数"
+          },
+          {
+            "location": "components/DeckOverlay/FloatingToolbar/deckImageShapeLogic.ts",
+            "approach": "crop-to-shape：clip-path 加在 figure（非 img），active 状态用 --deck-shape id marker 往返",
+            "key_code_pattern": "DECK_SHAPE_MARKER_PROP='--deck-shape'；parseActiveShapeId(inline['--deck-shape']) 而非比对 clip-path（浏览器规范化破坏相等）"
+          },
+          {
+            "location": "components/DeckOverlay/FloatingToolbar/DeckImageReplacePanel.tsx + deckImageGenerate.ts",
+            "approach": "replace/insert 三 tab（AI/From Kuse/Upload）：swapSrc 只替换 img.src 不写 style patch，新图继承既有 transform+clip-path（img node 和 figure parent 不变）",
+            "key_code_pattern": "swapSrc: bridge.replaceImageSrc(path,url) + preview.applyImageReplace(path,url)，无 style patch"
+          },
+          {
+            "location": "DML 图片 base（模板 <img object-fit:cover>）",
+            "approach": "模板基线：object-fit:cover + 可能无显式 width/height，所以 reset 时必须 pin width/height:100% 否则 cover 不生效",
+            "key_code_pattern": "buildImageResetStyles 总写 width/height:100% + object-fit:cover"
+          }
+        ],
+        "comparison": "三种裁剪机制按破坏性和用途区分：(1) transform 几何裁剪（crop-to-scale）—非破坏、轻量、可逆、导出方便，但受 figure 宽高比制约（必须同步 pin aspect-ratio）；(2) clip-path 蒙版（crop-to-shape）—CSS 原生非破坏、与 crop transform 正交（蒙版几何恒定），但必须加在未变换的父 figure 否则被 transform 扭曲；(3) canvas/后端像素裁剪—精确但破坏原始文件不可逆。round-trip 机制：CropRect 编码/解码可靠但依赖浮点舍入；clip-path 字符串匹配不可靠（circle(50%) 被规范化为 circle(50% at 50% 50%)）；故用 --deck-shape id marker（自定义属性字面存储不规范化）。replace 只换 src 的设计让分数坐标 crop 对新宽高比图片仍有效，保留用户工作流。",
+        "trade_offs": "crop-to-scale（transform）：无损可逆、导出友好，但需同时改 figure aspect-ratio（否则 scale 无法抵消拉伸 → 失真）。crop-to-shape（clip-path）：非破坏、与 crop 正交，但需要 figure 父节点访问权（path.length>=2）。id marker round-trip：解决浏览器规范化问题，代价是冗余存储 id。reset 总 pin width/height:100%：保险地让 object-fit:cover 对所有模板生效（模板可能无显式尺寸），代价是覆盖了模板原始尺寸语义。",
+        "decision_guide": "展示时几何裁剪 + 保留原始文件（deck/pptx 可逆编辑）→ transform 几何（crop-to-scale），但记得同步 pin 容器 aspect-ratio。装饰性形状裁剪 + 不改文件逻辑 → clip-path 蒙版，且必须加在未变换的父元素。需要精确像素 / 导出后端处理 → canvas 或后端裁剪（破坏性，需另存原始 src）。性能关键 + 大量图片（chat/feed）→ object-fit + 静态 object-position（浏览器优化无 JS transform）。round-trip active 状态 → 用自定义属性 id marker，不要比对会被浏览器规范化的 CSS 值（clip-path/transform）。replace 图片想保留裁剪 → 只换 src 不写 patch（用分数坐标对任意宽高比有效）。"
+      },
+      "reviews": [],
+      "next_review": "2026-06-16",
+      "review_stage": 0
+    },
+    {
+      "id": "deck-undo-snapshot-inplace-hybrid",
+      "name": "撤销/重做的快照+原地补丁混合模式（Undo/Redo: Snapshot + In-Place Patch Hybrid）",
+      "category": "frontend",
+      "description": "deck 编辑器的 undo/redo 混合两种 op：structural op 存整片 before/after HTML 字符串，restore 时 bump structuralVersion 触发 iframe remount（闪烁不可避免）；in-place op（样式/文本/图片 src 等非结构改动）存 per-node before/after 补丁，restore 时只 bump contentVersion 并经 iframe:patch 事件 + setNodeHtml/applyStyles/replaceImageSrc bridge action 原地打补丁，不 remount 不闪烁、选区不丢。核心难点是 in-flight remount 竞态：双 undo 时 structural restore 让 iframe 正在重载，紧随的 in-place postMessage 被丢弃（bridge 监听器还没重新挂上）→ host 缓存与 iframe DOM 静默分歧。修复用 version-tag stash：补丁打上当前 structuralVersion 暂存，iframe load 后版本匹配才 replay，不匹配则丢弃为 stale。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "b47e45f33 feat(deck): add undo/redo content-snapshot history to DeckPreview",
+        "eba8a0005 feat(deck): make non-structural undo/redo restore in place (no flash)",
+        "253556660 feat(deck): add setNodeHtml bridge action + iframe:patch forwarding",
+        "fcd27982f feat(deck): wire deck toolbar undo/redo buttons + shortcuts",
+        "814ee1438 fix(deck): replay in-place undo dropped by an in-flight structural remount",
+        "eaeb8e531 fix(deck): guard in-place src restore against bridge-rejected URLs",
+        "ab999edf9 fix(deck): clarify snapshot structuralVersion is unused on restore"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "store/filePreview/previews/deckHistory.ts + DeckPreview.ts",
+            "approach": "snapshot+op 混合：structural op 存整片 HTML 字符串（remount），in-place op 存 per-node 补丁（bridge 原地打补丁不 remount）；_restoring 重入守卫 + 50 上限 + 新编辑清 redo",
+            "key_code_pattern": "_pendingInPlacePatches={version:_structuralVersion, patches}；takePendingInPlacePatches() 版本不匹配则返回 []（丢弃 stale）"
+          },
+          {
+            "location": "store/undo/index.ts（assets UndoStore）",
+            "approach": "文件操作单 undo 栈：create/delete/move/rename 的 backup-restore，API 驱动，无 in-place 概念（整树 UI 重建）",
+            "key_code_pattern": "isUndoing 守卫 + backup 整树 → optimistic → 失败/undo 时 restore"
+          },
+          {
+            "location": "packages/htmlEditor/.../A4ContentHistoryManager.ts",
+            "approach": "A4 文档纯快照（debounced）：每次 op 存整片内容，restore 全量重排（总是 remount，无粒度）",
+            "key_code_pattern": "isApplyingSnapshot 守卫 + 整片 setContent 重排"
+          },
+          {
+            "location": "components/DeckOverlay/deckPatchRouter.ts + useDeckBridge.ts",
+            "approach": "补丁路由：纯函数把 patch.kind 路由到对应 bridge action（styles→applyStyles, html→setNodeHtml, src→replaceImageSrc）",
+            "key_code_pattern": "routePatchToBridge(bridge, patch) switch on patch.kind，无副作用"
+          }
+        ],
+        "comparison": "三种 undo 模式：纯快照（A4：整片复制，restore 必重排，存储贵但简单，可回到任意历史态）、op-based 补丁（deck in-place：per-node before/after，可原地不闪烁，但要 forward replay 且 restore 后编辑器可能已变）、transaction-based（ProseMirror：每键 mutation transform，自动 dedup/compose，最细粒度但要深度集成编辑器状态机）。deck 是 snapshot+op 混合：结构改动用快照（remount 反正不可避免），非结构改动用 in-place 补丁（避免 remount 闪烁、保选区）。assets UndoStore 和 A4 都是整目标重建，只有 deck 做了 in-place 优化，代价是要处理跨 iframe 的 in-flight remount 竞态（version-tag stash + replay）。structuralVersion 在 op 记录时是死值，restore 时新鲜读 _structuralVersion 才有意义。",
+        "trade_offs": "纯快照：低复杂度（serialize→setContent）、可回任意态，但存储贵（整片克隆）、restore 必 remount。op-based 原地补丁：存储省（只存改动的 inline key）、可原地不闪烁、保选区，但复杂度中（要路由 bridge + 版本标记 + 竞态 stash）、有 forward replay 语义（编辑器状态变了可能丢）。in-flight remount 竞态：必须 version-tag 暂存 + load 后版本匹配 replay，否则 host 缓存与 iframe DOM 静默分歧无自愈。bridge 拒绝的 URL 要 skip 且 no-emit 保持 host/iframe lock-step。",
+        "decision_guide": "目标是静态可序列化内容（deck HTML/文档/树）+ 编辑不频繁或批量 + 整片 remount 可接受 + 要回任意历史态 → 纯快照（如 A4 文档）。编辑频繁细粒度（逐字符/inline 样式）+ 有原地打补丁通道（bridge/DOM ref）+ 要避免 remount 闪烁/保选区 + op 可经同一 mutator 路径 replay → op-based 原地补丁（如 deck 非结构改动）。编辑器有内建状态机（schema/transaction）+ op 自动 compose/transform + 需冲突解决（协作）→ transaction-based（如 ProseMirror/Tiptap）。跨进程/异步 remount 场景做原地优化 → 必须 version-tag 暂存 + load 后版本匹配 replay（否则缓存与远端静默分歧）。"
+      },
+      "reviews": [],
+      "next_review": "2026-06-16",
+      "review_stage": 0
+    },
+    {
+      "id": "deck-analytics-session-funnel-infra",
+      "name": "会话化漏斗化埋点基础设施（Session + Funnel Analytics Infrastructure）",
+      "category": "general",
+      "description": "deck 的集中化 analytics：utils/tracking/deck.ts 用统一 track() + 强类型 DeckCommonParams + 20+ typed wrapper 封装所有 deck_* 事件，DeckPreview 维护 _deckSession（UUID + startAt + slidesViewed/Edited Set + counters + did* flags），打开生成 session、关闭 roll-up 出 session_ended 聚合指标。6 个 funnel（open/load、activation、AI 生成、export、publish、share）按 requested→succeeded/failed 对建模含 duration_ms+error_code。4 项准确性原则：load 事件 buffer 到 session 存在后才发（防异步初始化竞态）、edit_mode_entered 用 _editSessionTracked+500ms debounce 去重（防 remount blip 重复）、image 事件 gate on real mutation（mutation 返回 bool，no-op 不发）、export ctx 在 click 时快照（防多秒导出过程中 slide_index 漂移）。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "00982220a feat(deck-tracking): analytics infra + open/load/session events",
+        "6c0b22f51 feat(deck-tracking): activation events (edit mode + present)",
+        "3ea368b5e feat(deck-tracking): AI slide generation funnel",
+        "e25201e36 feat(deck-tracking): export funnel (pptx/pdf/html)",
+        "5ccdacbe2 feat(deck-tracking): publish + share events",
+        "07eaf672f fix(deck-tracking): buffer load events until session exists",
+        "fabb7a90b fix(deck-tracking): dedupe deck_edit_mode_entered across remount blip",
+        "4b70b9c57 fix(deck-tracking): gate image events on real mutation; snapshot export ctx",
+        "935797dce docs(deck-tracking): deck_* event reference + gesture→event checklist"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "utils/tracking/deck.ts",
+            "approach": "集中 typed wrapper：单一 track() 总附 file_type+userStatus，20+ 高阶 wrapper 各有 params type，DeckCommonParams 改一处全事件生效",
+            "key_code_pattern": "track(name, params){ windowTrackEvent(name, {file_type:'deck', ...params, userStatus}) }；trackDeckImageGenerated(p: Common & {source,status,duration_ms,error_code})"
+          },
+          {
+            "location": "store/filePreview/previews/DeckPreview.ts（_deckSession + buffer/dedupe/gate/snapshot）",
+            "approach": "session 生命周期 + 4 准确性修复：beginTrackingSession 建 session、endTrackingSession roll-up，_pendingLoad buffer、_editSessionTracked+500ms debounce、mutation 返 bool gate、exportCommon 快照",
+            "key_code_pattern": "_flushPendingLoad() 等 session 存在才发 load；setMode 进 edit 仅首次 track，退出 500ms 后才重置（remount blip 恢复窗）"
+          },
+          {
+            "location": "utils/tracking/workflow.ts / dispute.ts / scheduled-tasks.ts",
+            "approach": "散点/半集中 wrapper：dispute/scheduled-tasks 字段直传无 common pattern、无 session、无 funnel、无准确性修复（事件树浅，单层）",
+            "key_code_pattern": "trackDisputeEventBase(name, {request_id, ...}) 字段直传"
+          },
+          {
+            "location": "components/FolderWidgets/Download/fromDeck.ts（export funnel snapshot）",
+            "approach": "多秒 funnel 快照：runExport 在 click 时 const common=exportCommon() 快照一次，clicked/success/failed 复用同一 common",
+            "key_code_pattern": "const common=exportCommon(); trackClicked({...common}); await run(); trackSuccess({...common, duration_ms})"
+          }
+        ],
+        "comparison": "deck.ts 是项目目前最成熟的 analytics 实现，4 个维度全面升级：集中化（统一 DeckCommonParams + typed wrapper vs dispute/scheduled-tasks 字段直传，common 改一处全生效 + 编译期捕缺字段）、session 化（UUID + counter roll-up，GA4 可 JOIN 同会话事件 + 一个 session_ended 给所有会话级指标 vs 散点需子查询 JOIN request_id）、funnel 化（requested→succeeded/failed 对含 duration+error_code，GA4 原生 funnel chart vs workflow 无结尾事件需自定义 SQL）、准确性（buffer/dedupe/gate/snapshot 4 修复 vs 散点无时序/mutation 准确性处理）。但散点埋点（dispute/scheduled-tasks）也没问题——事件少、无 common、无 session/funnel 需求，选对抽象等级是关键，不是越复杂越好。",
+        "trade_offs": "集中 typed wrapper：单一 track 核心 + 薄 wrapper、编译期类型检查、common 一致、迁移改签名全调用点自动升级，但 event 少时是过度工程。session 化：理解用户任务内行为路径 + roll-up 聚合自动，但要维护 session 生命周期 + counter 钩子。funnel 化：原生 conversion/dropout 分析，但要成对发事件。4 准确性修复都低代码量高价值（buffer/dedupe 是 P0 data integrity，gate/snapshot 是 P1 data noise/consistency），通用价值高（任何异步初始化要 buffer、任何频繁 toggle 要 debounce、所有 mutation 埋点要 gate on real mutation、所有 >1s funnel 要 snapshot ctx）。",
+        "decision_guide": "event<5 + 无 common + 不需跨事件聚合 + 无异步竞态 + 不成 funnel → 散点直埋足够（如单个 button click/page view）。event>=10 + >50% 共享 common + 严格 TS + 多人协作 + 事件有依赖 → 集中 typed wrapper。一次任务含多子操作 + 要统计会话级转化（做了 X 和 Y）+ 要 session duration/聚合 → 引入 session + roll-up（如 deck/chat）。用户启动功能有成功/失败结果 + 要测 conversion/dropout → funnel 建模（requested→succeeded/failed）。保证准确性 checklist：异步初始化 context → buffer 到 session 存在；频繁状态 toggle → debounce/session 追踪防抖动重复；mutation 埋点 → 返 bool gate on real mutation；多秒 funnel → click 时快照 context 防漂移。"
+      },
+      "reviews": [],
+      "next_review": "2026-06-16",
+      "review_stage": 0
+    },
+    {
+      "id": "deck-insert-pending-postremount-autoselect",
+      "name": "跨进程插入的 pending + post-remount 自动选中（Cross-Process Insert: Pending + Post-Remount Auto-Select）",
+      "category": "frontend",
+      "description": "deck 顶部工具栏（数据驱动 placeholder 名册 + icon-only 分组 + undo/redo + Format toggle）的插入栏插入 Text/Image/Shape 到 iframe 内第三方 HTML。因为插入要改 host cached doc → bump structuralVersion → iframe remount（异步）→ 新节点才进 DOM，host 无法同步访问新节点，所以用 pending + consume 模式：insertShape 记录 _pendingInsertSelectionPath 绝对路径快照，iframe onLoad 时 takePendingInsertSelection() 一次性消费并经 bridge.selectShape 选中。关键竞态清理：所有 sibling structural op（delete/duplicate/reorder/imageReplace）都要 _invalidatePendingInsertSelection() 防止路径快照失效误选。插入文本故意不加 data-kuse-edit 标记（否则翻转整个 deck 进 whitelist regime 反而让原有段落停止编辑）。",
+      "learned_date": "2026-06-15",
+      "source_commits": [
+        "ac8fbe112 feat(deck): add top insert bar to deck editor toolbar",
+        "519f7120c feat(deck): wire Text insert dropdown + post-remount auto-select",
+        "6baa36ff8 feat(deck): wire Image insert picker (upload/board/AI) + auto-select",
+        "5f685bcd8 feat(deck): add element-level shape insert to DeckPreview",
+        "d9e45fd03 feat(deck): rebuild deck top toolbar as grouped icon+label bar",
+        "9352fee35 feat(deck): toggle the property panel from the toolbar Format button",
+        "47b54f1fd fix(deck): clear pending insert auto-select on sibling structural ops",
+        "7ba9dba44 fix(deck): make inserted text shape editable in whitelist decks",
+        "ae0a757b5 fix(deck): no-op shape insert onto an empty/generating placeholder slide"
+      ],
+      "deep_analysis": {
+        "existing_implementations": [
+          {
+            "location": "components/FolderWidgets/PreviewerToolbar/DeckTopToolbar.tsx + deckTopToolbarItems.ts",
+            "approach": "数据驱动工具栏：placeholder 名册（纯数据无 JSX）独立于组件，icon 映射在 UI 层，可纯逻辑层测试顺序/唯一性；undo/redo 按钮用 useSyncExternalStore 订阅 history:change",
+            "key_code_pattern": "DECK_TOOLBAR_INSERT_PLACEHOLDERS=[{id:'graphics'},...]；PLACEHOLDER_ICONS 在 tsx 层映射；aria-disabled（非 disabled）保 tooltip 可用"
+          },
+          {
+            "location": "store/filePreview/previews/DeckPreview.ts（insertShape + pending）",
+            "approach": "pending+consume：insertShape 记录 _pendingInsertSelectionPath + bump structuralVersion，DeckStage onLoad 时 takePendingInsertSelection 一次性消费 → bridge.selectShape；no-op guard（empty/generating slide 返 null 不记录）",
+            "key_code_pattern": "takePendingInsertSelection(){ const p=_pendingInsertSelectionPath; _pendingInsertSelectionPath=null; return p }（一次性清除）"
+          },
+          {
+            "location": "components/Chat 的 Tiptap Suggestion slash command",
+            "approach": "同进程插入：editor.chain().insertContent().focus().run() 原子 transaction，插入即可同步访问/选中，无 pending、无竞态清理",
+            "key_code_pattern": "editor.chain().insertContent(node).focus().run()"
+          },
+          {
+            "location": "components/FinderView 的 auto-rename + scroll-into-view（store event → rAF → setEditingPath）",
+            "approach": "同进程异步定位新元素：FOLDER_CREATED store event → rAF → selectMultiple+setEditingPath，与 deck post-remount 同类（异步副作用定位新建元素）但无跨进程边界",
+            "key_code_pattern": "subscribeToStoreEvent(FOLDER_CREATED, ({path})=> rAF(()=>{ selectMultiple([path]); setEditingPath(path) }))"
+          }
+        ],
+        "comparison": "Chat slash command 插入目标是同进程 ProseMirror，插入与选中是原子 transaction（同调用栈内可直接 focus，selection 相对当前 doc state 无竞态窗口），无需 pending 也无需竞态清理。deck insert bar 插入目标是跨进程 sandbox iframe 内第三方 HTML，插入→bump structuralVersion→iframe remount→onLoad 是异步边界，host 无直接 iframe DOM 访问，selection 变更必须过 postMessage，必然需要 pending+consume。pending path 是 [slideIndex, childIndex] 绝对索引快照，任何改 slide/child-index 的 sibling op 都会失效，必须显式清除（ProseMirror selection 是相对当前 doc 的、transaction 原子，无此问题）。FinderView 的 auto-rename 是同进程版的同类问题（异步定位新建元素用 store event+rAF），但无跨进程，所以不需要版本/路径快照失效处理。",
+        "trade_offs": "同步选中（Chat/Markdown）：简单、无竞态，但要求同进程可访问 DOM + 原子操作。pending+consume（deck）：能处理跨进程 + 异步 remount，但要维护 pending 字段 + 一次性消费语义 + 在每个 sibling structural op 显式清除（漏一个就误选）+ no-op guard。数据驱动 placeholder 名册：测试友好（无 JSX/图标可纯逻辑断言）、diff 清晰，但多一层间接。aria-disabled vs disabled：保 tooltip 可用（disabled 会阻 pointer-move 让 tooltip 永不开），但要自己处理点击拦截。插入文本不加标记：保护 Heuristic regime 下原有段落可编辑，但若未来有 whitelist deck 需特判。",
+        "decision_guide": "插入目标在同进程可访问 DOM（ProseMirror/contenteditable/同域）+ 插入与选中原子（同 transaction/command chain）+ 无长竞态窗口 → 同步选中（editor.chain().insertContent().focus().run()）。插入目标跨进程（sandbox iframe/webworker/remote）+ 插入与重建是异步边界（structuralVersion bump → remount → async onLoad）+ 有长竞态窗口 → pending + post-mount consume。竞态清理必做：所有 sibling structural op（delete/duplicate/reorder/replace）清除 pending；消费点用 take（清除）非 get（只读）；no-op guard（目标不可用返 null 不记录）；一次性语义（take 后清字段）。同进程异步定位新建元素（如新建文件夹后进编辑态）→ store event + rAF + setEditingPath（无跨进程不需路径快照失效）。工具栏配置 → 数据驱动名册（纯数据）+ UI 层映射 icon，便于测试。"
+      },
+      "reviews": [],
+      "next_review": "2026-06-16",
       "review_stage": 0
     }
   ],
-  "last_updated": "2026-06-08",
+  "last_updated": "2026-06-15",
   "weeks": [
     {
       "week": "2026-W12",
@@ -1176,6 +1602,45 @@
           "priority": "low"
         }
       ]
+    },
+    {
+      "week": "2026-W25",
+      "summary": "Deck 幻灯片画布编辑器全面落地（152 个 deck commits）：直接操作几何（拖拽/选择/8-handle resize/flow→absolute 冻结）、iframe contentEditable 浮动文本工具栏、非破坏性图片裁剪（transform 几何 vs clip-path 蒙版）、撤销重做快照+原地补丁混合、会话化漏斗化埋点体系、跨进程插入 pending+post-remount 自动选中",
+      "concepts_learned": [
+        "deck-canvas-direct-manipulation-geometry",
+        "deck-floating-text-toolbar-contenteditable",
+        "deck-image-crop-shape-clippath",
+        "deck-undo-snapshot-inplace-hybrid",
+        "deck-analytics-session-funnel-infra",
+        "deck-insert-pending-postremount-autoselect"
+      ],
+      "commits_analyzed": 379,
+      "learning_recommendations": [
+        {
+          "topic": "iframe ↔ host 跨进程通信架构（postMessage bridge 系统化）",
+          "why": "本周 deck 几乎所有交互（拖拽几何/格式化命令/选区上报/插入/撤销补丁/埋点）都建立在一套 host↔iframe postMessage bridge 上，但这套 bridge 是逐 feature 手搓堆出来的（deckStageBridgeRuntime 已 ~3500 行字符串脚本）。缺少对跨进程通信的系统性模型：消息协议设计、请求-响应配对、错误/超时、版本同步、安全（origin 校验），这正是 deck 多个竞态 bug（in-flight remount 丢补丁、pending 失效误选、load 事件竞态）的共同根源",
+          "how": "读源码：通读 deckStageBridgeRuntime.ts + useDeckBridge.ts + deckPatchRouter.ts，画出完整的 action（host→iframe）和 event（iframe→host）清单；做实验：用 Chrome DevTools 在 host 和 iframe 两个 context 同时下断点，观察一次 drag-commit 的完整消息往返；看文档：MDN Window.postMessage 的 targetOrigin/source 安全章节 + Comlink 库（把 postMessage 封装成 RPC）的设计，对比手搓 bridge 与 Comlink RPC 的取舍",
+          "priority": "high"
+        },
+        {
+          "topic": "浏览器 CSS 几何与坐标系（transform / clip-path / object-fit / 多层缩放）",
+          "why": "本周 6 个概念里有 3 个（画布几何、图片裁剪、文本工具栏定位）的 bug 都来自 CSS 几何理解不到位：clip-path 加在被 transform 的 img 上会扭曲、crop scale 与 figure aspect 不匹配导致失真、三层坐标系（slide px→iframe visual px→host viewport px）的缩放换算、clip-path 值被浏览器规范化。这些是反复踩的同一类坑",
+          "how": "读规范：MDN clip-path（注意「在元素 local 坐标系解析再应用 transform」）、transform-origin、object-fit/object-position；做实验：手写一个 demo，把 clip-path 分别加在有 transform 和无 transform 的元素上，对比圆形是否变椭圆；推导：deckImageCropLogic 的 NO-DISTORTION INVARIANT（rect 宽高比=figure 宽高比则 scale(1/w,1/h) 抵消拉伸）用纸笔推一遍；看 getBoundingClientRect 在多层 CSS transform/zoom 下返回的是 visual 还是 layout 坐标",
+          "priority": "high"
+        },
+        {
+          "topic": "undo/redo 的三种范式与状态机（snapshot vs op/command vs CRDT/transaction）",
+          "why": "本周 deck undo 是 snapshot+in-place op 混合，A4 是纯快照，assets 是 backup-restore，ProseMirror 是 transaction——项目里已有 4 套各不相同的 undo 实现，但没有统一的心智模型来判断何时用哪种、何时该做原地优化、如何处理 redo 分叉与竞态。in-flight remount 竞态的 version-tag stash 是临时手搓，缺少系统方法",
+          "how": "读源码：并排对比 deckHistory.ts、store/undo/index.ts、A4ContentHistoryManager.ts 三者的栈结构、重入守卫、redo 清除时机；读文章：command pattern undo vs memento pattern undo 的经典对比；做实验：给 deck 故意制造「undo → 立即编辑 → redo」的分叉，观察 redo 栈何时被清；进阶：读 ProseMirror history 模块（~300 行）理解 transaction 如何 rebase/compose 实现协作下的 undo",
+          "priority": "medium"
+        },
+        {
+          "topic": "后端视角：deck 文件的持久化、版本与协作冲突（本周 100% 前端的对应面）",
+          "why": "本周 379 commit 几乎全是前端，deck 编辑的所有改动（drag commit/style edit/insert/undo）最终都要落盘成 .deck 文件并触发 save。但完全没碰后端：多端同时编辑同一 deck 的冲突解决、save 的乐观锁/版本号、structuralVersion/contentVersion 这套前端版本概念在后端如何对应、自动保存的去抖与失败重试。连续多周前端为主，后端视角是明显短板",
+          "how": "读 DeckSaveManager.ts 看前端 save 触发与去抖逻辑，再追到后端 deck 文件保存 API（看是否有 version/etag 字段做并发控制）；对比：前端 structuralVersion 单调递增 vs 后端是否有 file_version 列（呼应已记录的 Deck evals 埋点方案里「后端给 file_version 加列」）；研究：last-write-wins vs 乐观锁 412 冲突 vs OT/CRDT 三种协作冲突策略，判断 deck 这种「单用户为主、偶尔多端」场景该用哪种",
+          "priority": "medium"
+        }
+      ]
     }
   ],
   "pages": [
@@ -1274,6 +1739,20 @@
         "surviving-remounts-cache-strategies",
         "disciplined-shared-selector-extraction",
         "version-counter-derived-store-read"
+      ]
+    },
+    {
+      "filename": "week-2026-W25.html",
+      "title": "Week 25 Learning Hub — Deck Canvas Editor: Geometry, Floating Toolbars, Non-Destructive Crop, Undo Hybrid, Analytics & Cross-Process Insert",
+      "type": "weekly",
+      "generated_date": "2026-06-15",
+      "concepts": [
+        "deck-canvas-direct-manipulation-geometry",
+        "deck-floating-text-toolbar-contenteditable",
+        "deck-image-crop-shape-clippath",
+        "deck-undo-snapshot-inplace-hybrid",
+        "deck-analytics-session-funnel-infra",
+        "deck-insert-pending-postremount-autoselect"
       ]
     }
   ]
